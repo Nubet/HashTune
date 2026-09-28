@@ -1,0 +1,20 @@
+package com.norbertfila.hashtune.configuration;
+
+import io.minio.MinioClient;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@Configuration
+@EnableScheduling
+@EnableConfigurationProperties({StorageProperties.class, AudioProperties.class})
+public class ApplicationConfiguration {
+    @Bean
+    MinioClient minioClient(StorageProperties properties) {
+        return MinioClient.builder()
+                .endpoint(properties.getEndpoint())
+                .credentials(properties.getAccessKey(), properties.getSecretKey())
+                .build();
+    }
+}

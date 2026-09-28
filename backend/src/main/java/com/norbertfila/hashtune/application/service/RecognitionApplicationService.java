@@ -6,9 +6,9 @@ import com.norbertfila.hashtune.application.port.out.RecognitionRepository;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
 import com.norbertfila.hashtune.configuration.AudioProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
+import com.norbertfila.hashtune.domain.recognition.Recognition;
 import com.norbertfila.hashtune.domain.recognition.RecognitionSource;
 import com.norbertfila.hashtune.domain.recognition.RecognitionStatus;
-import com.norbertfila.hashtune.domain.recognition.Recognition;
 import com.norbertfila.hashtune.domain.track.Track;
 import com.norbertfila.hashtune.domain.track.TrackStatus;
 import java.io.IOException;
@@ -34,7 +34,10 @@ public class RecognitionApplicationService {
     @Transactional
     public Recognition recognize(MultipartFile file, RecognitionSource source) {
         if (file == null || file.isEmpty() || file.getSize() > audioProperties.getMaxFileSizeBytes()) {
-            throw new ApplicationException(org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY, "INVALID_AUDIO", "Audio sample is empty or too large");
+            throw new ApplicationException(
+                    org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+                    "INVALID_AUDIO",
+                    "Audio sample is empty or too large");
         }
         UUID recognitionId = UUID.randomUUID();
         String key = "samples/" + recognitionId + "/" + safeName(file.getOriginalFilename());
@@ -42,17 +45,25 @@ public class RecognitionApplicationService {
         try (InputStream input = file.getInputStream()) {
             storage.put(storageProperties.getTempBucket(), key, input, file.getSize(), file.getContentType());
         } catch (IOException exception) {
-            throw new ApplicationException(org.springframework.http.HttpStatus.BAD_REQUEST, "INVALID_AUDIO", "Could not read audio sample");
+            throw new ApplicationException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "INVALID_AUDIO", "Could not read audio sample");
         }
         try {
             AudioRecognitionEngine.RecognitionResult result = engine.recognize(new AudioRecognitionEngine.InputAudio(
                     storageProperties.getTempBucket(), key, file.getOriginalFilename(), ""));
-            Track track = result.matched() ? tracks.findFirstByStatus(TrackStatus.INDEXED).orElse(null) : null;
-            Recognition entity = recognitions.save(new Recognition(recognitionId, track == null ? null : track.id(),
+            Track track = result.matched()
+                    ? tracks.findFirstByStatus(TrackStatus.INDEXED).orElse(null)
+                    : null;
+            Recognition entity = recognitions.save(new Recognition(
+                    recognitionId,
+                    track == null ? null : track.id(),
                     result.matched() && track != null ? RecognitionStatus.MATCHED : RecognitionStatus.NO_MATCH,
                     result.matched() && track != null ? result.confidence() : null,
-                    result.matched() && track != null ? result.matchedAtMs() : null, source,
-                    result.sampleDurationMs(), System.currentTimeMillis() - started, Instant.now()));
+                    result.matched() && track != null ? result.matchedAtMs() : null,
+                    source,
+                    result.sampleDurationMs(),
+                    System.currentTimeMillis() - started,
+                    Instant.now()));
             storage.delete(storageProperties.getTempBucket(), key);
             return entity;
         } catch (RuntimeException exception) {

@@ -6,14 +6,13 @@ import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
 import com.norbertfila.hashtune.configuration.AudioProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
-import com.norbertfila.hashtune.domain.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.domain.indexing.IndexingJob;
+import com.norbertfila.hashtune.domain.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.domain.track.Track;
 import com.norbertfila.hashtune.domain.track.TrackStatus;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestInputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.HexFormat;
@@ -40,18 +39,22 @@ public class TrackApplicationService {
         validate(file);
         String checksum = checksum(file);
         tracks.findByChecksum(checksum).ifPresent(existing -> {
-            throw new ApplicationException(org.springframework.http.HttpStatus.CONFLICT, "TRACK_ALREADY_EXISTS", "Track already exists");
+            throw new ApplicationException(
+                    org.springframework.http.HttpStatus.CONFLICT, "TRACK_ALREADY_EXISTS", "Track already exists");
         });
         UUID id = UUID.randomUUID();
         String key = "audio/" + id + "/original-" + safeName(file.getOriginalFilename());
         try (InputStream input = file.getInputStream()) {
             storage.put(storageProperties.getAudioBucket(), key, input, file.getSize(), file.getContentType());
         } catch (IOException exception) {
-            throw new ApplicationException(org.springframework.http.HttpStatus.BAD_REQUEST, "INVALID_AUDIO", "Could not read uploaded file");
+            throw new ApplicationException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "INVALID_AUDIO", "Could not read uploaded file");
         }
         Instant now = Instant.now();
-        Track track = tracks.save(new Track(id, title(file), "Unknown", null, null, key, checksum, TrackStatus.UPLOADED, now, now));
-        IndexingJob job = jobs.save(new IndexingJob(UUID.randomUUID(), track.id(), IndexingJobStatus.PENDING, 0, 0, null, null, now, null, null));
+        Track track = tracks.save(
+                new Track(id, title(file), "Unknown", null, null, key, checksum, TrackStatus.UPLOADED, now, now));
+        IndexingJob job = jobs.save(new IndexingJob(
+                UUID.randomUUID(), track.id(), IndexingJobStatus.PENDING, 0, 0, null, null, now, null, null));
         return new UploadResult(track, job);
     }
 
@@ -69,8 +72,19 @@ public class TrackApplicationService {
     @Transactional
     public IndexingJob reindex(UUID id) {
         Track track = get(id);
-        track = tracks.save(new Track(track.id(), track.title(), track.artist(), track.album(), track.durationMs(), track.audioObjectKey(), track.checksum(), TrackStatus.UPLOADED, track.createdAt(), Instant.now()));
-        return jobs.save(new IndexingJob(UUID.randomUUID(), track.id(), IndexingJobStatus.PENDING, 0, 0, null, null, Instant.now(), null, null));
+        track = tracks.save(new Track(
+                track.id(),
+                track.title(),
+                track.artist(),
+                track.album(),
+                track.durationMs(),
+                track.audioObjectKey(),
+                track.checksum(),
+                TrackStatus.UPLOADED,
+                track.createdAt(),
+                Instant.now()));
+        return jobs.save(new IndexingJob(
+                UUID.randomUUID(), track.id(), IndexingJobStatus.PENDING, 0, 0, null, null, Instant.now(), null, null));
     }
 
     public IndexingJob getJob(UUID id) {
@@ -85,17 +99,58 @@ public class TrackApplicationService {
     private void process(IndexingJob job) {
         Track track = get(job.trackId());
         try (InputStream ignored = storage.get(storageProperties.getAudioBucket(), track.audioObjectKey())) {
-            AudioRecognitionEngine.IndexingResult result = engine.index(track.id(), new AudioRecognitionEngine.InputAudio(
-                    storageProperties.getAudioBucket(), track.audioObjectKey(), track.title(), track.checksum()));
-            jobs.save(new IndexingJob(job.id(), job.trackId(), IndexingJobStatus.COMPLETED, 100, job.attempts(), null, null,
-                    job.createdAt(), job.startedAt(), Instant.now()));
-            tracks.save(new Track(track.id(), track.title(), track.artist(), track.album(), result.durationMs(), track.audioObjectKey(),
-                    track.checksum(), TrackStatus.INDEXED, track.createdAt(), Instant.now()));
+            AudioRecognitionEngine.IndexingResult result = engine.index(
+                    track.id(),
+                    new AudioRecognitionEngine.InputAudio(
+                            storageProperties.getAudioBucket(),
+                            track.audioObjectKey(),
+                            track.title(),
+                            track.checksum()));
+            jobs.save(new IndexingJob(
+                    job.id(),
+                    job.trackId(),
+                    IndexingJobStatus.COMPLETED,
+                    100,
+                    job.attempts(),
+                    null,
+                    null,
+                    job.createdAt(),
+                    job.startedAt(),
+                    Instant.now()));
+            tracks.save(new Track(
+                    track.id(),
+                    track.title(),
+                    track.artist(),
+                    track.album(),
+                    result.durationMs(),
+                    track.audioObjectKey(),
+                    track.checksum(),
+                    TrackStatus.INDEXED,
+                    track.createdAt(),
+                    Instant.now()));
         } catch (Exception exception) {
-            jobs.save(new IndexingJob(job.id(), job.trackId(), IndexingJobStatus.FAILED, job.progress(), job.attempts(),
-                    "INDEXING_FAILED", exception.getMessage(), job.createdAt(), job.startedAt(), Instant.now()));
-            tracks.save(new Track(track.id(), track.title(), track.artist(), track.album(), track.durationMs(), track.audioObjectKey(),
-                    track.checksum(), TrackStatus.FAILED, track.createdAt(), Instant.now()));
+            jobs.save(new IndexingJob(
+                    job.id(),
+                    job.trackId(),
+                    IndexingJobStatus.FAILED,
+                    job.progress(),
+                    job.attempts(),
+                    "INDEXING_FAILED",
+                    exception.getMessage(),
+                    job.createdAt(),
+                    job.startedAt(),
+                    Instant.now()));
+            tracks.save(new Track(
+                    track.id(),
+                    track.title(),
+                    track.artist(),
+                    track.album(),
+                    track.durationMs(),
+                    track.audioObjectKey(),
+                    track.checksum(),
+                    TrackStatus.FAILED,
+                    track.createdAt(),
+                    Instant.now()));
         }
     }
 
@@ -105,7 +160,10 @@ public class TrackApplicationService {
 
     private void validate(MultipartFile file) {
         if (file == null || file.isEmpty() || file.getSize() > audioProperties.getMaxFileSizeBytes()) {
-            throw new ApplicationException(org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY, "INVALID_AUDIO", "Audio file is empty or too large");
+            throw new ApplicationException(
+                    org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
+                    "INVALID_AUDIO",
+                    "Audio file is empty or too large");
         }
     }
 
@@ -135,5 +193,5 @@ public class TrackApplicationService {
         return new ApplicationException(org.springframework.http.HttpStatus.NOT_FOUND, code, message);
     }
 
-    public record UploadResult(Track track, IndexingJob job) { }
+    public record UploadResult(Track track, IndexingJob job) {}
 }

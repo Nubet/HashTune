@@ -10,15 +10,23 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ApiExceptionHandler {
     @ExceptionHandler(ApplicationException.class)
     ResponseEntity<ApiDtos.ProblemResponse> handle(ApplicationException exception, HttpServletRequest request) {
-        return ResponseEntity.status(exception.status()).body(new ApiDtos.ProblemResponse(
-                "https://hashtune.local/problems/" + exception.code().toLowerCase(),
-                exception.code(), exception.status().value(), exception.getMessage(), request.getRequestURI()));
+        return ResponseEntity.status(exception.status())
+                .body(new ApiDtos.ProblemResponse(
+                        "https://hashtune.local/problems/" + exception.code().toLowerCase(),
+                        exception.code(),
+                        exception.status().value(),
+                        exception.getMessage(),
+                        request.getRequestURI()));
     }
 
     @ExceptionHandler(Exception.class)
     ResponseEntity<ApiDtos.ProblemResponse> handleUnexpected(Exception exception, HttpServletRequest request) {
-        return ResponseEntity.internalServerError().body(new ApiDtos.ProblemResponse(
-                "https://hashtune.local/problems/internal-error", "Internal Server Error", 500,
-                "An unexpected error occurred", request.getRequestURI()));
+        return ResponseEntity.internalServerError()
+                .body(new ApiDtos.ProblemResponse(
+                        "https://hashtune.local/problems/internal-error",
+                        "Internal Server Error",
+                        500,
+                        "An unexpected error occurred",
+                        request.getRequestURI()));
     }
 }

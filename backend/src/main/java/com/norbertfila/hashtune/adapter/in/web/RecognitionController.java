@@ -21,17 +21,21 @@ public class RecognitionController {
     private final RecognitionApplicationService service;
 
     @PostMapping(value = "/recognitions", consumes = "multipart/form-data")
-    public ApiDtos.RecognitionResponse recognize(@RequestPart("file") MultipartFile file,
-                                                   @RequestParam(defaultValue = "AUDIO_FILE") RecognitionSource source) {
+    public ApiDtos.RecognitionResponse recognize(
+            @RequestPart("file") MultipartFile file,
+            @RequestParam(defaultValue = "AUDIO_FILE") RecognitionSource source) {
         var result = service.recognize(file, source);
         var track = result.trackId() == null ? null : service.track(result.trackId());
         return ApiDtos.RecognitionResponse.from(result, track);
     }
 
     @GetMapping("/recognition-history")
-    public List<ApiDtos.HistoryResponse> history(@RequestParam(defaultValue = "25") int limit,
-                                                  @RequestParam(defaultValue = "0") int offset) {
-        return service.history(limit, offset).stream().map(item -> ApiDtos.HistoryResponse.from(item, item.trackId() == null ? null : service.track(item.trackId()))).toList();
+    public List<ApiDtos.HistoryResponse> history(
+            @RequestParam(defaultValue = "25") int limit, @RequestParam(defaultValue = "0") int offset) {
+        return service.history(limit, offset).stream()
+                .map(item -> ApiDtos.HistoryResponse.from(
+                        item, item.trackId() == null ? null : service.track(item.trackId())))
+                .toList();
     }
 
     @DeleteMapping("/recognition-history")

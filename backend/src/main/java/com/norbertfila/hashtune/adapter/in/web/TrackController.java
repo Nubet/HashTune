@@ -28,10 +28,13 @@ public class TrackController {
     }
 
     @GetMapping
-    public List<ApiDtos.TrackResponse> search(@RequestParam(required = false) String query,
-                                              @RequestParam(defaultValue = "25") int limit,
-                                              @RequestParam(defaultValue = "0") int offset) {
-        return service.search(query, limit, offset).stream().map(ApiDtos.TrackResponse::from).toList();
+    public List<ApiDtos.TrackResponse> search(
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "25") int limit,
+            @RequestParam(defaultValue = "0") int offset) {
+        return service.search(query, limit, offset).stream()
+                .map(ApiDtos.TrackResponse::from)
+                .toList();
     }
 
     @DeleteMapping("/{id}")

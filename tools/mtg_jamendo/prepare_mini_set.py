@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import html
 import random
 import re
 import shutil
@@ -129,9 +130,9 @@ def load_genre_tracks(dataset_dir: Path) -> list[MtgJamendoTrack]:
                     genres=genres,
                     primary_genre=genres[0],
                     sha256=checksum,
-                    title=source["TRACK_NAME"],
-                    artist=source["ARTIST_NAME"],
-                    album=source["ALBUM_NAME"],
+                    title=html.unescape(source["TRACK_NAME"]),
+                    artist=html.unescape(source["ARTIST_NAME"]),
+                    album=html.unescape(source["ALBUM_NAME"]),
                     release_date=source["RELEASEDATE"],
                     source_url=source["URL"],
                     license_name=license_name,
@@ -225,7 +226,7 @@ def write_manifest(output_dir: Path, tracks: list[MtgJamendoTrack]) -> None:
         "license",
         "license_url",
     ]
-    with manifest_path.open("w", encoding="utf-8", newline="") as file:
+    with manifest_path.open("w", encoding="utf-8-sig", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=fields)
         writer.writeheader()
         for track in tracks:

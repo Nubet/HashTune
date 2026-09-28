@@ -69,6 +69,10 @@ pnpm-debug.log*
 **/*.db
 **/tmp/
 **/.cache/
+**/__pycache__/
+*.pyc
+data/dev/mtg_jamendo_mini/
+external/mtg-jamendo-dataset/
 
 # Vercel
 **/.vercel/

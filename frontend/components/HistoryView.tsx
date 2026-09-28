@@ -7,7 +7,7 @@ export function HistoryView({
   onToast,
 }: {
   history: Recognition[];
-  onClear: () => void;
+  onClear: () => Promise<boolean>;
   onToast: (message: string) => void;
 }) {
   return (
@@ -20,9 +20,8 @@ export function HistoryView({
           </div>
           <button
             className="text-[11px] font-bold text-brand"
-            onClick={() => {
-              onClear();
-              onToast("History cleared");
+            onClick={async () => {
+              if (await onClear()) onToast("History cleared");
             }}
           >
             Clear history

@@ -5,36 +5,22 @@ import { Button, SectionLabel } from "./ui";
 
 export function LibraryView({
   tracks,
+  indexingProgress,
+  onAddFiles,
+  onReindex,
   onRemove,
-  onToast,
 }: {
   tracks: Track[];
-  onRemove: (id: number) => void;
-  onToast: (message: string) => void;
+  indexingProgress: number | null;
+  onAddFiles: (files: FileList) => Promise<void>;
+  onReindex: (id: string) => Promise<void>;
+  onRemove: (id: string) => Promise<void>;
 }) {
   const [query, setQuery] = useState("");
-  const [activeMenu, setActiveMenu] = useState<number | null>(null);
-  const [indexing, setIndexing] = useState(false);
-  const [indexProgress, setIndexProgress] = useState(0);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const visibleTracks = tracks.filter((track) =>
     `${track.title} ${track.artist}`.toLowerCase().includes(query.toLowerCase()),
   );
-
-  function startIndex(files: FileList | null) {
-    if (!files?.length) return;
-    setIndexing(true);
-    setIndexProgress(0);
-    let progress = 0;
-    const timer = window.setInterval(() => {
-      progress += 10;
-      setIndexProgress(progress);
-      if (progress >= 100) {
-        window.clearInterval(timer);
-        setIndexing(false);
-        onToast("Library updated");
-      }
-    }, 70);
-  }
 
   return (
     <section>
@@ -44,7 +30,7 @@ export function LibraryView({
             <SectionLabel>Fingerprint database</SectionLabel>
             <h1 className="mt-1 text-[32px] font-bold tracking-[-.045em]">Music Library</h1>
             <p className="mt-2 text-[12px] text-muted">
-              {tracks.length + 494} tracks · 1.82M fingerprints · stored locally
+              {tracks.length} tracks · mock fingerprints · stored in backend
             </p>
           </div>
           <div className="flex gap-2">
@@ -63,7 +49,7 @@ export function LibraryView({
               accept="audio/*,.mp3,.wav,.flac"
               multiple
               hidden
-              onChange={(event) => startIndex(event.target.files)}
+              onChange={(event) => event.target.files && void onAddFiles(event.target.files)}
             />
             <input
               id="library-folder"
@@ -71,20 +57,20 @@ export function LibraryView({
               accept="audio/*"
               multiple
               hidden
-              onChange={(event) => startIndex(event.target.files)}
+              onChange={(event) => event.target.files && void onAddFiles(event.target.files)}
             />
           </div>
         </div>
-        {indexing && (
+        {indexingProgress !== null && (
           <div className="mt-7 bg-subtle px-5 py-4">
             <div className="flex justify-between text-[11px] font-semibold">
               <span>Creating fingerprints…</span>
-              <span>{indexProgress}%</span>
+              <span>{indexingProgress}%</span>
             </div>
             <div className="mt-3 h-1 bg-[#dddfe3]">
               <div
                 className="h-full bg-brand transition-[width]"
-                style={{ width: `${indexProgress}%` }}
+                style={{ width: `${indexingProgress}%` }}
               />
             </div>
             <div className="mt-3 flex justify-between text-[9px] text-[#888]">
@@ -133,7 +119,7 @@ export function LibraryView({
                       className="block w-full px-3 py-2 text-left text-[11px] hover:bg-[#f5f5f5]"
                       onClick={() => {
                         setActiveMenu(null);
-                        onToast("Fingerprint regenerated");
+                        void onReindex(track.id);
                       }}
                     >
                       Regenerate fingerprint
@@ -142,8 +128,7 @@ export function LibraryView({
                       className="block w-full px-3 py-2 text-left text-[11px] text-red-600 hover:bg-[#f5f5f5]"
                       onClick={() => {
                         setActiveMenu(null);
-                        onRemove(track.id);
-                        onToast("Track removed");
+                        void onRemove(track.id);
                       }}
                     >
                       Remove from library

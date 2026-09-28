@@ -1,24 +1,47 @@
 import { useState } from "react";
+import type { Recognition } from "../lib/music";
 import { MicIcon, UploadIcon } from "./icons";
+import { RecognitionResult } from "./RecognitionResult";
 import { Button, SectionLabel } from "./ui";
 
-type Match = { source: string; fileName?: string };
-
-export function ListenView({ onRecognized }: { onRecognized: (source: string) => void }) {
+export function ListenView({
+  recognition,
+  onRecognize,
+  error,
+}: {
+  recognition: Recognition | null;
+  onRecognize: (file: File, source: "MICROPHONE" | "AUDIO_FILE") => Promise<void>;
+  error: string;
+}) {
   const [isListening, setIsListening] = useState(false);
-  const [match, setMatch] = useState<Match | null>(null);
   const [fileName, setFileName] = useState("");
-  const [detailsOpen, setDetailsOpen] = useState(false);
 
-  function recognize(source: string, name?: string) {
+  async function recognizeFile(file: File, source: "MICROPHONE" | "AUDIO_FILE") {
     setIsListening(true);
-    setFileName(name ?? "");
-    setMatch(null);
-    window.setTimeout(() => {
+    setFileName(file.name);
+    await onRecognize(file, source);
+    setIsListening(false);
+  }
+
+  async function recordMicrophone() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
+      recorder.ondataavailable = (event) => chunks.push(event.data);
+      recorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        void recognizeFile(
+          new File(chunks, "microphone-sample.webm", { type: "audio/webm" }),
+          "MICROPHONE",
+        );
+      };
+      setIsListening(true);
+      recorder.start();
+      window.setTimeout(() => recorder.stop(), 5000);
+    } catch {
       setIsListening(false);
-      setMatch({ source, fileName: name });
-      onRecognized(source);
-    }, 1500);
+    }
   }
 
   return (
@@ -28,21 +51,25 @@ export function ListenView({ onRecognized }: { onRecognized: (source: string) =>
           <div>
             <SectionLabel>Local recognition</SectionLabel>
             <h1 className="mt-3 max-w-[520px] text-[clamp(40px,5vw,49px)] font-bold leading-[.98] tracking-[-.055em]">
-              {isListening ? "Listening…" : match ? "Song identified" : "What song is this?"}
+              {isListening
+                ? "Listening…"
+                : recognition?.status === "MATCHED"
+                  ? "Song identified"
+                  : "What song is this?"}
             </h1>
             <p className="mt-5 max-w-[480px] text-[14px] leading-6 text-muted">
               {isListening
                 ? fileName
                   ? "Extracting a fingerprint from the selected clip."
                   : "Capturing a short sample from your microphone."
-                : match
+                : recognition?.status === "MATCHED"
                   ? "Strong fingerprint alignment found in your local library."
                   : "Listen through your microphone or identify an audio file against your indexed library."}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button
                 variant="primary"
-                onClick={() => recognize("Microphone")}
+                onClick={() => void recordMicrophone()}
                 disabled={isListening}
               >
                 <MicIcon />
@@ -62,11 +89,12 @@ export function ListenView({ onRecognized }: { onRecognized: (source: string) =>
                 hidden
                 onChange={(event) => {
                   const file = event.target.files?.[0];
-                  if (file) recognize("Audio file", file.name);
+                  if (file) void recognizeFile(file, "AUDIO_FILE");
                 }}
               />
             </div>
             {fileName && <div className="mt-3 text-[10px] text-[#888]">{fileName}</div>}
+            {error && <div className="mt-3 text-[11px] text-red-600">{error}</div>}
             {isListening && (
               <div className="mt-5 flex h-6 items-center gap-[3px]" aria-label="Recognizing audio">
                 {Array.from({ length: 28 }, (_, index) => (
@@ -100,62 +128,7 @@ export function ListenView({ onRecognized }: { onRecognized: (source: string) =>
           </div>
         </div>
       </section>
-      {match && (
-        <div className="border-b border-line bg-canvas">
-          <div className="animate-enter mx-auto max-w-[1040px] px-6 py-7">
-            <div className="flex items-center gap-5">
-              <div className="grid size-20 shrink-0 place-items-center bg-[#e8d25f] text-[9px] font-bold tracking-[.15em]">
-                AM
-              </div>
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-[.1em] text-success">
-                  Match found · 96%
-                </div>
-                <div className="mt-1 text-[23px] font-bold tracking-[-.035em]">
-                  Do I Wanna Know?
-                </div>
-                <div className="text-[12px] text-muted">Arctic Monkeys · AM</div>
-              </div>
-              <div className="ml-auto hidden gap-9 sm:flex">
-                <div>
-                  <small className="text-[9px] uppercase text-[#999]">Matched at</small>
-                  <div className="text-[12px] font-semibold">02:17</div>
-                </div>
-                <div>
-                  <small className="text-[9px] uppercase text-[#999]">Recognition</small>
-                  <div className="text-[12px] font-semibold">0.28 s</div>
-                </div>
-              </div>
-            </div>
-            <button
-              className="mt-5 text-[10px] font-bold text-brand"
-              onClick={() => setDetailsOpen(!detailsOpen)}
-            >
-              {detailsOpen ? "Hide match details" : "Show match details"}
-            </button>
-            {detailsOpen && (
-              <div className="mt-4 grid grid-cols-2 gap-y-3 border-t border-line pt-4 text-[10px] sm:grid-cols-4">
-                <div>
-                  <span className="text-[#999]">Sample</span>
-                  <b className="ml-2">5.0 s</b>
-                </div>
-                <div>
-                  <span className="text-[#999]">Hash matches</span>
-                  <b className="ml-2">302</b>
-                </div>
-                <div>
-                  <span className="text-[#999]">Offset cluster</span>
-                  <b className="ml-2">287</b>
-                </div>
-                <div>
-                  <span className="text-[#999]">Source</span>
-                  <b className="ml-2">{match.source}</b>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {recognition && <RecognitionResult recognition={recognition} />}
     </>
   );
 }

@@ -9,7 +9,7 @@ import { musicApi, type ApiHistoryItem } from "../lib/api/musicApi";
 import type { ApiTrack, RecognitionResponse } from "../lib/api/contracts";
 import type { Recognition, Track } from "../lib/music";
 
-const colors = ["#e8d25f", "#d7b15a", "#18243a", "#d7d7d3", "#a88975", "#404040"];
+const colors = ["#0866F5", "#6EA7F3", "#B2D1F7", "#172A42", "#0D1C2E", "#EEF0F3"];
 
 function colorFor(id: string) {
   const value = [...id].reduce((sum, character) => sum + character.charCodeAt(0), 0);
@@ -162,7 +162,9 @@ export default function Home() {
       <Header page={page} onPageChange={changePage} />
       <main>
         {error && (
-          <div className="mx-auto max-w-[1040px] px-6 pt-5 text-[12px] text-red-600">{error}</div>
+          <div className="mx-auto max-w-[1200px] px-6 pt-6 text-[14px] text-red-600 lg:px-8">
+            {error}
+          </div>
         )}
         {page === "listen" && (
           <ListenView recognition={recognition} onRecognize={recognize} error={error} />

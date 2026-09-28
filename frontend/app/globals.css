@@ -1,19 +1,50 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #111111;
+  --brand-primary-blue: #0866f5;
+  --brand-light-blue: #6ea7f3;
+  --brand-pale-blue: #b2d1f7;
+  --brand-off-white: #eef0f3;
+  --brand-navy: #07111d;
+  --brand-white: #ffffff;
+  --bg-canvas: var(--brand-white);
+  --bg-subtle: var(--brand-off-white);
+  --text-ink: var(--brand-navy);
+  --text-muted: #64748b;
+  --border-line: #e2e8f0;
+
+  --background: var(--bg-canvas);
+  --foreground: var(--text-ink);
+}
+
+.dark {
+  --bg-canvas: var(--brand-navy);
+  --bg-subtle: #0d1c2e;
+  --text-ink: var(--brand-white);
+  --text-muted: var(--brand-pale-blue);
+  --border-line: #172a42;
 }
 
 @theme {
-  --color-canvas: #ffffff;
-  --color-ink: #111111;
-  --color-muted: #77777d;
-  --color-subtle: #f3f4f6;
-  --color-line: #e6e7ea;
-  --color-brand: #0877f9;
-  --color-brand-hover: #006be6;
-  --color-success: #23855e;
+  --color-brand: var(--brand-primary-blue);
+  --color-brand-hover: var(--brand-light-blue);
+
+  --color-canvas: var(--bg-canvas);
+  --color-ink: var(--text-ink);
+  --color-muted: var(--text-muted);
+  --color-subtle: var(--bg-subtle);
+  --color-line: var(--border-line);
+
+  --color-navy: var(--brand-navy);
+  --color-white: var(--brand-white);
+  --color-off-white: var(--brand-off-white);
+  --color-pale-blue: var(--brand-pale-blue);
+  --color-light-blue: var(--brand-light-blue);
+  --color-primary-blue: var(--brand-primary-blue);
+
+  --color-success: #27a36a;
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }

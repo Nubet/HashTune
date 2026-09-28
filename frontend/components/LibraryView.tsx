@@ -24,12 +24,12 @@ export function LibraryView({
 
   return (
     <section>
-      <div className="mx-auto max-w-[1040px] px-6 py-11">
+      <div className="mx-auto max-w-[1200px] px-6 py-14 lg:px-8">
         <div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-end">
           <div>
             <SectionLabel>Fingerprint database</SectionLabel>
-            <h1 className="mt-1 text-[32px] font-bold tracking-[-.045em]">Music Library</h1>
-            <p className="mt-2 text-[12px] text-muted">
+            <h1 className="mt-1 text-[40px] font-bold tracking-[-.045em]">Music Library</h1>
+            <p className="mt-3 text-[14px] text-muted">
               {tracks.length} tracks · fingerprinting pending · stored in backend
             </p>
           </div>
@@ -63,17 +63,17 @@ export function LibraryView({
         </div>
         {indexingProgress !== null && (
           <div className="mt-7 bg-subtle px-5 py-4">
-            <div className="flex justify-between text-[11px] font-semibold">
+            <div className="flex justify-between text-[12px] font-semibold">
               <span>Creating fingerprints…</span>
               <span>{indexingProgress}%</span>
             </div>
-            <div className="mt-3 h-1 bg-[#dddfe3]">
+            <div className="mt-3 h-1 bg-line">
               <div
                 className="h-full bg-brand transition-[width]"
                 style={{ width: `${indexingProgress}%` }}
               />
             </div>
-            <div className="mt-3 flex justify-between text-[9px] text-[#888]">
+            <div className="mt-3 flex justify-between text-[9px] text-muted">
               <span>Reading audio</span>
               <span>Spectrogram → peaks → hashes → database</span>
             </div>
@@ -87,24 +87,24 @@ export function LibraryView({
             id="library-search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            className="w-full border-0 py-3 text-[12px] outline-none placeholder:text-[#aaa]"
+            className="w-full border-0 bg-transparent py-4 text-[14px] outline-none placeholder:text-muted"
             placeholder="Search title or artist"
           />
-          <span className="hidden text-[10px] text-[#aaa] sm:block">TITLE / ARTIST / DURATION</span>
+          <span className="hidden text-[11px] text-muted sm:block">TITLE / ARTIST / DURATION</span>
         </div>
         <div>
           {visibleTracks.map((track) => (
             <div
               key={track.id}
-              className="grid grid-cols-[44px_1fr_76px_90px_36px] items-center gap-4 border-b border-line py-3 transition-colors hover:bg-[#fafafa]"
+              className="grid grid-cols-[44px_1fr_76px_90px_36px] items-center gap-4 border-b border-line py-3 transition-colors hover:bg-subtle"
             >
               <div className="size-10" style={{ background: track.color }} />
               <div>
-                <b className="text-[12px]">{track.title}</b>
-                <div className="mt-0.5 text-[10px] text-muted">{track.artist}</div>
+                <b className="text-[14px]">{track.title}</b>
+                <div className="mt-1 text-[12px] text-muted">{track.artist}</div>
               </div>
-              <span className="text-[10px] text-muted">{track.duration}</span>
-              <span className="text-[9px] font-bold text-success">{track.status}</span>
+              <span className="text-[12px] text-muted">{track.duration}</span>
+              <span className="text-[10px] font-bold text-success">{track.status}</span>
               <div className="relative">
                 <button
                   className="grid size-7 place-items-center text-muted"
@@ -116,7 +116,7 @@ export function LibraryView({
                 {activeMenu === track.id && (
                   <div className="absolute right-0 top-9 z-20 w-44 border border-line bg-canvas py-1 shadow-[0_12px_35px_rgba(0,0,0,.12)]">
                     <button
-                      className="block w-full px-3 py-2 text-left text-[11px] hover:bg-[#f5f5f5]"
+                      className="block w-full px-3 py-2 text-left text-[11px] hover:bg-subtle"
                       onClick={() => {
                         setActiveMenu(null);
                         void onReindex(track.id);
@@ -125,7 +125,7 @@ export function LibraryView({
                       Regenerate fingerprint
                     </button>
                     <button
-                      className="block w-full px-3 py-2 text-left text-[11px] text-red-600 hover:bg-[#f5f5f5]"
+                      className="block w-full px-3 py-2 text-left text-[11px] text-red-500 hover:bg-subtle"
                       onClick={() => {
                         setActiveMenu(null);
                         void onRemove(track.id);

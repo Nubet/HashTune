@@ -12,14 +12,14 @@ export function HistoryView({
 }) {
   return (
     <section>
-      <div className="mx-auto max-w-[1040px] px-6 py-11">
+      <div className="mx-auto max-w-[1200px] px-6 py-14 lg:px-8">
         <div className="flex items-end justify-between">
           <div>
             <SectionLabel>Recognition log</SectionLabel>
-            <h1 className="mt-1 text-[32px] font-bold tracking-[-.045em]">Recognition History</h1>
+            <h1 className="mt-1 text-[40px] font-bold tracking-[-.045em]">Recognition History</h1>
           </div>
           <button
-            className="text-[11px] font-bold text-brand"
+            className="text-[12px] font-bold text-brand"
             onClick={async () => {
               if (await onClear()) onToast("History cleared");
             }}
@@ -36,16 +36,16 @@ export function HistoryView({
               >
                 <div className="size-10" style={{ background: item.color }} />
                 <div>
-                  <b className="text-[12px]">{item.title}</b>
-                  <div className="text-[10px] text-muted">{item.artist}</div>
+                  <b className="text-[14px]">{item.title}</b>
+                  <div className="text-[12px] text-muted">{item.artist}</div>
                 </div>
-                <span className="text-[10px]">{item.score}</span>
-                <span className="text-[10px] text-muted">{item.source}</span>
-                <span className="text-right text-[10px] text-[#999]">{item.time}</span>
+                <span className="text-[12px]">{item.score}</span>
+                <span className="text-[12px] text-muted">{item.source}</span>
+                <span className="text-right text-[12px] text-muted">{item.time}</span>
               </div>
             ))
           ) : (
-            <div className="py-20 text-center text-[12px] text-[#999]">No recognitions yet.</div>
+            <div className="py-24 text-center text-[14px] text-muted">No recognitions yet.</div>
           )}
         </div>
       </div>

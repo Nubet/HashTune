@@ -116,14 +116,7 @@ export function ListenView({
               <i className="absolute -top-[3px] left-1/2 size-1.5 rounded-full bg-brand" />
             </div>
             <div className="absolute inset-[21%] grid place-items-center rounded-full bg-canvas shadow-[0_12px_45px_rgba(0,0,0,.08)]">
-              <svg className="size-20 text-brand" viewBox="0 0 120 120" fill="none">
-                <path
-                  d="M17 65c12-36 23 31 41-4 18-35 27-37 45 0"
-                  stroke="currentColor"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <img src="/hashtune-logo.svg" alt="" aria-hidden="true" className="size-20" />
             </div>
           </div>
         </div>

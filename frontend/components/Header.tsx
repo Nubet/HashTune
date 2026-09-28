@@ -1,5 +1,3 @@
-import { WaveIcon } from "./icons";
-
 export type Page = "listen" | "library" | "history";
 
 export function Header({ page, onPageChange }: { page: Page; onPageChange: (page: Page) => void }) {
@@ -12,9 +10,7 @@ export function Header({ page, onPageChange }: { page: Page; onPageChange: (page
     <header className="h-14 border-b border-line bg-canvas">
       <div className="mx-auto flex h-full max-w-[1040px] items-center px-6">
         <div className="flex items-center gap-2 font-bold tracking-[-.03em]">
-          <span className="grid size-7 place-items-center rounded-full bg-brand text-white">
-            <WaveIcon />
-          </span>
+          <img src="/hashtune-logo.svg" alt="" aria-hidden="true" className="size-7" />
           HashTune
         </div>
         <nav className="ml-10 flex gap-7">

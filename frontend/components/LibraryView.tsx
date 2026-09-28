@@ -30,7 +30,7 @@ export function LibraryView({
             <SectionLabel>Fingerprint database</SectionLabel>
             <h1 className="mt-1 text-[32px] font-bold tracking-[-.045em]">Music Library</h1>
             <p className="mt-2 text-[12px] text-muted">
-              {tracks.length} tracks · mock fingerprints · stored in backend
+              {tracks.length} tracks · fingerprinting pending · stored in backend
             </p>
           </div>
           <div className="flex gap-2">
@@ -104,7 +104,7 @@ export function LibraryView({
                 <div className="mt-0.5 text-[10px] text-muted">{track.artist}</div>
               </div>
               <span className="text-[10px] text-muted">{track.duration}</span>
-              <span className="text-[9px] font-bold text-success">INDEXED</span>
+              <span className="text-[9px] font-bold text-success">{track.status}</span>
               <div className="relative">
                 <button
                   className="grid size-7 place-items-center text-muted"

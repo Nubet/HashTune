@@ -1,6 +1,6 @@
 import { problemSchema } from "./contracts";
 
-const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8080";
 
 export class ApiError extends Error {
   constructor(
@@ -27,7 +27,7 @@ export async function request<T>(
 
   if (!response.ok) {
     const body = problemSchema.safeParse(await response.json().catch(() => null));
-    throw new ApiError(body.data?.detail ?? "Request failed", response.status, body.data?.title);
+    throw new ApiError(body.data?.detail ?? "Request failed", response.status, body.data?.code ?? body.data?.title);
   }
 
   return schema.parse(await response.json());
@@ -37,7 +37,7 @@ export async function requestVoid(path: string, options: RequestInit = {}) {
   const response = await fetch(`${baseUrl}${path}`, options);
   if (!response.ok) {
     const body = problemSchema.safeParse(await response.json().catch(() => null));
-    throw new ApiError(body.data?.detail ?? "Request failed", response.status, body.data?.title);
+    throw new ApiError(body.data?.detail ?? "Request failed", response.status, body.data?.code ?? body.data?.title);
   }
 }
 

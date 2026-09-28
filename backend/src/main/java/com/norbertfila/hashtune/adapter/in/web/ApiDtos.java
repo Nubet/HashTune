@@ -4,6 +4,7 @@ import com.norbertfila.hashtune.domain.indexing.IndexingJob;
 import com.norbertfila.hashtune.domain.recognition.Recognition;
 import com.norbertfila.hashtune.domain.track.Track;
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 public final class ApiDtos {
@@ -68,5 +69,12 @@ public final class ApiDtos {
         }
     }
 
-    public record ProblemResponse(String type, String title, int status, String detail, String instance) {}
+    public record ProblemResponse(
+            String type,
+            String title,
+            int status,
+            String detail,
+            String instance,
+            String code,
+            Map<String, String> errors) {}
 }

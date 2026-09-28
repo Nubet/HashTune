@@ -37,6 +37,7 @@ export const recognitionSchema = z.object({
 export const problemSchema = z.object({
   type: z.string().optional(),
   title: z.string().optional(),
+  code: z.string().optional(),
   status: z.number().optional(),
   detail: z.string().optional(),
   instance: z.string().optional(),

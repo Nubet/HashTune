@@ -14,7 +14,7 @@ import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableScheduling
-@EnableConfigurationProperties({StorageProperties.class, AudioProperties.class})
+@EnableConfigurationProperties({StorageProperties.class, AudioProperties.class, MtgJamendoSeedProperties.class})
 public class ApplicationConfiguration {
     @Bean
     MinioClient minioClient(StorageProperties properties) {

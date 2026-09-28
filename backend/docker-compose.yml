@@ -1,17 +1,21 @@
+name: hashtune-local
+
 services:
   postgres:
     image: postgres:17-alpine
+    container_name: hashtune-postgres
     environment:
       POSTGRES_DB: hashtune
       POSTGRES_USER: hashtune
       POSTGRES_PASSWORD: hashtune
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - hashtune-postgres:/var/lib/postgresql/data
 
   minio:
     image: minio/minio:latest
+    container_name: hashtune-minio
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: hashtune

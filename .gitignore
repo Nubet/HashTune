@@ -32,6 +32,8 @@ Desktop.ini
 !**/.yarn/versions/
 **/.next/
 **/out/
+!backend/src/main/java/**/out/
+!backend/src/main/java/**/out/**
 **/coverage/
 **/dist/
 **/build/

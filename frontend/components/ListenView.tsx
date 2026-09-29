@@ -114,7 +114,7 @@ export function ListenView({
   const [microphoneRecording, setMicrophoneRecording] = useState<File | null>(null);
   const audioLevel = useAudioLevel(microphoneStream);
   const microphoneRecordingUrl = useObjectUrl(microphoneRecording);
-  const signalDetected = audioLevel > 0.08;
+  const waveformLevel = Math.min(1, Math.sqrt(audioLevel) * 1.25);
 
   async function recognizeFile(file: File, source: "MICROPHONE" | "AUDIO_FILE") {
     setIsListening(true);
@@ -208,9 +208,7 @@ export function ListenView({
             <p className="mt-6 max-w-140 text-[16px] leading-7 text-muted">
               {isListening
                 ? microphoneStream
-                  ? signalDetected
-                    ? "Audio detected. Checking the clip against the library."
-                    : "No audio signal detected. Check your microphone or mute switch."
+                  ? "Listening to your microphone. Checking the clip against the library."
                   : fileName
                     ? "Checking the clip against the library."
                     : "Capturing a short sample from your microphone."
@@ -252,15 +250,15 @@ export function ListenView({
             {isListening && (
               <div
                 className="mt-5 flex h-6 items-center gap-0.75"
-                aria-label={signalDetected ? "Microphone signal detected" : "No microphone signal detected"}
+                aria-label="Microphone activity"
               >
                 {Array.from({ length: 28 }, (_, index) => (
                   <i
                     key={index}
                     className="block w-0.5 rounded-full bg-brand transition-[height,opacity] duration-100"
                     style={{
-                      height: `${3 + Math.round(audioLevel * (5 + (index % 8) * 2))}px`,
-                      opacity: `${0.35 + audioLevel * 0.65}`,
+                      height: `${4 + Math.round(waveformLevel * (10 + (index % 8) * 3))}px`,
+                      opacity: `${0.4 + waveformLevel * 0.6}`,
                     }}
                   />
                 ))}

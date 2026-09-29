@@ -3,6 +3,13 @@ import type { Track } from "../lib/music";
 import { MoreIcon } from "./icons";
 import { Button, SectionLabel } from "./ui";
 
+function statusLabel(status: string) {
+  if (status === "INDEXED") return "Ready";
+  if (status === "PROCESSING") return "Preparing";
+  if (status === "FAILED") return "Needs attention";
+  return "Waiting";
+}
+
 export function LibraryView({
   tracks,
   indexingProgress,
@@ -30,16 +37,19 @@ export function LibraryView({
       <div className="mx-auto max-w-[1200px] px-6 py-14 lg:px-8">
         <div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-end">
           <div>
-            <SectionLabel>Fingerprint database</SectionLabel>
-            <h1 className="mt-1 text-[40px] font-bold tracking-[-.045em]">Music Library</h1>
+            <SectionLabel>Your collection</SectionLabel>
+            <h1 className="mt-1 text-[40px] font-bold tracking-[-.045em]">Library</h1>
             <p className="mt-3 text-[14px] text-muted">
-              {tracks.length} tracks · {indexedCount} indexed · {pendingCount} pending
-              {failedCount > 0 ? ` · ${failedCount} failed` : ""}
+              {tracks.length === 0
+                ? "Add music to start identifying tracks."
+                : `${tracks.length} ${tracks.length === 1 ? "track" : "tracks"} · ${indexedCount} ready`}
+              {pendingCount > 0 ? ` · ${pendingCount} being prepared` : ""}
+              {failedCount > 0 ? ` · ${failedCount} need attention` : ""}
             </p>
           </div>
           <div className="flex gap-2">
             <Button onClick={() => document.getElementById("library-files")?.click()}>
-              Add files
+              Add audio
             </Button>
             <Button
               variant="primary"
@@ -68,7 +78,7 @@ export function LibraryView({
         {indexingProgress !== null && (
           <div className="mt-7 bg-subtle px-5 py-4">
             <div className="flex justify-between text-[12px] font-semibold">
-              <span>Creating fingerprints…</span>
+              <span>Preparing your library…</span>
               <span>{indexingProgress}%</span>
             </div>
             <div className="mt-3 h-1 bg-line">
@@ -78,8 +88,8 @@ export function LibraryView({
               />
             </div>
             <div className="mt-3 flex justify-between text-[9px] text-muted">
-              <span>Reading audio</span>
-              <span>Spectrogram → peaks → hashes → database</span>
+              <span>Processing audio</span>
+              <span>Your tracks will be ready to identify shortly</span>
             </div>
           </div>
         )}
@@ -92,7 +102,7 @@ export function LibraryView({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             className="w-full border-0 bg-transparent py-4 text-[14px] outline-none placeholder:text-muted"
-            placeholder="Search title or artist"
+            placeholder="Search your library"
           />
           <span className="hidden text-[11px] text-muted sm:block">TITLE / ARTIST / DURATION</span>
         </div>
@@ -108,7 +118,11 @@ export function LibraryView({
                 <div className="mt-1 text-[12px] text-muted">{track.artist}</div>
               </div>
               <span className="text-[12px] text-muted">{track.duration}</span>
-              <span className="text-[10px] font-bold text-success">{track.status}</span>
+              <span
+                className={`text-[10px] font-bold ${track.status === "FAILED" ? "text-red-600" : track.status === "INDEXED" ? "text-success" : "text-muted"}`}
+              >
+                {statusLabel(track.status)}
+              </span>
               <div className="relative">
                 <button
                   className="grid size-7 place-items-center text-muted"
@@ -126,7 +140,7 @@ export function LibraryView({
                         void onReindex(track.id);
                       }}
                     >
-                      Regenerate fingerprint
+                      Reprocess audio
                     </button>
                     <button
                       className="block w-full px-3 py-2 text-left text-[11px] text-red-500 hover:bg-subtle"
@@ -135,7 +149,7 @@ export function LibraryView({
                         void onRemove(track.id);
                       }}
                     >
-                      Remove from library
+                      Remove track
                     </button>
                   </div>
                 )}

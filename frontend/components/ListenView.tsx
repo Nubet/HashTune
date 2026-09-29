@@ -7,11 +7,9 @@ import { Button, SectionLabel } from "./ui";
 export function ListenView({
   recognition,
   onRecognize,
-  error,
 }: {
   recognition: Recognition | null;
   onRecognize: (file: File, source: "MICROPHONE" | "AUDIO_FILE") => Promise<void>;
-  error: string;
 }) {
   const [isListening, setIsListening] = useState(false);
   const [fileName, setFileName] = useState("");
@@ -47,24 +45,24 @@ export function ListenView({
   return (
     <>
       <section className="bg-subtle">
-        <div className="mx-auto grid min-h-[520px] max-w-[1200px] grid-cols-1 items-center gap-12 px-6 py-16 lg:grid-cols-[1fr_400px] lg:gap-20 lg:px-8">
+        <div className="mx-auto grid min-h-130 max-w-300 grid-cols-1 items-center gap-12 px-6 py-16 lg:grid-cols-[1fr_400px] lg:gap-20 lg:px-8">
           <div>
             <SectionLabel>Local recognition</SectionLabel>
-            <h1 className="mt-3 max-w-[620px] text-[clamp(44px,5vw,60px)] font-bold leading-[.98] tracking-[-.055em]">
+            <h1 className="mt-3 max-w-155 text-[clamp(44px,5vw,60px)] font-bold leading-[.98] tracking-[-.055em]">
               {isListening
                 ? "Listening…"
                 : recognition?.status === "MATCHED"
                   ? "Song identified"
-                  : "What song is this?"}
+                  : "What are you listening to?"}
             </h1>
-            <p className="mt-6 max-w-[560px] text-[16px] leading-7 text-muted">
+            <p className="mt-6 max-w-140 text-[16px] leading-7 text-muted">
               {isListening
                 ? fileName
-                  ? "Extracting a fingerprint from the selected clip."
+                  ? "Checking the clip against the library."
                   : "Capturing a short sample from your microphone."
                 : recognition?.status === "MATCHED"
-                  ? "Strong fingerprint alignment found in your local library."
-                  : "Listen through your microphone or identify an audio file against your indexed library."}
+                  ? "This track matches something in library."
+                  : "Use your microphone or choose an audio clip. HashTune only searches tracks included in Library."}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button
@@ -73,14 +71,14 @@ export function ListenView({
                 disabled={isListening}
               >
                 <MicIcon />
-                {isListening ? "Listening" : "Listen"}
+                {isListening ? "Checking…" : "Use microphone"}
               </Button>
               <Button
                 onClick={() => document.getElementById("sample-input")?.click()}
                 disabled={isListening}
               >
                 <UploadIcon />
-                Upload audio clip
+                Choose audio file
               </Button>
               <input
                 id="sample-input"
@@ -94,13 +92,12 @@ export function ListenView({
               />
             </div>
             {fileName && <div className="mt-3 text-[12px] text-muted">{fileName}</div>}
-            {error && <div className="mt-3 text-[12px] text-red-600">{error}</div>}
             {isListening && (
-              <div className="mt-5 flex h-6 items-center gap-[3px]" aria-label="Recognizing audio">
+              <div className="mt-5 flex h-6 items-center gap-0.75" aria-label="Recognizing audio">
                 {Array.from({ length: 28 }, (_, index) => (
                   <i
                     key={index}
-                    className="animate-wave block w-[2px] rounded-full bg-brand"
+                    className="animate-wave block w-0.5 rounded-full bg-brand"
                     style={{
                       height: `${6 + (index % 8) * 2}px`,
                       animationDelay: `${-index * 0.04}s`,
@@ -112,21 +109,21 @@ export function ListenView({
           </div>
           <div className="relative mx-auto size-[min(400px,75vw)]">
             <div className="animate-breathe absolute inset-0 rounded-full border border-pale-blue/20" />
-            <div className="animate-orbit absolute inset-[18px] rounded-full border border-transparent border-t-light-blue">
-              <i className="absolute -top-[3px] left-1/2 size-1.5 rounded-full bg-brand" />
+            <div className="animate-orbit absolute inset-4.5 rounded-full border border-transparent border-t-light-blue">
+              <i className="absolute -top-0.75 left-1/2 size-1.5 rounded-full bg-brand" />
             </div>
-            <div className="absolute inset-[21%] grid place-items-center rounded-full bg-canvas shadow-[0_12px_45px_rgba(0,0,0,.08)] dark:shadow-[0_12px_45px_rgba(0,0,0,.5)]">
+            <div className="logo-disc absolute inset-[21%] grid place-items-center rounded-full">
               <img
                 src="/hashtune-logo-blue.svg"
                 alt=""
                 aria-hidden="true"
-                className="size-24 dark:hidden"
+                className="logo-mark logo-mark-blue size-24"
               />
               <img
                 src="/hashtune-logo-white.svg"
                 alt=""
                 aria-hidden="true"
-                className="size-24 hidden dark:block"
+                className="logo-mark logo-mark-white size-24"
               />
             </div>
           </div>

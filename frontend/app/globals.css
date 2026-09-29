@@ -117,6 +117,32 @@ body {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
+.logo-mark {
+  display: block;
+}
+
+.logo-mark-white {
+  display: none;
+}
+
+.dark .logo-mark-blue {
+  display: none;
+}
+
+.dark .logo-mark-white {
+  display: block;
+}
+
+.logo-disc {
+  background: var(--brand-white);
+  box-shadow: 0 12px 45px rgb(0 0 0 / 8%);
+}
+
+.dark .logo-disc {
+  background: #0d1c2e;
+  box-shadow: 0 12px 45px rgb(0 0 0 / 50%);
+}
+
 button {
   cursor: pointer;
 }

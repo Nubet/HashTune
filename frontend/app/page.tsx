@@ -36,10 +36,15 @@ function toTrack(track: ApiTrack): Track {
 
 function toRecognition(response: RecognitionResponse, source: string): Recognition {
   const track = response.track;
+  const isInvalidAudio = response.status === "INVALID_AUDIO";
   return {
     id: `${Date.now()}-${track?.id ?? "no-match"}`,
-    title: track?.title ?? "No match",
-    artist: track?.artist ?? "No matching track found",
+    title: track?.title ?? (isInvalidAudio ? "Audio could not be read" : "Nothing matched"),
+    artist:
+      track?.artist ??
+      (isInvalidAudio
+        ? "Try a different audio file."
+        : "Try a clearer clip or add this track to your library."),
     score: response.confidence == null ? "--" : `${Math.round(response.confidence * 100)}%`,
     time: "Just now",
     source,
@@ -55,8 +60,8 @@ function toHistoryItem(item: ApiHistoryItem): Recognition {
   const track = item.track;
   return {
     id: item.id,
-    title: track?.title ?? "No match",
-    artist: track?.artist ?? "No matching track found",
+    title: track?.title ?? "Nothing matched",
+    artist: track?.artist ?? "No track from your library matched this search.",
     score: item.confidence == null ? "--" : `${Math.round(item.confidence * 100)}%`,
     time: new Date(item.createdAt).toLocaleString("pl-PL"),
     source: item.source,
@@ -86,7 +91,7 @@ export default function Home() {
       setRecognition(result);
       if (result.status === "MATCHED") setHistory((current) => [result, ...current]);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Recognition failed");
+      setError(reason instanceof Error ? reason.message : "We couldn't identify that audio.");
     }
   }
 
@@ -99,7 +104,7 @@ export default function Home() {
         .listTracks()
         .then((loadedTracks) => setTracks(loadedTracks.map(toTrack)))
         .catch((reason: unknown) =>
-          setError(reason instanceof Error ? reason.message : "Could not load library"),
+          setError(reason instanceof Error ? reason.message : "We couldn't load your library."),
         );
     }
 
@@ -108,7 +113,7 @@ export default function Home() {
         .history()
         .then((loadedHistory) => setHistory(loadedHistory.map(toHistoryItem)))
         .catch((reason: unknown) =>
-          setError(reason instanceof Error ? reason.message : "Could not load history"),
+          setError(reason instanceof Error ? reason.message : "We couldn't load your search history."),
         );
     }
   }
@@ -119,9 +124,9 @@ export default function Home() {
       setIndexProgress(0);
       await musicApi.uploadAndIndex(files, setIndexProgress);
       setTracks((await musicApi.listTracks()).map(toTrack));
-      showToast("Library updated");
+      showToast("Library is ready");
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Could not index files");
+      setError(reason instanceof Error ? reason.message : "We couldn't add those files.");
     } finally {
       setIndexProgress(null);
     }
@@ -131,9 +136,9 @@ export default function Home() {
     try {
       await musicApi.removeTrack(id);
       setTracks((current) => current.filter((track) => track.id !== id));
-      showToast("Track removed");
+      showToast("Track removed from your library");
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Could not remove track");
+      setError(reason instanceof Error ? reason.message : "We couldn't remove that track.");
     }
   }
 
@@ -142,9 +147,9 @@ export default function Home() {
       const job = await musicApi.reindexTrack(id);
       await musicApi.waitForIndexing(job.id);
       setTracks((await musicApi.listTracks()).map(toTrack));
-      showToast("Fingerprint regenerated");
+      showToast("Track is ready to identify");
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Could not reindex track");
+      setError(reason instanceof Error ? reason.message : "We couldn't refresh that track.");
     }
   }
 
@@ -154,7 +159,7 @@ export default function Home() {
       setHistory([]);
       return true;
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Could not clear history");
+      setError(reason instanceof Error ? reason.message : "We couldn't clear your search history.");
       return false;
     }
   }
@@ -169,7 +174,7 @@ export default function Home() {
           </div>
         )}
         {page === "listen" && (
-          <ListenView recognition={recognition} onRecognize={recognize} error={error} />
+          <ListenView recognition={recognition} onRecognize={recognize} />
         )}
         {page === "library" && (
           <LibraryView

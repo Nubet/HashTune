@@ -4,9 +4,9 @@ export type Page = "listen" | "library" | "history";
 
 export function Header({ page, onPageChange }: { page: Page; onPageChange: (page: Page) => void }) {
   const links: { id: Page; label: string }[] = [
-    { id: "listen", label: "Listen" },
-    { id: "library", label: "Music Library" },
-    { id: "history", label: "Recognition History" },
+    { id: "listen", label: "Identify" },
+    { id: "library", label: "Library" },
+    { id: "history", label: "History" },
   ];
   return (
     <header className="h-16 border-b border-line bg-canvas">
@@ -16,13 +16,13 @@ export function Header({ page, onPageChange }: { page: Page; onPageChange: (page
             src="/hashtune-logo-blue.svg"
             alt=""
             aria-hidden="true"
-            className="size-7 dark:hidden"
+            className="logo-mark logo-mark-blue size-7"
           />
           <img
             src="/hashtune-logo-white.svg"
             alt=""
             aria-hidden="true"
-            className="size-7 hidden dark:block"
+            className="logo-mark logo-mark-white size-7"
           />
           HashTune
         </div>
@@ -40,7 +40,7 @@ export function Header({ page, onPageChange }: { page: Page; onPageChange: (page
         <div className="ml-auto flex items-center gap-4 text-[11px] text-muted">
           <div className="flex items-center gap-2">
             <i className="size-1.5 rounded-full bg-success" />
-            500 tracks indexed
+            100 TRACKS
           </div>
           <div className="h-4 w-px bg-line" />
           <ThemeToggle />

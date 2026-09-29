@@ -15,8 +15,8 @@ export function HistoryView({
       <div className="mx-auto max-w-[1200px] px-6 py-14 lg:px-8">
         <div className="flex items-end justify-between">
           <div>
-            <SectionLabel>Recognition log</SectionLabel>
-            <h1 className="mt-1 text-[40px] font-bold tracking-[-.045em]">Recognition History</h1>
+            <SectionLabel>Your activity</SectionLabel>
+            <h1 className="mt-1 text-[40px] font-bold tracking-[-.045em]">Search history</h1>
           </div>
           <button
             className="text-[12px] font-bold text-brand"
@@ -24,7 +24,7 @@ export function HistoryView({
               if (await onClear()) onToast("History cleared");
             }}
           >
-            Clear history
+             Clear history
           </button>
         </div>
         <div className="mt-8 border-t border-line">
@@ -40,12 +40,16 @@ export function HistoryView({
                   <div className="text-[12px] text-muted">{item.artist}</div>
                 </div>
                 <span className="text-[12px]">{item.score}</span>
-                <span className="text-[12px] text-muted">{item.source}</span>
+                <span className="text-[12px] text-muted">
+                  {item.source === "MICROPHONE" ? "Microphone" : "Audio file"}
+                </span>
                 <span className="text-right text-[12px] text-muted">{item.time}</span>
               </div>
             ))
           ) : (
-            <div className="py-24 text-center text-[14px] text-muted">No recognitions yet.</div>
+            <div className="py-24 text-center text-[14px] text-muted">
+              Your identified tracks will appear here.
+            </div>
           )}
         </div>
       </div>

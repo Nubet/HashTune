@@ -1,5 +1,7 @@
 package com.norbertfila.hashtune.adapter.in.seed;
 
+import com.norbertfila.hashtune.application.port.out.CoverArtProvider;
+import com.norbertfila.hashtune.application.port.out.FingerprintRepository;
 import com.norbertfila.hashtune.application.port.out.IndexingJobRepository;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
@@ -41,6 +43,8 @@ public class MtgJamendoSeeder implements ApplicationRunner {
     private final StorageProperties storageProperties;
     private final TrackRepository tracks;
     private final IndexingJobRepository jobs;
+    private final CoverArtProvider coverArtProvider;
+    private final FingerprintRepository fingerprints;
 
     @Override
     public void run(ApplicationArguments args) throws IOException {
@@ -54,7 +58,12 @@ public class MtgJamendoSeeder implements ApplicationRunner {
             String checksum = sha256(audio);
             Optional<Track> existing = tracks.findByChecksum(checksum);
             if (existing.isPresent()) {
-                if (!jobs.existsByTrackId(existing.get().id())) {
+                refreshCoverArt(existing.get());
+                if (!jobs.existsByTrackId(existing.get().id())
+                        || (fingerprints.countByTrackId(existing.get().id()) == 0
+                                && !jobs.existsByTrackIdAndStatusIn(
+                                        existing.get().id(),
+                                        List.of(IndexingJobStatus.PENDING, IndexingJobStatus.PROCESSING)))) {
                     Instant now = Instant.now();
                     jobs.save(new IndexingJob(
                             UUID.randomUUID(),
@@ -85,18 +94,41 @@ public class MtgJamendoSeeder implements ApplicationRunner {
                     required(row, "title"),
                     required(row, "artist"),
                     required(row, "album"),
+                    null,
                     Math.round(Double.parseDouble(required(row, "duration_seconds")) * 1000),
                     objectKey,
                     checksum,
                     TrackStatus.UPLOADED,
                     now,
                     now));
+            track = refreshCoverArt(track);
             jobs.save(new IndexingJob(
                     UUID.randomUUID(), track.id(), IndexingJobStatus.PENDING, 0, 0, null, null, now, null, null));
             imported++;
         }
 
         log.info("MTG-Jamendo seed complete: imported={}, skipped={}", imported, skipped);
+    }
+
+    private Track refreshCoverArt(Track track) {
+        if (track.coverArtUrl() != null) {
+            return track;
+        }
+        return coverArtProvider
+                .findCoverArt(track.title(), track.artist(), track.album())
+                .map(url -> tracks.save(new Track(
+                        track.id(),
+                        track.title(),
+                        track.artist(),
+                        track.album(),
+                        url,
+                        track.durationMs(),
+                        track.audioObjectKey(),
+                        track.checksum(),
+                        track.status(),
+                        track.createdAt(),
+                        Instant.now())))
+                .orElse(track);
     }
 
     static List<Map<String, String>> parseCsv(String input) {

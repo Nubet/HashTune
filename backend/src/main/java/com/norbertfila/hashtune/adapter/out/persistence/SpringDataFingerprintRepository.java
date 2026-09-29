@@ -8,5 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 interface SpringDataFingerprintRepository extends JpaRepository<FingerprintEntity, UUID> {
     List<FingerprintEntity> findByHashIn(Collection<Long> hashes);
 
+    long countByTrackId(UUID trackId);
+
     void deleteByTrackId(UUID trackId);
 }

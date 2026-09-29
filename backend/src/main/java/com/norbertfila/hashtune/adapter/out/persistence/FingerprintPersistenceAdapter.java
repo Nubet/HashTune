@@ -30,6 +30,12 @@ public class FingerprintPersistenceAdapter implements FingerprintRepository {
 
     @Override
     @Transactional(readOnly = true)
+    public long countByTrackId(UUID trackId) {
+        return repository.countByTrackId(trackId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<FingerprintMatch> findMatches(Collection<Long> hashes) {
         if (hashes.isEmpty()) {
             return List.of();

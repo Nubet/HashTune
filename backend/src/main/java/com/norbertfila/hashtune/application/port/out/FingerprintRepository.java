@@ -8,6 +8,8 @@ import java.util.UUID;
 public interface FingerprintRepository {
     void replace(UUID trackId, List<FingerprintOccurrence> fingerprints);
 
+    long countByTrackId(UUID trackId);
+
     List<FingerprintMatch> findMatches(Collection<Long> hashes);
 
     void deleteByTrackId(UUID trackId);

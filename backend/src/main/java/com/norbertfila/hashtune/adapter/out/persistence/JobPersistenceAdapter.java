@@ -3,6 +3,7 @@ package com.norbertfila.hashtune.adapter.out.persistence;
 import com.norbertfila.hashtune.application.port.out.IndexingJobRepository;
 import com.norbertfila.hashtune.domain.indexing.IndexingJob;
 import com.norbertfila.hashtune.domain.indexing.IndexingJobStatus;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +26,18 @@ public class JobPersistenceAdapter implements IndexingJobRepository {
     }
 
     @Override
+    public Optional<IndexingJob> findByTrackId(UUID trackId) {
+        return repository.findByTrackId(trackId).map(JobPersistenceAdapter::toDomain);
+    }
+
+    @Override
     public boolean existsByTrackId(UUID trackId) {
         return repository.existsByTrackId(trackId);
+    }
+
+    @Override
+    public boolean existsByTrackIdAndStatusIn(UUID trackId, List<IndexingJobStatus> statuses) {
+        return repository.existsByTrackIdAndStatusIn(trackId, statuses);
     }
 
     @Override

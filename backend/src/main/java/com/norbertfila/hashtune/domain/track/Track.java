@@ -8,6 +8,7 @@ public record Track(
         String title,
         String artist,
         String album,
+        String coverArtUrl,
         Long durationMs,
         String audioObjectKey,
         String checksum,

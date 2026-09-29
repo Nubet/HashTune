@@ -26,6 +26,7 @@ public class TrackEntity {
     private String title;
     private String artist;
     private String album;
+    private String coverArtUrl;
     private Long durationMs;
     private String audioObjectKey;
     private String checksum;

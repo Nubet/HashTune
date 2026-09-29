@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -37,12 +39,13 @@ public class TrackPersistenceAdapter implements TrackRepository {
 
     @Override
     public List<Track> search(String query, int limit, int offset) {
-        return repository.findAll(PageRequest.of(offset / limit, limit)).getContent().stream()
-                .filter(track -> query == null
-                        || query.isBlank()
-                        || (track.getTitle() + " " + track.getArtist())
-                                .toLowerCase()
-                                .contains(query.toLowerCase()))
+        String normalizedQuery = query == null || query.isBlank() ? null : query.trim();
+        Page<TrackEntity> result = normalizedQuery == null
+                ? repository.findAll(PageRequest.of(offset / limit, limit, Sort.by(Sort.Direction.DESC, "createdAt")))
+                : repository.searchByQuery(
+                        normalizedQuery,
+                        PageRequest.of(offset / limit, limit, Sort.by(Sort.Direction.DESC, "createdAt")));
+        return result.getContent().stream()
                 .map(TrackPersistenceAdapter::toDomain)
                 .toList();
     }
@@ -58,6 +61,7 @@ public class TrackPersistenceAdapter implements TrackRepository {
                 .title(track.title())
                 .artist(track.artist())
                 .album(track.album())
+                .coverArtUrl(track.coverArtUrl())
                 .durationMs(track.durationMs())
                 .audioObjectKey(track.audioObjectKey())
                 .checksum(track.checksum())
@@ -73,6 +77,7 @@ public class TrackPersistenceAdapter implements TrackRepository {
                 track.getTitle(),
                 track.getArtist(),
                 track.getAlbum(),
+                track.getCoverArtUrl(),
                 track.getDurationMs(),
                 track.getAudioObjectKey(),
                 track.getChecksum(),

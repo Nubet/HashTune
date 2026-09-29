@@ -11,24 +11,34 @@ public final class ApiDtos {
     private ApiDtos() {}
 
     public record TrackResponse(
-            UUID id, String title, String artist, String album, Long durationMs, String status, Instant createdAt) {
+            UUID id,
+            String title,
+            String artist,
+            String album,
+            String coverArtUrl,
+            Long durationMs,
+            String status,
+            Instant createdAt) {
         static TrackResponse from(Track track) {
             return new TrackResponse(
                     track.id(),
                     track.title(),
                     track.artist(),
                     track.album(),
+                    track.coverArtUrl(),
                     track.durationMs(),
                     track.status().name(),
                     track.createdAt());
         }
     }
 
-    public record UploadResponse(UUID trackId, UUID indexingJobId, String status) {
+    public record UploadResponse(UUID trackId, UUID indexingJobId, String status, TrackResponse track) {
         static UploadResponse from(Track track, IndexingJob job) {
-            return new UploadResponse(track.id(), job.id(), job.status().name());
+            return new UploadResponse(track.id(), job.id(), job.status().name(), TrackResponse.from(track));
         }
     }
+
+    public record UpdateTrackMetadataRequest(String title, String artist, String album) {}
 
     public record IndexingJobResponse(
             UUID id, UUID trackId, String status, int progress, String errorCode, String errorMessage) {

@@ -1,6 +1,8 @@
 package com.norbertfila.hashtune.application.service;
 
+import com.norbertfila.hashtune.adapter.out.metadata.AudioMetadataReader;
 import com.norbertfila.hashtune.application.port.out.AudioRecognitionEngine;
+import com.norbertfila.hashtune.application.port.out.CoverArtProvider;
 import com.norbertfila.hashtune.application.port.out.FingerprintRepository;
 import com.norbertfila.hashtune.application.port.out.IndexingJobRepository;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
@@ -35,6 +37,8 @@ public class TrackApplicationService {
     private final AudioRecognitionEngine engine;
     private final StorageProperties storageProperties;
     private final AudioProperties audioProperties;
+    private final AudioMetadataReader metadataReader;
+    private final CoverArtProvider coverArtProvider;
 
     @Transactional
     public UploadResult upload(MultipartFile file) {
@@ -46,6 +50,11 @@ public class TrackApplicationService {
         });
         UUID id = UUID.randomUUID();
         String key = "audio/" + id + "/original-" + safeName(file.getOriginalFilename());
+        AudioMetadataReader.AudioMetadata metadata = metadataReader.read(file);
+        String title = firstValue(metadata.title(), title(file));
+        String artist = firstValue(metadata.artist(), "Unknown");
+        String album = metadata.album();
+        String coverArtUrl = coverArtProvider.findCoverArt(title, artist, album).orElse(null);
         try (InputStream input = file.getInputStream()) {
             storage.put(storageProperties.getAudioBucket(), key, input, file.getSize(), file.getContentType());
         } catch (IOException exception) {
@@ -54,9 +63,18 @@ public class TrackApplicationService {
         }
         Instant now = Instant.now();
         Track track = tracks.save(
-                new Track(id, title(file), "Unknown", null, null, key, checksum, TrackStatus.UPLOADED, now, now));
+                new Track(id, title, artist, album, coverArtUrl, null, key, checksum, TrackStatus.UPLOADED, now, now));
         IndexingJob job = jobs.save(new IndexingJob(
-                UUID.randomUUID(), track.id(), IndexingJobStatus.PENDING, 0, 0, null, null, now, null, null));
+                UUID.randomUUID(),
+                track.id(),
+                IndexingJobStatus.AWAITING_CONFIRMATION,
+                0,
+                0,
+                null,
+                null,
+                now,
+                null,
+                null));
         return new UploadResult(track, job);
     }
 
@@ -73,6 +91,43 @@ public class TrackApplicationService {
     }
 
     @Transactional
+    public Track updateMetadata(UUID id, String title, String artist, String album) {
+        Track track = get(id);
+        String updatedTitle = firstValue(title, track.title());
+        String updatedArtist = firstValue(artist, "Unknown");
+        String updatedAlbum = album == null || album.isBlank() ? null : album.trim();
+        String coverArtUrl = coverArtProvider
+                .findCoverArt(updatedTitle, updatedArtist, updatedAlbum)
+                .orElse(null);
+        Track updatedTrack = tracks.save(new Track(
+                track.id(),
+                updatedTitle,
+                updatedArtist,
+                updatedAlbum,
+                coverArtUrl,
+                track.durationMs(),
+                track.audioObjectKey(),
+                track.checksum(),
+                track.status(),
+                track.createdAt(),
+                Instant.now()));
+        jobs.findByTrackId(id)
+                .filter(job -> job.status() == IndexingJobStatus.AWAITING_CONFIRMATION)
+                .ifPresent(job -> jobs.save(new IndexingJob(
+                        job.id(),
+                        job.trackId(),
+                        IndexingJobStatus.PENDING,
+                        job.progress(),
+                        job.attempts(),
+                        job.errorCode(),
+                        job.errorMessage(),
+                        job.createdAt(),
+                        job.startedAt(),
+                        job.finishedAt())));
+        return updatedTrack;
+    }
+
+    @Transactional
     public IndexingJob reindex(UUID id) {
         Track track = get(id);
         track = tracks.save(new Track(
@@ -80,6 +135,7 @@ public class TrackApplicationService {
                 track.title(),
                 track.artist(),
                 track.album(),
+                track.coverArtUrl(),
                 track.durationMs(),
                 track.audioObjectKey(),
                 track.checksum(),
@@ -125,6 +181,7 @@ public class TrackApplicationService {
                     track.title(),
                     track.artist(),
                     track.album(),
+                    track.coverArtUrl(),
                     result.durationMs(),
                     track.audioObjectKey(),
                     track.checksum(),
@@ -148,6 +205,7 @@ public class TrackApplicationService {
                     track.title(),
                     track.artist(),
                     track.album(),
+                    track.coverArtUrl(),
                     track.durationMs(),
                     track.audioObjectKey(),
                     track.checksum(),
@@ -190,6 +248,10 @@ public class TrackApplicationService {
 
     private String safeName(String name) {
         return name == null ? "audio" : name.replaceAll("[^a-zA-Z0-9._-]", "_");
+    }
+
+    private String firstValue(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value.trim();
     }
 
     private ApplicationException notFound(String code, String message) {

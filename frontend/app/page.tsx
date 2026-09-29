@@ -33,6 +33,15 @@ function toTrack(track: ApiTrack): Track {
     title: track.title,
     artist: track.artist,
     album: track.album ?? undefined,
+    albumArtist: track.albumArtist ?? undefined,
+    composer: track.composer ?? undefined,
+    genre: track.genre ?? undefined,
+    releaseYear: track.releaseYear ?? undefined,
+    trackNumber: track.trackNumber ?? undefined,
+    discNumber: track.discNumber ?? undefined,
+    isrc: track.isrc ?? undefined,
+    barcode: track.barcode ?? undefined,
+    comment: track.comment ?? undefined,
     coverArtUrl: track.coverArtUrl ?? undefined,
     duration: formatDuration(track.durationMs),
     color: colorFor(track.id),
@@ -52,6 +61,15 @@ function toRecognition(response: RecognitionResponse, source: string): Recogniti
         ? "Try a different audio file."
         : "Try a clearer clip or add this track to your library."),
     album: track?.album ?? undefined,
+    albumArtist: track?.albumArtist ?? undefined,
+    composer: track?.composer ?? undefined,
+    genre: track?.genre ?? undefined,
+    releaseYear: track?.releaseYear ?? undefined,
+    trackNumber: track?.trackNumber ?? undefined,
+    discNumber: track?.discNumber ?? undefined,
+    isrc: track?.isrc ?? undefined,
+    barcode: track?.barcode ?? undefined,
+    comment: track?.comment ?? undefined,
     coverArtUrl: track?.coverArtUrl ?? undefined,
     durationMs: track?.durationMs ?? undefined,
     score: matchLabel(response.status),
@@ -72,6 +90,15 @@ function toHistoryItem(item: ApiHistoryItem): Recognition {
     title: track?.title ?? "Nothing matched",
     artist: track?.artist ?? "No track from your library matched this search.",
     album: track?.album ?? undefined,
+    albumArtist: track?.albumArtist ?? undefined,
+    composer: track?.composer ?? undefined,
+    genre: track?.genre ?? undefined,
+    releaseYear: track?.releaseYear ?? undefined,
+    trackNumber: track?.trackNumber ?? undefined,
+    discNumber: track?.discNumber ?? undefined,
+    isrc: track?.isrc ?? undefined,
+    barcode: track?.barcode ?? undefined,
+    comment: track?.comment ?? undefined,
     coverArtUrl: track?.coverArtUrl ?? undefined,
     durationMs: track?.durationMs ?? undefined,
     score: matchLabel(item.status),
@@ -153,6 +180,7 @@ export default function Home() {
             title: upload.track.title,
             artist: upload.track.artist,
             album: upload.track.album ?? "",
+            coverArtUrl: upload.track.coverArtUrl ?? undefined,
           });
         });
         if (approved) {
@@ -171,7 +199,11 @@ export default function Home() {
 
   async function confirmMetadata(metadata: Omit<MetadataDraft, "trackId" | "fileName">) {
     if (!metadataReview) return;
-    await musicApi.updateTrackMetadata(metadataReview.trackId, metadata);
+    await musicApi.updateTrackMetadata(metadataReview.trackId, {
+      title: metadata.title,
+      artist: metadata.artist,
+      album: metadata.album,
+    });
     setMetadataReview(null);
     reviewResolver.current?.(true);
     reviewResolver.current = null;

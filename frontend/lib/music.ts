@@ -3,6 +3,15 @@ export type Track = {
   title: string;
   artist: string;
   album?: string;
+  albumArtist?: string;
+  composer?: string;
+  genre?: string;
+  releaseYear?: string;
+  trackNumber?: number;
+  discNumber?: number;
+  isrc?: string;
+  barcode?: string;
+  comment?: string;
   coverArtUrl?: string;
   duration: string;
   color: string;
@@ -15,6 +24,7 @@ export type MetadataDraft = {
   title: string;
   artist: string;
   album: string;
+  coverArtUrl?: string;
 };
 
 export type Recognition = {
@@ -23,6 +33,15 @@ export type Recognition = {
   artist: string;
   coverArtUrl?: string;
   album?: string;
+  albumArtist?: string;
+  composer?: string;
+  genre?: string;
+  releaseYear?: string;
+  trackNumber?: number;
+  discNumber?: number;
+  isrc?: string;
+  barcode?: string;
+  comment?: string;
   durationMs?: number;
   score: string;
   time: string;

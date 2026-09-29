@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { MetadataDraft } from "../lib/music";
 import { Button } from "./ui";
+import { TrackArtwork } from "./TrackArtwork";
 
 export function MetadataReview({
   draft,
@@ -48,6 +49,17 @@ export function MetadataReview({
         <p className="mt-4 text-[13px] text-muted">
           We found these tags in the file. Correct anything before adding it to your library.
         </p>
+        {draft.coverArtUrl && (
+          <div className="mt-5 flex items-center gap-3">
+            <TrackArtwork
+              src={draft.coverArtUrl}
+              alt={`${draft.title} cover art`}
+              color="#17212b"
+              className="size-16 shrink-0"
+            />
+            <span className="text-[12px] text-muted">Embedded cover found in the file</span>
+          </div>
+        )}
         <div className="mt-6 grid gap-4">
           {(["title", "artist", "album"] as const).map((field) => (
             <label key={field} className="grid gap-1 text-[11px] font-semibold uppercase tracking-[.08em]">

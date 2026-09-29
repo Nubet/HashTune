@@ -18,11 +18,21 @@ class FingerprintMatcherTest {
         List<FingerprintOccurrence> sample = List.of(
                 new FingerprintOccurrence(10, 1_000),
                 new FingerprintOccurrence(20, 2_000),
-                new FingerprintOccurrence(30, 3_000));
+                new FingerprintOccurrence(30, 3_000),
+                new FingerprintOccurrence(40, 4_000),
+                new FingerprintOccurrence(50, 5_000),
+                new FingerprintOccurrence(60, 6_000),
+                new FingerprintOccurrence(70, 7_000),
+                new FingerprintOccurrence(80, 8_000));
         List<FingerprintMatch> stored = List.of(
                 new FingerprintMatch(10, matchingTrack, 11_000),
                 new FingerprintMatch(20, matchingTrack, 12_000),
                 new FingerprintMatch(30, matchingTrack, 13_000),
+                new FingerprintMatch(40, matchingTrack, 14_000),
+                new FingerprintMatch(50, matchingTrack, 15_000),
+                new FingerprintMatch(60, matchingTrack, 16_000),
+                new FingerprintMatch(70, matchingTrack, 17_000),
+                new FingerprintMatch(80, matchingTrack, 18_000),
                 new FingerprintMatch(10, unrelatedTrack, 5_000),
                 new FingerprintMatch(20, unrelatedTrack, 9_000));
 
@@ -30,8 +40,8 @@ class FingerprintMatcherTest {
 
         assertThat(result.trackId()).isEqualTo(matchingTrack);
         assertThat(result.matchedAtMs()).isEqualTo(10_000);
-        assertThat(result.hashMatches()).isEqualTo(3);
-        assertThat(result.offsetClusterSize()).isEqualTo(3);
+        assertThat(result.hashMatches()).isEqualTo(8);
+        assertThat(result.offsetClusterSize()).isEqualTo(8);
     }
 
     @Test

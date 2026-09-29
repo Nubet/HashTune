@@ -11,7 +11,8 @@ import java.util.stream.Collectors;
 
 final class FingerprintMatcher {
     private static final int OFFSET_BUCKET_SIZE_MS = 100;
-    private static final int MINIMUM_OFFSET_CLUSTER_SIZE = 3;
+    private static final int MINIMUM_OFFSET_CLUSTER_SIZE = 8;
+    private static final double MINIMUM_CONFIDENCE = 0.35;
 
     MatchResult match(List<FingerprintOccurrence> sampleFingerprints, List<FingerprintMatch> storedMatches) {
         Map<Long, List<Integer>> sampleOffsetsByHash = sampleFingerprints.stream()
@@ -38,18 +39,24 @@ final class FingerprintMatcher {
         }
 
         return offsetCountsByTrack.entrySet().stream()
-                .map(entry -> bestTrackMatch(entry.getKey(), entry.getValue(), totalMatchesByTrack.get(entry.getKey())))
+                .map(entry -> bestTrackMatch(
+                        entry.getKey(),
+                        entry.getValue(),
+                        totalMatchesByTrack.get(entry.getKey()),
+                        sampleFingerprints.size()))
                 .filter(result -> result.offsetClusterSize() >= MINIMUM_OFFSET_CLUSTER_SIZE)
+                .filter(result -> result.confidence() >= MINIMUM_CONFIDENCE)
                 .max(Comparator.comparingInt(MatchResult::offsetClusterSize))
                 .orElse(MatchResult.noMatch());
     }
 
-    private MatchResult bestTrackMatch(UUID trackId, Map<Long, Integer> offsetCounts, int totalMatches) {
+    private MatchResult bestTrackMatch(
+            UUID trackId, Map<Long, Integer> offsetCounts, int totalMatches, int sampleFingerprintCount) {
         Map.Entry<Long, Integer> bestBucket = offsetCounts.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .orElseThrow();
         int clusterSize = bestBucket.getValue();
-        double confidence = Math.min(1, clusterSize / (double) Math.max(1, totalMatches));
+        double confidence = Math.min(1, clusterSize / (double) Math.max(1, sampleFingerprintCount));
         return new MatchResult(
                 trackId, bestBucket.getKey() * OFFSET_BUCKET_SIZE_MS, confidence, totalMatches, clusterSize);
     }

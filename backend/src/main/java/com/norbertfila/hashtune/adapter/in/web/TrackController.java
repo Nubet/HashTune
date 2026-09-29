@@ -4,6 +4,7 @@ import com.norbertfila.hashtune.application.service.TrackApplicationService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,5 +56,13 @@ public class TrackController {
     @PostMapping("/{id}/reindex")
     public ResponseEntity<ApiDtos.IndexingJobResponse> reindex(@PathVariable UUID id) {
         return ResponseEntity.accepted().body(ApiDtos.IndexingJobResponse.from(service.reindex(id)));
+    }
+
+    @GetMapping("/{id}/cover")
+    public ResponseEntity<byte[]> cover(@PathVariable UUID id) {
+        TrackApplicationService.CoverArt cover = service.getCoverArt(id);
+        MediaType mediaType = MediaType.parseMediaType(
+                cover.mimeType() == null ? MediaType.APPLICATION_OCTET_STREAM_VALUE : cover.mimeType());
+        return ResponseEntity.ok().contentType(mediaType).body(cover.data());
     }
 }

@@ -26,7 +26,18 @@ public class TrackEntity {
     private String title;
     private String artist;
     private String album;
+    private String albumArtist;
+    private String composer;
+    private String genre;
+    private String releaseYear;
+    private Integer trackNumber;
+    private Integer discNumber;
+    private String isrc;
+    private String barcode;
+    private String comment;
     private String coverArtUrl;
+    private String coverArtObjectKey;
+    private String coverArtMimeType;
     private Long durationMs;
     private String audioObjectKey;
     private String checksum;

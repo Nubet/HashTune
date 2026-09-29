@@ -61,7 +61,18 @@ public class TrackPersistenceAdapter implements TrackRepository {
                 .title(track.title())
                 .artist(track.artist())
                 .album(track.album())
+                .albumArtist(track.albumArtist())
+                .composer(track.composer())
+                .genre(track.genre())
+                .releaseYear(track.releaseYear())
+                .trackNumber(track.trackNumber())
+                .discNumber(track.discNumber())
+                .isrc(track.isrc())
+                .barcode(track.barcode())
+                .comment(track.comment())
                 .coverArtUrl(track.coverArtUrl())
+                .coverArtObjectKey(track.coverArtObjectKey())
+                .coverArtMimeType(track.coverArtMimeType())
                 .durationMs(track.durationMs())
                 .audioObjectKey(track.audioObjectKey())
                 .checksum(track.checksum())
@@ -77,7 +88,18 @@ public class TrackPersistenceAdapter implements TrackRepository {
                 track.getTitle(),
                 track.getArtist(),
                 track.getAlbum(),
+                track.getAlbumArtist(),
+                track.getComposer(),
+                track.getGenre(),
+                track.getReleaseYear(),
+                track.getTrackNumber(),
+                track.getDiscNumber(),
+                track.getIsrc(),
+                track.getBarcode(),
+                track.getComment(),
                 track.getCoverArtUrl(),
+                track.getCoverArtObjectKey(),
+                track.getCoverArtMimeType(),
                 track.getDurationMs(),
                 track.getAudioObjectKey(),
                 track.getChecksum(),

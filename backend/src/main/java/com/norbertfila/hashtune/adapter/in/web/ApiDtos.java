@@ -6,6 +6,7 @@ import com.norbertfila.hashtune.domain.track.Track;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 public final class ApiDtos {
     private ApiDtos() {}
@@ -15,6 +16,15 @@ public final class ApiDtos {
             String title,
             String artist,
             String album,
+            String albumArtist,
+            String composer,
+            String genre,
+            String releaseYear,
+            Integer trackNumber,
+            Integer discNumber,
+            String isrc,
+            String barcode,
+            String comment,
             String coverArtUrl,
             Long durationMs,
             String status,
@@ -25,7 +35,21 @@ public final class ApiDtos {
                     track.title(),
                     track.artist(),
                     track.album(),
-                    track.coverArtUrl(),
+                    track.albumArtist(),
+                    track.composer(),
+                    track.genre(),
+                    track.releaseYear(),
+                    track.trackNumber(),
+                    track.discNumber(),
+                    track.isrc(),
+                    track.barcode(),
+                    track.comment(),
+                    track.coverArtObjectKey() == null
+                            ? track.coverArtUrl()
+                            : ServletUriComponentsBuilder.fromCurrentContextPath()
+                                    .path("/api/v1/library/tracks/{id}/cover")
+                                    .buildAndExpand(track.id())
+                                    .toUriString(),
                     track.durationMs(),
                     track.status().name(),
                     track.createdAt());

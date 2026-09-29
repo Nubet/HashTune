@@ -26,6 +26,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	implementation 'com.github.wendykierp:JTransforms:3.1'
 	implementation 'com.drewnoakes:metadata-extractor:2.19.0'
+	implementation 'org.jaudiotagger:jaudiotagger:2.0.1'
 	implementation 'org.flywaydb:flyway-core'
 	implementation 'org.springframework.boot:spring-boot-flyway'
 	implementation 'io.minio:minio:8.6.0'

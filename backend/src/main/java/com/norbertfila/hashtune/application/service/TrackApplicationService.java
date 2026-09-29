@@ -13,6 +13,7 @@ import com.norbertfila.hashtune.domain.indexing.IndexingJob;
 import com.norbertfila.hashtune.domain.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.domain.track.Track;
 import com.norbertfila.hashtune.domain.track.TrackStatus;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestInputStream;
@@ -54,16 +55,50 @@ public class TrackApplicationService {
         String title = firstValue(metadata.title(), title(file));
         String artist = firstValue(metadata.artist(), "Unknown");
         String album = metadata.album();
-        String coverArtUrl = coverArtProvider.findCoverArt(title, artist, album).orElse(null);
+        String coverArtObjectKey = metadata.artwork() == null ? null : "artwork/" + id + "/cover";
+        String coverArtMimeType =
+                metadata.artwork() == null ? null : metadata.artwork().mimeType();
+        String coverArtUrl = metadata.artwork() == null
+                ? coverArtProvider.findCoverArt(title, artist, album).orElse(null)
+                : null;
         try (InputStream input = file.getInputStream()) {
             storage.put(storageProperties.getAudioBucket(), key, input, file.getSize(), file.getContentType());
+            if (metadata.artwork() != null) {
+                storage.put(
+                        storageProperties.getAudioBucket(),
+                        coverArtObjectKey,
+                        new ByteArrayInputStream(metadata.artwork().data()),
+                        metadata.artwork().data().length,
+                        coverArtMimeType);
+            }
         } catch (IOException exception) {
             throw new ApplicationException(
                     org.springframework.http.HttpStatus.BAD_REQUEST, "INVALID_AUDIO", "Could not read uploaded file");
         }
         Instant now = Instant.now();
-        Track track = tracks.save(
-                new Track(id, title, artist, album, coverArtUrl, null, key, checksum, TrackStatus.UPLOADED, now, now));
+        Track track = tracks.save(new Track(
+                id,
+                title,
+                artist,
+                album,
+                metadata.albumArtist(),
+                metadata.composer(),
+                metadata.genre(),
+                metadata.releaseYear(),
+                metadata.trackNumber(),
+                metadata.discNumber(),
+                metadata.isrc(),
+                metadata.barcode(),
+                metadata.comment(),
+                coverArtUrl,
+                coverArtObjectKey,
+                coverArtMimeType,
+                null,
+                key,
+                checksum,
+                TrackStatus.UPLOADED,
+                now,
+                now));
         IndexingJob job = jobs.save(new IndexingJob(
                 UUID.randomUUID(),
                 track.id(),
@@ -87,6 +122,9 @@ public class TrackApplicationService {
         Track track = get(id);
         fingerprints.deleteByTrackId(track.id());
         storage.delete(storageProperties.getAudioBucket(), track.audioObjectKey());
+        if (track.coverArtObjectKey() != null) {
+            storage.delete(storageProperties.getAudioBucket(), track.coverArtObjectKey());
+        }
         tracks.delete(track);
     }
 
@@ -99,18 +137,8 @@ public class TrackApplicationService {
         String coverArtUrl = coverArtProvider
                 .findCoverArt(updatedTitle, updatedArtist, updatedAlbum)
                 .orElse(null);
-        Track updatedTrack = tracks.save(new Track(
-                track.id(),
-                updatedTitle,
-                updatedArtist,
-                updatedAlbum,
-                coverArtUrl,
-                track.durationMs(),
-                track.audioObjectKey(),
-                track.checksum(),
-                track.status(),
-                track.createdAt(),
-                Instant.now()));
+        Track updatedTrack = tracks.save(copyWith(
+                track, updatedTitle, updatedArtist, updatedAlbum, coverArtUrl, track.durationMs(), track.status()));
         jobs.findByTrackId(id)
                 .filter(job -> job.status() == IndexingJobStatus.AWAITING_CONFIRMATION)
                 .ifPresent(job -> jobs.save(new IndexingJob(
@@ -130,18 +158,14 @@ public class TrackApplicationService {
     @Transactional
     public IndexingJob reindex(UUID id) {
         Track track = get(id);
-        track = tracks.save(new Track(
-                track.id(),
+        track = tracks.save(copyWith(
+                track,
                 track.title(),
                 track.artist(),
                 track.album(),
                 track.coverArtUrl(),
                 track.durationMs(),
-                track.audioObjectKey(),
-                track.checksum(),
-                TrackStatus.UPLOADED,
-                track.createdAt(),
-                Instant.now()));
+                TrackStatus.UPLOADED));
         return jobs.save(new IndexingJob(
                 UUID.randomUUID(), track.id(), IndexingJobStatus.PENDING, 0, 0, null, null, Instant.now(), null, null));
     }
@@ -176,18 +200,14 @@ public class TrackApplicationService {
                     job.createdAt(),
                     job.startedAt(),
                     Instant.now()));
-            tracks.save(new Track(
-                    track.id(),
+            tracks.save(copyWith(
+                    track,
                     track.title(),
                     track.artist(),
                     track.album(),
                     track.coverArtUrl(),
                     result.durationMs(),
-                    track.audioObjectKey(),
-                    track.checksum(),
-                    TrackStatus.INDEXED,
-                    track.createdAt(),
-                    Instant.now()));
+                    TrackStatus.INDEXED));
         } catch (Exception exception) {
             jobs.save(new IndexingJob(
                     job.id(),
@@ -200,23 +220,64 @@ public class TrackApplicationService {
                     job.createdAt(),
                     job.startedAt(),
                     Instant.now()));
-            tracks.save(new Track(
-                    track.id(),
+            tracks.save(copyWith(
+                    track,
                     track.title(),
                     track.artist(),
                     track.album(),
                     track.coverArtUrl(),
                     track.durationMs(),
-                    track.audioObjectKey(),
-                    track.checksum(),
-                    TrackStatus.FAILED,
-                    track.createdAt(),
-                    Instant.now()));
+                    TrackStatus.FAILED));
         }
     }
 
     private Track get(UUID id) {
         return tracks.findById(id).orElseThrow(() -> notFound("TRACK_NOT_FOUND", "Track not found"));
+    }
+
+    public CoverArt getCoverArt(UUID id) {
+        Track track = get(id);
+        if (track.coverArtObjectKey() == null) {
+            throw notFound("COVER_ART_NOT_FOUND", "Embedded cover art not found");
+        }
+        try (InputStream input = storage.get(storageProperties.getAudioBucket(), track.coverArtObjectKey())) {
+            return new CoverArt(input.readAllBytes(), track.coverArtMimeType());
+        } catch (IOException exception) {
+            throw new IllegalStateException("Could not read cover art", exception);
+        }
+    }
+
+    private Track copyWith(
+            Track track,
+            String title,
+            String artist,
+            String album,
+            String coverArtUrl,
+            Long durationMs,
+            TrackStatus status) {
+        return new Track(
+                track.id(),
+                title,
+                artist,
+                album,
+                track.albumArtist(),
+                track.composer(),
+                track.genre(),
+                track.releaseYear(),
+                track.trackNumber(),
+                track.discNumber(),
+                track.isrc(),
+                track.barcode(),
+                track.comment(),
+                coverArtUrl,
+                track.coverArtObjectKey(),
+                track.coverArtMimeType(),
+                durationMs,
+                track.audioObjectKey(),
+                track.checksum(),
+                status,
+                track.createdAt(),
+                Instant.now());
     }
 
     private void validate(MultipartFile file) {
@@ -259,4 +320,6 @@ public class TrackApplicationService {
     }
 
     public record UploadResult(Track track, IndexingJob job) {}
+
+    public record CoverArt(byte[] data, String mimeType) {}
 }

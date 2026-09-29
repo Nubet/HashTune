@@ -1,5 +1,6 @@
 import type { Recognition } from "../lib/music";
 import { SectionLabel } from "./ui";
+import { TrackArtwork } from "./TrackArtwork";
 
 export function HistoryView({
   history,
@@ -34,7 +35,12 @@ export function HistoryView({
                 key={`${item.title}-${item.time}-${item.source}`}
                 className="grid grid-cols-[44px_1fr_100px_110px_80px] items-center gap-4 border-b border-line py-4"
               >
-                <div className="size-10" style={{ background: item.color }} />
+                <TrackArtwork
+                  src={item.coverArtUrl}
+                  alt={`${item.title} cover art`}
+                  color={item.color}
+                  className="size-10"
+                />
                 <div>
                   <b className="text-[14px]">{item.title}</b>
                   <div className="text-[12px] text-muted">{item.artist}</div>

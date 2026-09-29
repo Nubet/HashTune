@@ -8,6 +8,7 @@ import {
   type RecognitionResponse,
   type UploadResponse,
   uploadResponseSchema,
+  trackSchema,
 } from "./contracts";
 
 const trackListSchema = z.array(
@@ -16,6 +17,7 @@ const trackListSchema = z.array(
     title: z.string(),
     artist: z.string(),
     album: z.string().nullable().optional(),
+    coverArtUrl: z.string().url().nullable().optional(),
     durationMs: z.number().nullable().optional(),
     status: z.string(),
     createdAt: z.string(),
@@ -50,6 +52,18 @@ export const musicApi = {
     );
   },
 
+  updateTrackMetadata(id: string, metadata: { title: string; artist: string; album: string }) {
+    return request<ApiTrack>(
+      `/api/v1/library/tracks/${id}/metadata`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(metadata),
+      },
+      trackSchema,
+    );
+  },
+
   getIndexingJob(id: string) {
     return request<IndexingJob>(`/api/v1/indexing-jobs/${id}`, {}, indexingJobSchema);
   },
@@ -70,14 +84,6 @@ export const musicApi = {
       await new Promise((resolve) => window.setTimeout(resolve, 250));
     }
     throw new Error("Indexing timed out");
-  },
-
-  async uploadAndIndex(files: FileList, onProgress: (progress: number) => void) {
-    for (let index = 0; index < files.length; index += 1) {
-      const upload = await this.uploadTrack(files[index]);
-      await this.waitForIndexing(upload.indexingJobId);
-      onProgress(Math.round(((index + 1) / files.length) * 100));
-    }
   },
 
   recognize(file: File, source: "MICROPHONE" | "AUDIO_FILE") {

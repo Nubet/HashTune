@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Recognition } from "../lib/music";
+import { TrackArtwork } from "./TrackArtwork";
 
 export function RecognitionResult({ recognition }: { recognition: Recognition }) {
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -10,18 +11,21 @@ export function RecognitionResult({ recognition }: { recognition: Recognition })
     <div className="border-b border-line bg-canvas">
       <div className="animate-enter mx-auto max-w-[1200px] px-6 py-9 lg:px-8">
         <div className="flex items-center gap-5">
-          <div
+          <TrackArtwork
+            src={recognition.coverArtUrl}
+            alt={`${recognition.title} cover art`}
+            color={recognition.color}
             className="grid size-24 shrink-0 place-items-center text-[10px] font-bold tracking-[.15em] text-navy"
-            style={{ background: recognition.color }}
-          >
-            AM
-          </div>
+          />
           <div>
             <div className={`text-[11px] font-bold uppercase tracking-[.1em] ${isMatch ? "text-success" : "text-muted"}`}>
               {isMatch ? `Match found · ${recognition.score}` : isInvalidAudio ? "Audio not readable" : "No match"}
             </div>
             <div className="mt-1 text-[28px] font-bold tracking-[-.035em]">{recognition.title}</div>
-            <div className="text-[14px] text-muted">{recognition.artist}</div>
+            <div className="text-[14px] text-muted">
+              {recognition.artist}
+              {recognition.album ? ` · ${recognition.album}` : ""}
+            </div>
           </div>
           <div className="ml-auto hidden gap-9 sm:flex">
             <div>
@@ -61,6 +65,12 @@ export function RecognitionResult({ recognition }: { recognition: Recognition })
             <div>
               <span className="text-muted">Confidence</span>
               <b className="ml-2">{recognition.score}</b>
+            </div>
+            <div>
+              <span className="text-muted">Track length</span>
+              <b className="ml-2">
+                {recognition.durationMs ? `${(recognition.durationMs / 1000).toFixed(1)} s` : "--"}
+              </b>
             </div>
             <div>
               <span className="text-muted">Track position</span>

@@ -1,10 +1,11 @@
 import { z } from "zod";
 
-const trackSchema = z.object({
+export const trackSchema = z.object({
   id: z.string(),
   title: z.string(),
   artist: z.string(),
   album: z.string().nullable().optional(),
+  coverArtUrl: z.string().url().nullable().optional(),
   durationMs: z.number().nullable().optional(),
   status: z.string(),
   createdAt: z.string(),
@@ -14,6 +15,7 @@ export const uploadResponseSchema = z.object({
   trackId: z.string(),
   indexingJobId: z.string(),
   status: z.string(),
+  track: trackSchema,
 });
 
 export const indexingJobSchema = z.object({

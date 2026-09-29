@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Track } from "../lib/music";
 import { MoreIcon } from "./icons";
+import { TrackArtwork } from "./TrackArtwork";
 import { Button, SectionLabel } from "./ui";
 
 function statusLabel(status: string) {
@@ -104,7 +105,7 @@ export function LibraryView({
             className="w-full border-0 bg-transparent py-4 text-[14px] outline-none placeholder:text-muted"
             placeholder="Search your library"
           />
-          <span className="hidden text-[11px] text-muted sm:block">TITLE / ARTIST / DURATION</span>
+              <span className="hidden text-[11px] text-muted sm:block">TITLE / ARTIST / ALBUM / DURATION</span>
         </div>
         <div>
           {visibleTracks.map((track) => (
@@ -112,10 +113,18 @@ export function LibraryView({
               key={track.id}
               className="grid grid-cols-[44px_1fr_76px_90px_36px] items-center gap-4 border-b border-line py-3 transition-colors hover:bg-subtle"
             >
-              <div className="size-10" style={{ background: track.color }} />
+              <TrackArtwork
+                src={track.coverArtUrl}
+                alt={`${track.title} cover art`}
+                color={track.color}
+                className="size-10"
+              />
               <div>
                 <b className="text-[14px]">{track.title}</b>
-                <div className="mt-1 text-[12px] text-muted">{track.artist}</div>
+                <div className="mt-1 text-[12px] text-muted">
+                  {track.artist}
+                  {track.album ? ` · ${track.album}` : ""}
+                </div>
               </div>
               <span className="text-[12px] text-muted">{track.duration}</span>
               <span

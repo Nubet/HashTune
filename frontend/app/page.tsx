@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Header, type Page } from "@/components/Header";
 import { HistoryView } from "@/components/HistoryView";
 import { LibraryView } from "@/components/LibraryView";
 import { ListenView } from "@/components/ListenView";
+import { MetadataReview } from "@/components/MetadataReview";
 import { musicApi, type ApiHistoryItem } from "@/lib/api/musicApi";
 import type { ApiTrack, RecognitionResponse } from "@/lib/api/contracts";
-import type { Recognition, Track } from "@/lib/music";
+import type { MetadataDraft, Recognition, Track } from "@/lib/music";
 
 const colors = ["#0866F5", "#6EA7F3", "#B2D1F7", "#172A42", "#0D1C2E", "#EEF0F3"];
 
@@ -28,6 +29,7 @@ function toTrack(track: ApiTrack): Track {
     title: track.title,
     artist: track.artist,
     album: track.album ?? undefined,
+    coverArtUrl: track.coverArtUrl ?? undefined,
     duration: formatDuration(track.durationMs),
     color: colorFor(track.id),
     status: track.status,
@@ -45,6 +47,9 @@ function toRecognition(response: RecognitionResponse, source: string): Recogniti
       (isInvalidAudio
         ? "Try a different audio file."
         : "Try a clearer clip or add this track to your library."),
+    album: track?.album ?? undefined,
+    coverArtUrl: track?.coverArtUrl ?? undefined,
+    durationMs: track?.durationMs ?? undefined,
     score: response.confidence == null ? "--" : `${Math.round(response.confidence * 100)}%`,
     time: "Just now",
     source,
@@ -62,6 +67,9 @@ function toHistoryItem(item: ApiHistoryItem): Recognition {
     id: item.id,
     title: track?.title ?? "Nothing matched",
     artist: track?.artist ?? "No track from your library matched this search.",
+    album: track?.album ?? undefined,
+    coverArtUrl: track?.coverArtUrl ?? undefined,
+    durationMs: track?.durationMs ?? undefined,
     score: item.confidence == null ? "--" : `${Math.round(item.confidence * 100)}%`,
     time: new Date(item.createdAt).toLocaleString("pl-PL"),
     source: item.source,
@@ -78,6 +86,8 @@ export default function Home() {
   const [recognition, setRecognition] = useState<Recognition | null>(null);
   const [indexProgress, setIndexProgress] = useState<number | null>(null);
   const [error, setError] = useState("");
+  const [metadataReview, setMetadataReview] = useState<MetadataDraft | null>(null);
+  const reviewResolver = useRef<((approved: boolean) => void) | null>(null);
 
   function showToast(message: string) {
     setToast(message);
@@ -122,7 +132,24 @@ export default function Home() {
     try {
       setError("");
       setIndexProgress(0);
-      await musicApi.uploadAndIndex(files, setIndexProgress);
+      for (let index = 0; index < files.length; index += 1) {
+        const file = files[index];
+        const upload = await musicApi.uploadTrack(file);
+        const approved = await new Promise<boolean>((resolve) => {
+          reviewResolver.current = resolve;
+          setMetadataReview({
+            trackId: upload.trackId,
+            fileName: file.name,
+            title: upload.track.title,
+            artist: upload.track.artist,
+            album: upload.track.album ?? "",
+          });
+        });
+        if (approved) {
+          await musicApi.waitForIndexing(upload.indexingJobId);
+        }
+        setIndexProgress(Math.round(((index + 1) / files.length) * 100));
+      }
       setTracks((await musicApi.listTracks()).map(toTrack));
       showToast("Library is ready");
     } catch (reason) {
@@ -130,6 +157,22 @@ export default function Home() {
     } finally {
       setIndexProgress(null);
     }
+  }
+
+  async function confirmMetadata(metadata: Omit<MetadataDraft, "trackId" | "fileName">) {
+    if (!metadataReview) return;
+    await musicApi.updateTrackMetadata(metadataReview.trackId, metadata);
+    setMetadataReview(null);
+    reviewResolver.current?.(true);
+    reviewResolver.current = null;
+  }
+
+  async function skipMetadataReview() {
+    if (!metadataReview) return;
+    await musicApi.removeTrack(metadataReview.trackId);
+    setMetadataReview(null);
+    reviewResolver.current?.(false);
+    reviewResolver.current = null;
   }
 
   async function removeTrack(id: string) {
@@ -189,6 +232,9 @@ export default function Home() {
           <HistoryView history={history} onClear={clearHistory} onToast={showToast} />
         )}
       </main>
+      {metadataReview && (
+        <MetadataReview draft={metadataReview} onConfirm={confirmMetadata} onSkip={skipMetadataReview} />
+      )}
       {toast && (
         <div className="pointer-events-none fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-ink px-4 py-2.5 text-[11px] font-semibold text-white animate-enter">
           {toast}

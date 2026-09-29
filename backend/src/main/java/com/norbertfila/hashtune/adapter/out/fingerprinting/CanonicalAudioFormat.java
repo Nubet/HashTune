@@ -1,7 +1,7 @@
 package com.norbertfila.hashtune.adapter.out.fingerprinting;
 
 final class CanonicalAudioFormat {
-    static final int SAMPLE_RATE = 44_100;
+    static final int SAMPLE_RATE = 22_050;
     static final int CHANNEL_COUNT = 1;
     static final int PCM16_NORMALIZATION_FACTOR = 1 << 15;
     static final String FFMPEG_OUTPUT_FORMAT = "s16le";

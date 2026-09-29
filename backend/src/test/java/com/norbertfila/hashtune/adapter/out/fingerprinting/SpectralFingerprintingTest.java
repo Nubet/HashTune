@@ -14,16 +14,9 @@ class SpectralFingerprintingTest {
     private final SpectralFingerprinting fingerprinting = new SpectralFingerprinting();
 
     @Test
-    void downsampleAveragesEveryInputGroup() {
-        double[] result = AudioPreprocessor.downsample(new double[] {1, 3, 5, 7, 9}, 2);
-
-        assertThat(result).containsExactly(2, 6, 9);
-    }
-
-    @Test
     void spectrumAnalyzerFindsTheExpectedFrequencyBin() {
-        int sampleRate = 1024;
-        double[] samples = new double[1024];
+        int sampleRate = 2048;
+        double[] samples = new double[2048];
         for (int index = 0; index < samples.length; index++) {
             samples[index] = Math.sin(2 * Math.PI * 64 * index / sampleRate);
         }

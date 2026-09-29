@@ -1,61 +1,88 @@
 package com.norbertfila.hashtune.adapter.out.fingerprinting;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 final class SpectralPeakExtractor {
-    // These are FFT-bin ranges, not Hz. The ranges widen at higher frequencies to limit peak density
-    // The final boundary is half the FFT size because a real-valued signal has a mirrored spectrum
-    private static final List<FrequencyBand> FREQUENCY_BANDS = List.of(
-            new FrequencyBand(0, 10),
-            new FrequencyBand(10, 20),
-            new FrequencyBand(20, 40),
-            new FrequencyBand(40, 80),
-            new FrequencyBand(80, 160),
-            new FrequencyBand(160, SpectrumAnalyzer.FFT_WINDOW_SIZE / 2));
+    private static final double MIN_FREQUENCY_HZ = 300;
+    private static final double MAX_FREQUENCY_HZ = 4_000;
+    private static final double MIN_AMPLITUDE_DB = -60;
+    private static final int TIME_NEIGHBOURHOOD = 10;
+    private static final int FREQUENCY_NEIGHBOURHOOD = 5;
+    private static final int MAX_PEAKS_PER_SECOND = 30;
 
     List<SpectralPeak> extract(SpectrumFrames spectrum) {
         if (spectrum.frames().isEmpty()) {
             return List.of();
         }
 
-        List<SpectralPeak> peaks = new ArrayList<>();
-        for (SpectrumFrame frame : spectrum.frames()) {
-            peaks.addAll(findSignificantPeaks(frame));
+        int minimumBin = Math.max(
+                0, frequencyBin(MIN_FREQUENCY_HZ, spectrum.frames().getFirst().sampleRate()));
+        int maximumBin = Math.min(
+                SpectrumAnalyzer.FFT_WINDOW_SIZE / 2,
+                frequencyBin(MAX_FREQUENCY_HZ, spectrum.frames().getFirst().sampleRate()) + 1);
+        double maximumMagnitude = spectrum.frames().stream()
+                .flatMapToDouble(frame -> java.util.Arrays.stream(frame.magnitudes(), minimumBin, maximumBin))
+                .max()
+                .orElse(Double.NEGATIVE_INFINITY);
+        double amplitudeThreshold = maximumMagnitude + MIN_AMPLITUDE_DB;
+
+        List<PeakCandidate> candidates = new ArrayList<>();
+        for (int timeIndex = 0; timeIndex < spectrum.frames().size(); timeIndex++) {
+            double[] magnitudes = spectrum.frames().get(timeIndex).magnitudes();
+            for (int frequencyBin = minimumBin; frequencyBin < maximumBin; frequencyBin++) {
+                double magnitude = magnitudes[frequencyBin];
+                if (magnitude >= amplitudeThreshold && isLocalMaximum(spectrum, timeIndex, frequencyBin, magnitude)) {
+                    candidates.add(new PeakCandidate(timeIndex, frequencyBin, magnitude));
+                }
+            }
         }
-        return peaks;
-    }
 
-    private List<SpectralPeak> findSignificantPeaks(SpectrumFrame frame) {
-        List<BandMaximum> bandMaximums = new ArrayList<>();
-        for (FrequencyBand band : FREQUENCY_BANDS) {
-            bandMaximums.add(findBandMaximum(frame, band));
+        double durationSeconds = spectrum.frames().getLast().timeSeconds()
+                + SpectrumAnalyzer.FRAME_HOP_SIZE
+                        / (double) spectrum.frames().getFirst().sampleRate();
+        int maximumPeaks = Math.max(1, (int) Math.floor(durationSeconds * MAX_PEAKS_PER_SECOND));
+        if (candidates.size() > maximumPeaks) {
+            candidates.sort(Comparator.comparingDouble(PeakCandidate::magnitude).reversed());
+            candidates = new ArrayList<>(candidates.subList(0, maximumPeaks));
         }
 
-        double averageBandMagnitude = bandMaximums.stream()
-                .mapToDouble(BandMaximum::magnitude)
-                .average()
-                .orElse(0);
-
-        return bandMaximums.stream()
-                .filter(maximum -> maximum.magnitude() > averageBandMagnitude)
-                .map(maximum -> new SpectralPeak(frame.frequencyHzForBin(maximum.frequencyBin()), frame.timeSeconds()))
+        return candidates.stream()
+                .sorted(Comparator.comparingInt(PeakCandidate::timeIndex).thenComparingInt(PeakCandidate::frequencyBin))
+                .map(candidate -> {
+                    SpectrumFrame frame = spectrum.frames().get(candidate.timeIndex());
+                    return new SpectralPeak(
+                            candidate.frequencyBin(),
+                            frame.frequencyHzForBin(candidate.frequencyBin()),
+                            frame.timeSeconds());
+                })
                 .toList();
     }
 
-    private BandMaximum findBandMaximum(SpectrumFrame frame, FrequencyBand band) {
-        int lastBin = Math.min(band.lastBinExclusive(), frame.magnitudes().length);
-        int strongestBin = band.firstBinInclusive();
-        double strongestMagnitude = 0;
+    private boolean isLocalMaximum(SpectrumFrames spectrum, int timeIndex, int frequencyBin, double magnitude) {
+        int firstTime = Math.max(0, timeIndex - TIME_NEIGHBOURHOOD);
+        int lastTime = Math.min(spectrum.frames().size(), timeIndex + TIME_NEIGHBOURHOOD + 1);
+        int firstFrequency = Math.max(0, frequencyBin - FREQUENCY_NEIGHBOURHOOD);
+        int lastFrequency = Math.min(SpectrumAnalyzer.FFT_WINDOW_SIZE / 2, frequencyBin + FREQUENCY_NEIGHBOURHOOD + 1);
 
-        for (int frequencyBin = band.firstBinInclusive(); frequencyBin < lastBin; frequencyBin++) {
-            if (frame.magnitudes()[frequencyBin] > strongestMagnitude) {
-                strongestMagnitude = frame.magnitudes()[frequencyBin];
-                strongestBin = frequencyBin;
+        for (int neighbourTime = firstTime; neighbourTime < lastTime; neighbourTime++) {
+            double[] magnitudes = spectrum.frames().get(neighbourTime).magnitudes();
+            for (int neighbourFrequency = firstFrequency; neighbourFrequency < lastFrequency; neighbourFrequency++) {
+                if (neighbourTime == timeIndex && neighbourFrequency == frequencyBin) {
+                    continue;
+                }
+                if (magnitudes[neighbourFrequency] >= magnitude) {
+                    return false;
+                }
             }
         }
-        return new BandMaximum(strongestBin, strongestMagnitude);
+        return true;
     }
 
-    private record BandMaximum(int frequencyBin, double magnitude) {}
+    private int frequencyBin(double frequencyHz, int sampleRate) {
+        return (int) Math.floor(frequencyHz * SpectrumAnalyzer.FFT_WINDOW_SIZE / sampleRate);
+    }
+
+    private record PeakCandidate(int timeIndex, int frequencyBin, double magnitude) {}
 }

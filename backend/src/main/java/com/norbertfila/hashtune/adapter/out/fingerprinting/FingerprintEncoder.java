@@ -5,19 +5,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 final class FingerprintEncoder {
-    private static final int TARGET_ZONE_SIZE = 5;
-    private static final int MILLISECONDS_PER_SECOND = 1_000;
+    private static final int FAN_OUT = 20;
+    private static final int TARGET_MINIMUM_MS = 23;
+    private static final int TARGET_MAXIMUM_MS = 4_644;
 
     List<FingerprintOccurrence> encode(List<SpectralPeak> peaks) {
         List<FingerprintOccurrence> fingerprints = new ArrayList<>();
 
         for (int anchorIndex = 0; anchorIndex < peaks.size(); anchorIndex++) {
             SpectralPeak anchor = peaks.get(anchorIndex);
-            int targetEnd = Math.min(peaks.size(), anchorIndex + TARGET_ZONE_SIZE + 1);
-            for (int targetIndex = anchorIndex + 1; targetIndex < targetEnd; targetIndex++) {
+            int targets = 0;
+            for (int targetIndex = anchorIndex + 1; targetIndex < peaks.size(); targetIndex++) {
+                long deltaMs = Math.round((peaks.get(targetIndex).timeSeconds() - anchor.timeSeconds()) * 1_000);
+                if (deltaMs < TARGET_MINIMUM_MS) {
+                    continue;
+                }
+                if (deltaMs > TARGET_MAXIMUM_MS) {
+                    break;
+                }
                 fingerprints.add(new FingerprintOccurrence(
                         FingerprintHash.encode(anchor, peaks.get(targetIndex)),
-                        Math.toIntExact(Math.round(anchor.timeSeconds() * MILLISECONDS_PER_SECOND))));
+                        Math.toIntExact(Math.round(anchor.timeSeconds() * 1_000))));
+                targets++;
+                if (targets >= FAN_OUT) {
+                    break;
+                }
             }
         }
         return fingerprints;

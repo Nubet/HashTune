@@ -10,9 +10,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 final class FingerprintMatcher {
-    private static final int OFFSET_BUCKET_SIZE_MS = 100;
+    private static final int OFFSET_BUCKET_SIZE_MS = 50;
     private static final int MINIMUM_OFFSET_CLUSTER_SIZE = 8;
-    private static final double MINIMUM_CONFIDENCE = 0.35;
+    private static final double MINIMUM_CONFIDENCE = 0.02;
+    private static final double OFFSET_BIN_COUNT = 850;
 
     MatchResult match(List<FingerprintOccurrence> sampleFingerprints, List<FingerprintMatch> storedMatches) {
         Map<Long, List<Integer>> sampleOffsetsByHash = sampleFingerprints.stream()
@@ -46,7 +47,8 @@ final class FingerprintMatcher {
                         sampleFingerprints.size()))
                 .filter(result -> result.offsetClusterSize() >= MINIMUM_OFFSET_CLUSTER_SIZE)
                 .filter(result -> result.confidence() >= MINIMUM_CONFIDENCE)
-                .max(Comparator.comparingInt(MatchResult::offsetClusterSize))
+                .filter(result -> result.significance() >= 3)
+                .max(Comparator.comparingDouble(MatchResult::significance))
                 .orElse(MatchResult.noMatch());
     }
 
@@ -56,14 +58,27 @@ final class FingerprintMatcher {
                 .max(Map.Entry.comparingByValue())
                 .orElseThrow();
         int clusterSize = bestBucket.getValue();
+        double expectedMatches = totalMatches / OFFSET_BIN_COUNT;
+        double significance = (clusterSize - expectedMatches) / Math.max(1, Math.sqrt(expectedMatches));
         double confidence = Math.min(1, clusterSize / (double) Math.max(1, sampleFingerprintCount));
         return new MatchResult(
-                trackId, bestBucket.getKey() * OFFSET_BUCKET_SIZE_MS, confidence, totalMatches, clusterSize);
+                trackId,
+                bestBucket.getKey() * OFFSET_BUCKET_SIZE_MS,
+                confidence,
+                totalMatches,
+                clusterSize,
+                significance);
     }
 
-    record MatchResult(UUID trackId, long matchedAtMs, double confidence, int hashMatches, int offsetClusterSize) {
+    record MatchResult(
+            UUID trackId,
+            long matchedAtMs,
+            double confidence,
+            int hashMatches,
+            int offsetClusterSize,
+            double significance) {
         static MatchResult noMatch() {
-            return new MatchResult(null, 0, 0, 0, 0);
+            return new MatchResult(null, 0, 0, 0, 0, 0);
         }
     }
 }

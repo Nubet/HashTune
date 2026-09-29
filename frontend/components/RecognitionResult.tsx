@@ -63,7 +63,7 @@ export function RecognitionResult({ recognition }: { recognition: Recognition })
               </b>
             </div>
             <div>
-              <span className="text-muted">Confidence</span>
+              <span className="text-muted">Match quality</span>
               <b className="ml-2">{recognition.score}</b>
             </div>
             <div>

@@ -45,7 +45,7 @@ export function HistoryView({
                   <b className="text-[14px]">{item.title}</b>
                   <div className="text-[12px] text-muted">{item.artist}</div>
                 </div>
-                <span className="text-[12px]">{item.score}</span>
+                <span className="text-[12px] font-medium">{item.score}</span>
                 <span className="text-[12px] text-muted">
                   {item.source === "MICROPHONE" ? "Microphone" : "Audio file"}
                 </span>

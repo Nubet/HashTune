@@ -32,6 +32,14 @@ public class RecognitionApplicationService {
 
     @Transactional
     public Recognition recognize(MultipartFile file, RecognitionSource source) {
+        return process(file, source, true);
+    }
+
+    public Recognition probe(MultipartFile file, RecognitionSource source) {
+        return process(file, source, false);
+    }
+
+    private Recognition process(MultipartFile file, RecognitionSource source, boolean persist) {
         if (file == null || file.isEmpty() || file.getSize() > audioProperties.getMaxFileSizeBytes()) {
             throw new ApplicationException(
                     org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
@@ -53,7 +61,7 @@ public class RecognitionApplicationService {
             Track track = result.matched() && result.trackId() != null
                     ? tracks.findById(result.trackId()).orElse(null)
                     : null;
-            Recognition entity = recognitions.save(new Recognition(
+            Recognition entity = new Recognition(
                     recognitionId,
                     track == null ? null : track.id(),
                     result.matched() && track != null ? RecognitionStatus.MATCHED : RecognitionStatus.NO_MATCH,
@@ -62,9 +70,9 @@ public class RecognitionApplicationService {
                     source,
                     result.sampleDurationMs(),
                     System.currentTimeMillis() - started,
-                    Instant.now()));
+                    Instant.now());
             storage.delete(storageProperties.getTempBucket(), key);
-            return entity;
+            return persist ? recognitions.save(entity) : entity;
         } catch (RuntimeException exception) {
             storage.delete(storageProperties.getTempBucket(), key);
             throw exception;

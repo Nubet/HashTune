@@ -23,6 +23,10 @@ function formatDuration(durationMs?: number | null) {
   return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
+function matchLabel(status: string) {
+  return status === "MATCHED" ? "Strong match" : "--";
+}
+
 function toTrack(track: ApiTrack): Track {
   return {
     id: track.id,
@@ -50,7 +54,7 @@ function toRecognition(response: RecognitionResponse, source: string): Recogniti
     album: track?.album ?? undefined,
     coverArtUrl: track?.coverArtUrl ?? undefined,
     durationMs: track?.durationMs ?? undefined,
-    score: response.confidence == null ? "--" : `${Math.round(response.confidence * 100)}%`,
+    score: matchLabel(response.status),
     time: "Just now",
     source,
     color: colorFor(track?.id ?? "no-match"),
@@ -70,7 +74,7 @@ function toHistoryItem(item: ApiHistoryItem): Recognition {
     album: track?.album ?? undefined,
     coverArtUrl: track?.coverArtUrl ?? undefined,
     durationMs: track?.durationMs ?? undefined,
-    score: item.confidence == null ? "--" : `${Math.round(item.confidence * 100)}%`,
+    score: matchLabel(item.status),
     time: new Date(item.createdAt).toLocaleString("pl-PL"),
     source: item.source,
     color: colorFor(track?.id ?? "no-match"),
@@ -94,14 +98,20 @@ export default function Home() {
     window.setTimeout(() => setToast(""), 1800);
   }
 
-  async function recognize(file: File, source: "MICROPHONE" | "AUDIO_FILE") {
+  async function recognize(file: File, source: "MICROPHONE" | "AUDIO_FILE", probe = false) {
     try {
       setError("");
-      const result = toRecognition(await musicApi.recognize(file, source), source);
-      setRecognition(result);
-      if (result.status === "MATCHED") setHistory((current) => [result, ...current]);
+      const response = await musicApi.recognize(file, source, probe);
+      const matched = response.status === "MATCHED";
+      if (!probe || matched) {
+        const result = toRecognition(response, source);
+        setRecognition(result);
+        if (matched) setHistory((current) => [result, ...current]);
+      }
+      return matched;
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "We couldn't identify that audio.");
+      throw reason;
     }
   }
 

@@ -86,9 +86,11 @@ export const musicApi = {
     throw new Error("Indexing timed out");
   },
 
-  recognize(file: File, source: "MICROPHONE" | "AUDIO_FILE") {
+  recognize(file: File, source: "MICROPHONE" | "AUDIO_FILE", probe = false) {
+    const query = new URLSearchParams({ source });
+    if (probe) query.set("probe", "true");
     return request<RecognitionResponse>(
-      `/api/v1/recognitions?source=${source}`,
+      `/api/v1/recognitions?${query}`,
       { method: "POST", body: multipart(file) },
       recognitionSchema,
     );

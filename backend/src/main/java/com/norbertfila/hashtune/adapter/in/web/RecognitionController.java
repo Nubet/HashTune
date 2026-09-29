@@ -23,8 +23,9 @@ public class RecognitionController {
     @PostMapping(value = "/recognitions", consumes = "multipart/form-data")
     public ApiDtos.RecognitionResponse recognize(
             @RequestPart("file") MultipartFile file,
-            @RequestParam(defaultValue = "AUDIO_FILE") RecognitionSource source) {
-        var result = service.recognize(file, source);
+            @RequestParam(defaultValue = "AUDIO_FILE") RecognitionSource source,
+            @RequestParam(defaultValue = "false") boolean probe) {
+        var result = probe ? service.probe(file, source) : service.recognize(file, source);
         var track = result.trackId() == null ? null : service.track(result.trackId());
         return ApiDtos.RecognitionResponse.from(result, track);
     }

@@ -7,6 +7,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class SpectralFingerprintingTest {
+    private static final int TEST_SAMPLE_RATE = CanonicalAudioFormat.SAMPLE_RATE;
+    private static final int TEST_DURATION_SECONDS = 2;
+
     private final SpectralFingerprinting fingerprinting = new SpectralFingerprinting();
 
     @Test
@@ -40,10 +43,10 @@ class SpectralFingerprintingTest {
 
     @Test
     void fingerprintingIsDeterministicAndProducesOccurrences() {
-        double[] samples = sineWave(44_100, 2, 440);
+        double[] samples = sineWave(TEST_SAMPLE_RATE, TEST_DURATION_SECONDS, 440);
 
-        List<FingerprintOccurrence> first = fingerprinting.fingerprint(samples, 44_100);
-        List<FingerprintOccurrence> second = fingerprinting.fingerprint(samples, 44_100);
+        List<FingerprintOccurrence> first = fingerprinting.fingerprint(samples, TEST_SAMPLE_RATE);
+        List<FingerprintOccurrence> second = fingerprinting.fingerprint(samples, TEST_SAMPLE_RATE);
 
         assertThat(first).isNotEmpty().isEqualTo(second);
         assertThat(first).allSatisfy(occurrence -> assertThat(occurrence.hash()).isBetween(0L, 0xFFFF_FFFFL));
@@ -51,7 +54,8 @@ class SpectralFingerprintingTest {
 
     @Test
     void rejectsUnsupportedInput() {
-        assertThatIllegalArgumentException().isThrownBy(() -> fingerprinting.fingerprint(new double[0], 44_100));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> fingerprinting.fingerprint(new double[0], TEST_SAMPLE_RATE));
         assertThatIllegalArgumentException().isThrownBy(() -> fingerprinting.fingerprint(new double[] {1}, 44_101));
     }
 

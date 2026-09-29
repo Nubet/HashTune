@@ -9,5 +9,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "app.audio")
 public class AudioProperties {
     private String engine;
+    private String ffmpegBinary;
     private long maxFileSizeBytes;
 }

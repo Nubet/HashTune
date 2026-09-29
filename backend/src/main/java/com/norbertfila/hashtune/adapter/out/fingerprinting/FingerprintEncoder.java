@@ -5,6 +5,7 @@ import java.util.List;
 
 final class FingerprintEncoder {
     private static final int TARGET_ZONE_SIZE = 5;
+    private static final int MILLISECONDS_PER_SECOND = 1_000;
 
     List<FingerprintOccurrence> encode(List<SpectralPeak> peaks) {
         List<FingerprintOccurrence> fingerprints = new ArrayList<>();
@@ -15,7 +16,7 @@ final class FingerprintEncoder {
             for (int targetIndex = anchorIndex + 1; targetIndex < targetEnd; targetIndex++) {
                 fingerprints.add(new FingerprintOccurrence(
                         FingerprintHash.encode(anchor, peaks.get(targetIndex)),
-                        Math.toIntExact(Math.round(anchor.timeSeconds() * 1000))));
+                        Math.toIntExact(Math.round(anchor.timeSeconds() * MILLISECONDS_PER_SECOND))));
             }
         }
         return fingerprints;

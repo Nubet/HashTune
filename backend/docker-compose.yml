@@ -23,7 +23,7 @@ services:
       FFMPEG_BINARY: ffmpeg
       MTG_JAMENDO_SEED_ENABLED: "true"
       MTG_JAMENDO_SEED_DIRECTORY: /app/data/dev/mtg_jamendo_mini
-      ALLOWED_ORIGIN: http://localhost:3000
+      ALLOWED_ORIGIN: http://localhost:3000,http://127.0.0.1:3000
     ports:
       - "${BACKEND_PORT:-8080}:8080"
   postgres:

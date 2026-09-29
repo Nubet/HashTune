@@ -50,10 +50,18 @@ public class DeezerCoverArtAdapter implements CoverArtProvider {
         return result != null
                 && result.artist() != null
                 && normalize(result.title()).equals(normalize(title))
-                && normalize(result.artist().name()).equals(normalize(artist));
+                && artistsMatch(result.artist().name(), artist);
     }
 
-    private String normalize(String value) {
+    static boolean artistsMatch(String resultArtist, String requestedArtist) {
+        String normalizedResult = normalize(resultArtist);
+        String normalizedRequested = normalize(requestedArtist);
+        return normalizedResult.equals(normalizedRequested)
+                || normalizedRequested.contains(normalizedResult)
+                || normalizedResult.contains(normalizedRequested);
+    }
+
+    private static String normalize(String value) {
         return value == null ? "" : value.toLowerCase(Locale.ROOT).replaceAll("[^\\p{L}\\p{N}]", "");
     }
 

@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Header, type Page } from "../components/Header";
-import { HistoryView } from "../components/HistoryView";
-import { LibraryView } from "../components/LibraryView";
-import { ListenView } from "../components/ListenView";
-import { musicApi, type ApiHistoryItem } from "../lib/api/musicApi";
-import type { ApiTrack, RecognitionResponse } from "../lib/api/contracts";
-import type { Recognition, Track } from "../lib/music";
+import { Header, type Page } from "@/components/Header";
+import { HistoryView } from "@/components/HistoryView";
+import { LibraryView } from "@/components/LibraryView";
+import { ListenView } from "@/components/ListenView";
+import { musicApi, type ApiHistoryItem } from "@/lib/api/musicApi";
+import type { ApiTrack, RecognitionResponse } from "@/lib/api/contracts";
+import type { Recognition, Track } from "@/lib/music";
 
 const colors = ["#0866F5", "#6EA7F3", "#B2D1F7", "#172A42", "#0D1C2E", "#EEF0F3"];
 

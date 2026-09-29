@@ -1,5 +1,6 @@
 package com.norbertfila.hashtune.adapter.out.fingerprinting;
 
+import com.norbertfila.hashtune.domain.fingerprint.FingerprintOccurrence;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -10,7 +10,6 @@ import com.norbertfila.hashtune.domain.recognition.Recognition;
 import com.norbertfila.hashtune.domain.recognition.RecognitionSource;
 import com.norbertfila.hashtune.domain.recognition.RecognitionStatus;
 import com.norbertfila.hashtune.domain.track.Track;
-import com.norbertfila.hashtune.domain.track.TrackStatus;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
@@ -51,8 +50,8 @@ public class RecognitionApplicationService {
         try {
             AudioRecognitionEngine.RecognitionResult result = engine.recognize(new AudioRecognitionEngine.InputAudio(
                     storageProperties.getTempBucket(), key, file.getOriginalFilename(), ""));
-            Track track = result.matched()
-                    ? tracks.findFirstByStatus(TrackStatus.INDEXED).orElse(null)
+            Track track = result.matched() && result.trackId() != null
+                    ? tracks.findById(result.trackId()).orElse(null)
                     : null;
             Recognition entity = recognitions.save(new Recognition(
                     recognitionId,

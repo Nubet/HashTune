@@ -1,0 +1,12 @@
+package com.norbertfila.hashtune.adapter.out.persistence;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+interface SpringDataFingerprintRepository extends JpaRepository<FingerprintEntity, UUID> {
+    List<FingerprintEntity> findByHashIn(Collection<Long> hashes);
+
+    void deleteByTrackId(UUID trackId);
+}

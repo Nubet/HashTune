@@ -1,6 +1,7 @@
 package com.norbertfila.hashtune.application.service;
 
 import com.norbertfila.hashtune.application.port.out.AudioRecognitionEngine;
+import com.norbertfila.hashtune.application.port.out.FingerprintRepository;
 import com.norbertfila.hashtune.application.port.out.IndexingJobRepository;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
@@ -30,6 +31,7 @@ public class TrackApplicationService {
     private final TrackRepository tracks;
     private final IndexingJobRepository jobs;
     private final ObjectStoragePort storage;
+    private final FingerprintRepository fingerprints;
     private final AudioRecognitionEngine engine;
     private final StorageProperties storageProperties;
     private final AudioProperties audioProperties;
@@ -65,6 +67,7 @@ public class TrackApplicationService {
     @Transactional
     public void delete(UUID id) {
         Track track = get(id);
+        fingerprints.deleteByTrackId(track.id());
         storage.delete(storageProperties.getAudioBucket(), track.audioObjectKey());
         tracks.delete(track);
     }
@@ -98,7 +101,7 @@ public class TrackApplicationService {
 
     private void process(IndexingJob job) {
         Track track = get(job.trackId());
-        try (InputStream ignored = storage.get(storageProperties.getAudioBucket(), track.audioObjectKey())) {
+        try {
             AudioRecognitionEngine.IndexingResult result = engine.index(
                     track.id(),
                     new AudioRecognitionEngine.InputAudio(

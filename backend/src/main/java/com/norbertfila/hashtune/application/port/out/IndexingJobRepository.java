@@ -9,5 +9,7 @@ public interface IndexingJobRepository {
 
     Optional<IndexingJob> findById(UUID id);
 
+    boolean existsByTrackId(UUID trackId);
+
     Optional<IndexingJob> claimNextPending();
 }

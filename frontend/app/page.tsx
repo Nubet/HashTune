@@ -139,8 +139,10 @@ export default function Home() {
 
   async function reindexTrack(id: string) {
     try {
-      await musicApi.reindexTrack(id);
-      showToast("Fingerprint regeneration queued");
+      const job = await musicApi.reindexTrack(id);
+      await musicApi.waitForIndexing(job.id);
+      setTracks((await musicApi.listTracks()).map(toTrack));
+      showToast("Fingerprint regenerated");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Could not reindex track");
     }

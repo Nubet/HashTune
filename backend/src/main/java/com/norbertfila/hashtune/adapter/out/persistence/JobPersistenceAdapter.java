@@ -25,6 +25,11 @@ public class JobPersistenceAdapter implements IndexingJobRepository {
     }
 
     @Override
+    public boolean existsByTrackId(UUID trackId) {
+        return repository.existsByTrackId(trackId);
+    }
+
+    @Override
     @Transactional
     public Optional<IndexingJob> claimNextPending() {
         return repository.findByStatusOrderByCreatedAtAsc(IndexingJobStatus.PENDING).stream()

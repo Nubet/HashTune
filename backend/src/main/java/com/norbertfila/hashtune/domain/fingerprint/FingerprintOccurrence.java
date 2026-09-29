@@ -1,3 +1,3 @@
-package com.norbertfila.hashtune.adapter.out.fingerprinting;
+package com.norbertfila.hashtune.domain.fingerprint;
 
 public record FingerprintOccurrence(long hash, int anchorOffsetMs) {}

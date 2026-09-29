@@ -1,0 +1,13 @@
+.git
+.gitignore
+.idea
+.opencode
+.claude
+frontend
+inspo-wasm-fingerprinting
+data/dev/mtg_jamendo_samples
+backend/build
+backend/.gradle
+**/node_modules
+**/.next
+**/target

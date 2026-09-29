@@ -1,9 +1,12 @@
 package com.norbertfila.hashtune.adapter.in.seed;
 
+import com.norbertfila.hashtune.application.port.out.IndexingJobRepository;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
 import com.norbertfila.hashtune.configuration.MtgJamendoSeedProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
+import com.norbertfila.hashtune.domain.indexing.IndexingJob;
+import com.norbertfila.hashtune.domain.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.domain.track.Track;
 import com.norbertfila.hashtune.domain.track.TrackStatus;
 import java.io.IOException;
@@ -17,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +40,7 @@ public class MtgJamendoSeeder implements ApplicationRunner {
     private final ObjectStoragePort storage;
     private final StorageProperties storageProperties;
     private final TrackRepository tracks;
+    private final IndexingJobRepository jobs;
 
     @Override
     public void run(ApplicationArguments args) throws IOException {
@@ -47,7 +52,22 @@ public class MtgJamendoSeeder implements ApplicationRunner {
         for (Map<String, String> row : rows) {
             Path audio = resolveAudio(directory, required(row, "audio_path"));
             String checksum = sha256(audio);
-            if (tracks.findByChecksum(checksum).isPresent()) {
+            Optional<Track> existing = tracks.findByChecksum(checksum);
+            if (existing.isPresent()) {
+                if (!jobs.existsByTrackId(existing.get().id())) {
+                    Instant now = Instant.now();
+                    jobs.save(new IndexingJob(
+                            UUID.randomUUID(),
+                            existing.get().id(),
+                            IndexingJobStatus.PENDING,
+                            0,
+                            0,
+                            null,
+                            null,
+                            now,
+                            null,
+                            null));
+                }
                 skipped++;
                 continue;
             }
@@ -60,7 +80,7 @@ public class MtgJamendoSeeder implements ApplicationRunner {
             }
 
             Instant now = Instant.now();
-            tracks.save(new Track(
+            Track track = tracks.save(new Track(
                     id,
                     required(row, "title"),
                     required(row, "artist"),
@@ -71,6 +91,8 @@ public class MtgJamendoSeeder implements ApplicationRunner {
                     TrackStatus.UPLOADED,
                     now,
                     now));
+            jobs.save(new IndexingJob(
+                    UUID.randomUUID(), track.id(), IndexingJobStatus.PENDING, 0, 0, null, null, now, null, null));
             imported++;
         }
 

@@ -18,6 +18,9 @@ export function LibraryView({
 }) {
   const [query, setQuery] = useState("");
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const indexedCount = tracks.filter((track) => track.status === "INDEXED").length;
+  const failedCount = tracks.filter((track) => track.status === "FAILED").length;
+  const pendingCount = tracks.length - indexedCount - failedCount;
   const visibleTracks = tracks.filter((track) =>
     `${track.title} ${track.artist}`.toLowerCase().includes(query.toLowerCase()),
   );
@@ -30,7 +33,8 @@ export function LibraryView({
             <SectionLabel>Fingerprint database</SectionLabel>
             <h1 className="mt-1 text-[40px] font-bold tracking-[-.045em]">Music Library</h1>
             <p className="mt-3 text-[14px] text-muted">
-              {tracks.length} tracks · fingerprinting pending · stored in backend
+              {tracks.length} tracks · {indexedCount} indexed · {pendingCount} pending
+              {failedCount > 0 ? ` · ${failedCount} failed` : ""}
             </p>
           </div>
           <div className="flex gap-2">

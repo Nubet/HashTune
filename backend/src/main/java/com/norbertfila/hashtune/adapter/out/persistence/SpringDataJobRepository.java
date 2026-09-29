@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 
 interface SpringDataJobRepository extends JpaRepository<IndexingJobEntity, UUID> {
+    boolean existsByTrackId(UUID trackId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     List<IndexingJobEntity> findByStatusOrderByCreatedAtAsc(IndexingJobStatus status);
 }

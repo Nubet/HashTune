@@ -10,7 +10,18 @@ final class SpectralPeakExtractor {
     private static final double MIN_AMPLITUDE_DB = -60;
     private static final int TIME_NEIGHBOURHOOD = 10;
     private static final int FREQUENCY_NEIGHBOURHOOD = 5;
-    private static final int MAX_PEAKS_PER_SECOND = 30;
+    private final int maxPeaksPerSecond;
+
+    SpectralPeakExtractor() {
+        this(30);
+    }
+
+    SpectralPeakExtractor(int maxPeaksPerSecond) {
+        if (maxPeaksPerSecond < 1) {
+            throw new IllegalArgumentException("maxPeaksPerSecond must be positive");
+        }
+        this.maxPeaksPerSecond = maxPeaksPerSecond;
+    }
 
     List<SpectralPeak> extract(SpectrumFrames spectrum) {
         if (spectrum.frames().isEmpty()) {
@@ -42,7 +53,7 @@ final class SpectralPeakExtractor {
         double durationSeconds = spectrum.frames().getLast().timeSeconds()
                 + SpectrumAnalyzer.FRAME_HOP_SIZE
                         / (double) spectrum.frames().getFirst().sampleRate();
-        int maximumPeaks = Math.max(1, (int) Math.floor(durationSeconds * MAX_PEAKS_PER_SECOND));
+        int maximumPeaks = Math.max(1, (int) Math.floor(durationSeconds * maxPeaksPerSecond));
         if (candidates.size() > maximumPeaks) {
             candidates.sort(Comparator.comparingDouble(PeakCandidate::magnitude).reversed());
             candidates = new ArrayList<>(candidates.subList(0, maximumPeaks));

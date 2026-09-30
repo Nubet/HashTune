@@ -5,9 +5,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 final class FingerprintEncoder {
-    private static final int FAN_OUT = 20;
     private static final int TARGET_MINIMUM_MS = 23;
     private static final int TARGET_MAXIMUM_MS = 4_644;
+    private final int fanOut;
+
+    FingerprintEncoder() {
+        this(20);
+    }
+
+    FingerprintEncoder(int fanOut) {
+        if (fanOut < 1) {
+            throw new IllegalArgumentException("fanOut must be positive");
+        }
+        this.fanOut = fanOut;
+    }
 
     List<FingerprintOccurrence> encode(List<SpectralPeak> peaks) {
         List<FingerprintOccurrence> fingerprints = new ArrayList<>();
@@ -27,7 +38,7 @@ final class FingerprintEncoder {
                         FingerprintHash.encode(anchor, peaks.get(targetIndex)),
                         Math.toIntExact(Math.round(anchor.timeSeconds() * 1_000))));
                 targets++;
-                if (targets >= FAN_OUT) {
+                if (targets >= fanOut) {
                     break;
                 }
             }

@@ -11,6 +11,22 @@ import type { ApiTrack, RecognitionResponse } from "@/lib/api/contracts";
 import type { MetadataDraft, Recognition, Track } from "@/lib/music";
 
 const colors = ["#0866F5", "#6EA7F3", "#B2D1F7", "#172A42", "#0D1C2E", "#EEF0F3"];
+const pendingRemovalsStorageKey = "hashtune.pending-removals";
+
+function readPendingRemovalIds() {
+  if (typeof window === "undefined") return new Set<string>();
+  try {
+    return new Set<string>(JSON.parse(window.sessionStorage.getItem(pendingRemovalsStorageKey) ?? "[]"));
+  } catch {
+    return new Set<string>();
+  }
+}
+
+function persistPendingRemovalIds(ids: Set<string>) {
+  if (typeof window !== "undefined") {
+    window.sessionStorage.setItem(pendingRemovalsStorageKey, JSON.stringify([...ids]));
+  }
+}
 
 function colorFor(id: string) {
   const value = [...id].reduce((sum, character) => sum + character.charCodeAt(0), 0);
@@ -120,6 +136,7 @@ export default function Home() {
   const [toast, setToast] = useState("");
   const [recognition, setRecognition] = useState<Recognition | null>(null);
   const [indexProgress, setIndexProgress] = useState<number | null>(null);
+  const [pendingRemovalIds, setPendingRemovalIds] = useState<Set<string>>(readPendingRemovalIds);
   const [error, setError] = useState("");
   const [metadataReview, setMetadataReview] = useState<MetadataDraft | null>(null);
   const reviewResolver = useRef<((approved: boolean) => void) | null>(null);
@@ -127,6 +144,11 @@ export default function Home() {
   function showToast(message: string) {
     setToast(message);
     window.setTimeout(() => setToast(""), 1800);
+  }
+
+  function replacePendingRemovalIds(ids: Set<string>) {
+    setPendingRemovalIds(ids);
+    persistPendingRemovalIds(ids);
   }
 
   async function recognize(file: File, source: "MICROPHONE" | "AUDIO_FILE", probe = false) {
@@ -149,7 +171,13 @@ export default function Home() {
   function loadLibrary(origin: "PERSONAL" | "MTG_JAMENDO" | "ALL") {
     void musicApi
       .listTracks("", origin)
-      .then((loadedTracks) => setTracks(loadedTracks.map(toTrack)))
+      .then((loadedTracks) => {
+        const mappedTracks = loadedTracks.map(toTrack);
+        const loadedIds = new Set(mappedTracks.map((track) => track.id));
+        const activePendingIds = new Set([...pendingRemovalIds].filter((id) => loadedIds.has(id)));
+        replacePendingRemovalIds(activePendingIds);
+        setTracks(mappedTracks.filter((track) => !activePendingIds.has(track.id)));
+      })
       .catch((reason: unknown) =>
         setError(reason instanceof Error ? reason.message : "We couldn't load your library."),
       );
@@ -228,11 +256,25 @@ export default function Home() {
   }
 
   async function removeTrack(id: string) {
+    const removedTrack = tracks.find((track) => track.id === id);
+    if (!removedTrack) return;
+
+    const pendingAfterStart = new Set(pendingRemovalIds).add(id);
+    replacePendingRemovalIds(pendingAfterStart);
+    setTracks((current) => current.filter((track) => track.id !== id));
+    showToast("Removing track…");
+
     try {
       await musicApi.removeTrack(id);
-      setTracks((current) => current.filter((track) => track.id !== id));
+      const pendingAfterSuccess = new Set(pendingRemovalIds);
+      pendingAfterSuccess.delete(id);
+      replacePendingRemovalIds(pendingAfterSuccess);
       showToast("Track removed from your library");
     } catch (reason) {
+      const pendingAfterFailure = new Set(pendingRemovalIds);
+      pendingAfterFailure.delete(id);
+      replacePendingRemovalIds(pendingAfterFailure);
+      setTracks((current) => (current.some((track) => track.id === id) ? current : [removedTrack, ...current]));
       setError(reason instanceof Error ? reason.message : "We couldn't remove that track.");
     }
   }

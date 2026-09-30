@@ -33,6 +33,8 @@ export const indexingJobSchema = z.object({
   trackId: z.string(),
   status: z.string(),
   progress: z.number(),
+  attempts: z.number().optional(),
+  nextAttemptAt: z.string().nullable().optional(),
   errorCode: z.string().nullable().optional(),
   errorMessage: z.string().nullable().optional(),
 });

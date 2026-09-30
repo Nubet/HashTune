@@ -123,10 +123,24 @@ public final class ApiDtos {
     public record UpdateTrackMetadataRequest(String title, String artist, String album) {}
 
     public record IndexingJobResponse(
-            UUID id, UUID trackId, String status, int progress, String errorCode, String errorMessage) {
+            UUID id,
+            UUID trackId,
+            String status,
+            int progress,
+            int attempts,
+            Instant nextAttemptAt,
+            String errorCode,
+            String errorMessage) {
         static IndexingJobResponse from(IndexingJob job) {
             return new IndexingJobResponse(
-                    job.id(), job.trackId(), job.status().name(), job.progress(), job.errorCode(), job.errorMessage());
+                    job.id(),
+                    job.trackId(),
+                    job.status().name(),
+                    job.progress(),
+                    job.attempts(),
+                    job.nextAttemptAt(),
+                    job.errorCode(),
+                    job.errorMessage());
         }
     }
 

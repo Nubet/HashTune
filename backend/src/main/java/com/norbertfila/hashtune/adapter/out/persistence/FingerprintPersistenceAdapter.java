@@ -2,6 +2,7 @@ package com.norbertfila.hashtune.adapter.out.persistence;
 
 import com.norbertfila.hashtune.application.port.out.FingerprintRepository;
 import com.norbertfila.hashtune.domain.fingerprint.FingerprintOccurrence;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -12,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @RequiredArgsConstructor
 public class FingerprintPersistenceAdapter implements FingerprintRepository {
+    private static final int MAX_HASHES_PER_QUERY = 10_000;
+
     private final SpringDataFingerprintRepository repository;
 
     @Override
@@ -40,10 +43,16 @@ public class FingerprintPersistenceAdapter implements FingerprintRepository {
         if (hashes.isEmpty()) {
             return List.of();
         }
-        return repository.findByHashIn(hashes).stream()
-                .map(fingerprint -> new FingerprintMatch(
-                        fingerprint.getHash(), fingerprint.getTrackId(), fingerprint.getAnchorOffsetMs()))
-                .toList();
+        List<Long> distinctHashes = hashes.stream().distinct().toList();
+        List<FingerprintMatch> matches = new ArrayList<>();
+        for (int offset = 0; offset < distinctHashes.size(); offset += MAX_HASHES_PER_QUERY) {
+            int end = Math.min(offset + MAX_HASHES_PER_QUERY, distinctHashes.size());
+            repository.findByHashIn(distinctHashes.subList(offset, end)).stream()
+                    .map(fingerprint -> new FingerprintMatch(
+                            fingerprint.getHash(), fingerprint.getTrackId(), fingerprint.getAnchorOffsetMs()))
+                    .forEach(matches::add);
+        }
+        return matches;
     }
 
     @Override

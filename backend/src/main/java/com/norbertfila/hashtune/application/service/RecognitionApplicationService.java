@@ -37,6 +37,7 @@ public class RecognitionApplicationService {
         return process(file, source, true);
     }
 
+    @Transactional
     public Recognition probe(MultipartFile file, RecognitionSource source) {
         return process(file, source, false);
     }
@@ -70,7 +71,7 @@ public class RecognitionApplicationService {
                     result.sampleDurationMs(),
                     System.currentTimeMillis() - started,
                     Instant.now());
-            return persist ? recognitions.save(entity) : entity;
+            return persist || entity.status() == RecognitionStatus.MATCHED ? recognitions.save(entity) : entity;
         } catch (IOException exception) {
             throw new ApplicationException(
                     org.springframework.http.HttpStatus.BAD_REQUEST, "INVALID_AUDIO", "Could not read audio sample");

@@ -5,6 +5,7 @@ import com.norbertfila.hashtune.domain.recognition.Recognition;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,7 +20,13 @@ public class RecognitionPersistenceAdapter implements RecognitionRepository {
 
     @Override
     public List<Recognition> findLatest(int limit, int offset) {
-        return repository.findAll(PageRequest.of(offset / limit, limit)).getContent().stream()
+        return repository
+                .findAll(PageRequest.of(
+                        offset / limit,
+                        limit,
+                        Sort.by(Sort.Direction.DESC, "createdAt").and(Sort.by(Sort.Direction.DESC, "id"))))
+                .getContent()
+                .stream()
                 .map(RecognitionPersistenceAdapter::toDomain)
                 .toList();
     }

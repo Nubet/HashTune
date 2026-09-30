@@ -1,7 +1,7 @@
 package com.norbertfila.hashtune.adapter.out.persistence;
 
-import com.norbertfila.hashtune.domain.track.TrackStatus;
 import com.norbertfila.hashtune.domain.track.TrackOrigin;
+import com.norbertfila.hashtune.domain.track.TrackStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -27,8 +27,10 @@ public class TrackEntity {
     private String title;
     private String artist;
     private String album;
+
     @Enumerated(EnumType.STRING)
     private TrackOrigin origin;
+
     private String albumArtist;
     private String composer;
     private String genre;

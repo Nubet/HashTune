@@ -14,6 +14,11 @@ import com.norbertfila.hashtune.application.port.out.RecognitionRepository;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
 import com.norbertfila.hashtune.configuration.AudioProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
+import com.norbertfila.hashtune.domain.track.Track;
+import com.norbertfila.hashtune.domain.track.TrackStatus;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
@@ -45,5 +50,30 @@ class RecognitionApplicationServiceTest {
                 .isInstanceOf(IllegalStateException.class);
 
         verify(storage).delete(eq("temp"), startsWith("samples/"));
+    }
+
+    @Test
+    void persistsMatchedProbeForHistory() {
+        UUID trackId = UUID.randomUUID();
+        MockMultipartFile file = new MockMultipartFile("file", "sample.mp3", "audio/mpeg", new byte[] {1, 2, 3});
+        Track track = new Track(
+                trackId,
+                "Remember the Time",
+                "Michael Jackson",
+                "Dangerous",
+                null,
+                null,
+                null,
+                null,
+                TrackStatus.INDEXED,
+                Instant.now(),
+                Instant.now());
+        when(engine.recognize(any()))
+                .thenReturn(new AudioRecognitionEngine.RecognitionResult(true, trackId, 1.0, 27_000, 5_000, 1, 1));
+        when(tracks.findById(trackId)).thenReturn(Optional.of(track));
+
+        service.probe(file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.MICROPHONE);
+
+        verify(recognitions).save(any());
     }
 }

@@ -17,6 +17,7 @@ const trackListSchema = z.array(
     title: z.string(),
     artist: z.string(),
     album: z.string().nullable().optional(),
+    origin: z.enum(["PERSONAL", "MTG_JAMENDO"]),
     albumArtist: z.string().nullable().optional(),
     composer: z.string().nullable().optional(),
     genre: z.string().nullable().optional(),
@@ -43,14 +44,30 @@ const historyItemSchema = z.object({
 });
 
 const historySchema = z.array(historyItemSchema);
+const trackPageSize = 100;
 
 export type ApiHistoryItem = z.infer<typeof historyItemSchema>;
 
 export const musicApi = {
-  listTracks(query = "") {
-    const params = new URLSearchParams({ limit: "100", offset: "0" });
-    if (query) params.set("query", query);
-    return request<ApiTrack[]>(`/api/v1/library/tracks?${params}`, {}, trackListSchema);
+  async listTracks(query = "", origin: "PERSONAL" | "MTG_JAMENDO" | "ALL" = "PERSONAL") {
+    const tracks: ApiTrack[] = [];
+
+    for (let offset = 0; ; offset += trackPageSize) {
+      const params = new URLSearchParams({
+        limit: String(trackPageSize),
+        offset: String(offset),
+      });
+      if (query) params.set("query", query);
+      if (origin !== "ALL") params.set("origin", origin);
+
+      const page = await request<ApiTrack[]>(
+        `/api/v1/library/tracks?${params}`,
+        {},
+        trackListSchema,
+      );
+      tracks.push(...page);
+      if (page.length < trackPageSize) return tracks;
+    }
   },
 
   uploadTrack(file: File) {

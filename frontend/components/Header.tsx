@@ -2,7 +2,15 @@ import { ThemeToggle } from "./ThemeToggle";
 
 export type Page = "listen" | "library" | "history";
 
-export function Header({ page, onPageChange }: { page: Page; onPageChange: (page: Page) => void }) {
+export function Header({
+  page,
+  onPageChange,
+  trackCount,
+}: {
+  page: Page;
+  onPageChange: (page: Page) => void;
+  trackCount: number | null;
+}) {
   const links: { id: Page; label: string }[] = [
     { id: "listen", label: "Identify" },
     { id: "library", label: "Library" },
@@ -40,7 +48,7 @@ export function Header({ page, onPageChange }: { page: Page; onPageChange: (page
         <div className="ml-auto flex items-center gap-4 text-[11px] text-muted">
           <div className="flex items-center gap-2">
             <i className="size-1.5 rounded-full bg-success" />
-            100 TRACKS
+            {trackCount === null ? "—" : trackCount} {trackCount === 1 ? "TRACK" : "TRACKS"}
           </div>
           <div className="h-4 w-px bg-line" />
           <ThemeToggle />

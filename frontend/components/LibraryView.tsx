@@ -17,12 +17,16 @@ export function LibraryView({
   onAddFiles,
   onReindex,
   onRemove,
+  origin,
+  onOriginChange,
 }: {
   tracks: Track[];
   indexingProgress: number | null;
   onAddFiles: (files: FileList) => Promise<void>;
   onReindex: (id: string) => Promise<void>;
   onRemove: (id: string) => Promise<void>;
+  origin: "PERSONAL" | "MTG_JAMENDO" | "ALL";
+  onOriginChange: (origin: "PERSONAL" | "MTG_JAMENDO" | "ALL") => void;
 }) {
   const [query, setQuery] = useState("");
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -49,6 +53,16 @@ export function LibraryView({
             </p>
           </div>
           <div className="flex gap-2">
+            <select
+              value={origin}
+              onChange={(event) => onOriginChange(event.target.value as "PERSONAL" | "MTG_JAMENDO" | "ALL")}
+              className="border border-line bg-canvas px-3 text-[12px] font-semibold"
+              aria-label="Library source"
+            >
+              <option value="PERSONAL">Personal</option>
+              <option value="MTG_JAMENDO">MTG-Jamendo</option>
+              <option value="ALL">All sources</option>
+            </select>
             <Button onClick={() => document.getElementById("library-files")?.click()}>
               Add audio
             </Button>

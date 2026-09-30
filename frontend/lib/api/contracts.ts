@@ -5,6 +5,7 @@ export const trackSchema = z.object({
   title: z.string(),
   artist: z.string(),
   album: z.string().nullable().optional(),
+  origin: z.enum(["PERSONAL", "MTG_JAMENDO"]),
   albumArtist: z.string().nullable().optional(),
   composer: z.string().nullable().optional(),
   genre: z.string().nullable().optional(),

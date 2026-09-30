@@ -33,6 +33,7 @@ function toTrack(track: ApiTrack): Track {
     title: track.title,
     artist: track.artist,
     album: track.album ?? undefined,
+    origin: track.origin,
     albumArtist: track.albumArtist ?? undefined,
     composer: track.composer ?? undefined,
     genre: track.genre ?? undefined,
@@ -111,6 +112,9 @@ function toHistoryItem(item: ApiHistoryItem): Recognition {
 
 export default function Home() {
   const [page, setPage] = useState<Page>("listen");
+  const [libraryOrigin, setLibraryOrigin] = useState<"PERSONAL" | "MTG_JAMENDO" | "ALL">(
+    "PERSONAL",
+  );
   const [tracks, setTracks] = useState<Track[]>([]);
   const [history, setHistory] = useState<Recognition[]>([]);
   const [toast, setToast] = useState("");
@@ -142,17 +146,21 @@ export default function Home() {
     }
   }
 
+  function loadLibrary(origin: "PERSONAL" | "MTG_JAMENDO" | "ALL") {
+    void musicApi
+      .listTracks("", origin)
+      .then((loadedTracks) => setTracks(loadedTracks.map(toTrack)))
+      .catch((reason: unknown) =>
+        setError(reason instanceof Error ? reason.message : "We couldn't load your library."),
+      );
+  }
+
   function changePage(nextPage: Page) {
     setPage(nextPage);
     setError("");
 
     if (nextPage === "library") {
-      void musicApi
-        .listTracks()
-        .then((loadedTracks) => setTracks(loadedTracks.map(toTrack)))
-        .catch((reason: unknown) =>
-          setError(reason instanceof Error ? reason.message : "We couldn't load your library."),
-        );
+      loadLibrary(libraryOrigin);
     }
 
     if (nextPage === "history") {
@@ -160,7 +168,9 @@ export default function Home() {
         .history()
         .then((loadedHistory) => setHistory(loadedHistory.map(toHistoryItem)))
         .catch((reason: unknown) =>
-          setError(reason instanceof Error ? reason.message : "We couldn't load your search history."),
+          setError(
+            reason instanceof Error ? reason.message : "We couldn't load your search history.",
+          ),
         );
     }
   }
@@ -251,16 +261,18 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-canvas text-ink">
-      <Header page={page} onPageChange={changePage} />
+      <Header
+        page={page}
+        onPageChange={changePage}
+        trackCount={tracks.length}
+      />
       <main>
         {error && (
           <div className="mx-auto max-w-[1200px] px-6 pt-6 text-[14px] text-red-600 lg:px-8">
             {error}
           </div>
         )}
-        {page === "listen" && (
-          <ListenView recognition={recognition} onRecognize={recognize} />
-        )}
+        {page === "listen" && <ListenView recognition={recognition} onRecognize={recognize} />}
         {page === "library" && (
           <LibraryView
             tracks={tracks}
@@ -268,6 +280,11 @@ export default function Home() {
             onAddFiles={addFiles}
             onReindex={reindexTrack}
             onRemove={removeTrack}
+            origin={libraryOrigin}
+            onOriginChange={(origin) => {
+              setLibraryOrigin(origin);
+              loadLibrary(origin);
+            }}
           />
         )}
         {page === "history" && (
@@ -275,7 +292,11 @@ export default function Home() {
         )}
       </main>
       {metadataReview && (
-        <MetadataReview draft={metadataReview} onConfirm={confirmMetadata} onSkip={skipMetadataReview} />
+        <MetadataReview
+          draft={metadataReview}
+          onConfirm={confirmMetadata}
+          onSkip={skipMetadataReview}
+        />
       )}
       {toast && (
         <div className="pointer-events-none fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-ink px-4 py-2.5 text-[11px] font-semibold text-white animate-enter">

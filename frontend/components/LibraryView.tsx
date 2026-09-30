@@ -301,7 +301,7 @@ export function LibraryView({
             <input
               id="library-files"
               type="file"
-              accept="audio/*,.mp3,.wav,.flac"
+              accept="audio/*,.mp3,.wav,.flac,.m4a,.ogg"
               multiple
               hidden
               onChange={(event) => event.target.files && void onAddFiles(event.target.files)}

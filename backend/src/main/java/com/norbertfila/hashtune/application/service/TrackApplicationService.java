@@ -22,7 +22,6 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.HexFormat;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -57,7 +56,8 @@ public class TrackApplicationService {
         String checksum = checksum(file);
         Track existing = tracks.findByChecksum(checksum).orElse(null);
         if (existing != null) {
-            return new ImportResult("DUPLICATE", existing, jobs.findByTrackId(existing.id()).orElse(null));
+            return new ImportResult(
+                    "DUPLICATE", existing, jobs.findByTrackId(existing.id()).orElse(null));
         }
         UploadResult result = saveUpload(file, checksum, origin, relativePath, IndexingJobStatus.PENDING);
         return new ImportResult("IMPORTED", result.track(), result.job());
@@ -121,22 +121,9 @@ public class TrackApplicationService {
                 TrackStatus.UPLOADED,
                 now,
                 now));
-        IndexingJob job = jobs.save(new IndexingJob(
-                UUID.randomUUID(),
-                track.id(),
-                initialJobStatus,
-                0,
-                0,
-                null,
-                null,
-                now,
-                null,
-                null));
+        IndexingJob job = jobs.save(
+                new IndexingJob(UUID.randomUUID(), track.id(), initialJobStatus, 0, 0, null, null, now, null, null));
         return new UploadResult(track, job);
-    }
-
-    public List<Track> search(String query, TrackOrigin origin, int limit, int offset) {
-        return tracks.search(query, origin, Math.min(limit, 100), Math.max(offset, 0));
     }
 
     @Transactional

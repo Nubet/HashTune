@@ -1,10 +1,13 @@
 package com.norbertfila.hashtune.adapter.out.persistence;
 
+import com.norbertfila.hashtune.application.port.out.AlbumSummary;
+import com.norbertfila.hashtune.application.port.out.ArtistSummary;
+import com.norbertfila.hashtune.application.port.out.PageResult;
+import com.norbertfila.hashtune.application.port.out.TrackQueryRepository;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
+import com.norbertfila.hashtune.application.port.out.TrackSearchQuery;
 import com.norbertfila.hashtune.domain.track.Track;
 import com.norbertfila.hashtune.domain.track.TrackStatus;
-import com.norbertfila.hashtune.domain.track.TrackOrigin;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +18,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class TrackPersistenceAdapter implements TrackRepository {
+public class TrackPersistenceAdapter implements TrackRepository, TrackQueryRepository {
     private final SpringDataTrackRepository repository;
 
     @Override
@@ -39,20 +42,65 @@ public class TrackPersistenceAdapter implements TrackRepository {
     }
 
     @Override
-    public List<Track> search(String query, TrackOrigin origin, int limit, int offset) {
-        String normalizedQuery = query == null || query.isBlank() ? null : query.trim();
-        Page<TrackEntity> result = normalizedQuery == null
-                ? origin == null
-                        ? repository.findAll(PageRequest.of(offset / limit, limit, Sort.by(Sort.Direction.DESC, "createdAt")))
-                        : repository.findByOrigin(
-                                origin, PageRequest.of(offset / limit, limit, Sort.by(Sort.Direction.DESC, "createdAt")))
-                : repository.searchByQuery(
-                        normalizedQuery,
-                        origin == null ? TrackOrigin.PERSONAL : origin,
-                        PageRequest.of(offset / limit, limit, Sort.by(Sort.Direction.DESC, "createdAt")));
-        return result.getContent().stream()
-                .map(TrackPersistenceAdapter::toDomain)
-                .toList();
+    public PageResult<Track> searchTracks(TrackSearchQuery query) {
+        Page<TrackEntity> result = repository.searchTracks(
+                query.query(),
+                query.origin(),
+                query.artist(),
+                query.album(),
+                pageRequest(
+                        query.page(),
+                        query.size(),
+                        Sort.by(Sort.Direction.ASC, "title")
+                                .and(Sort.by(Sort.Direction.ASC, "artist"))
+                                .and(Sort.by(Sort.Direction.ASC, "id"))));
+        return new PageResult<>(
+                result.getContent().stream()
+                        .map(TrackPersistenceAdapter::toDomain)
+                        .toList(),
+                result.getNumber(),
+                result.getSize(),
+                result.getTotalElements());
+    }
+
+    @Override
+    public PageResult<AlbumSummary> searchAlbums(
+            String query, com.norbertfila.hashtune.domain.track.TrackOrigin origin, int page, int size) {
+        Page<AlbumSummaryProjection> result = repository.searchAlbums(
+                query,
+                origin == null ? null : origin.name(),
+                pageRequest(page, size, Sort.by(Sort.Direction.ASC, "title")));
+        return new PageResult<>(
+                result.getContent().stream()
+                        .map(album -> new AlbumSummary(
+                                album.getTitle(),
+                                album.getArtist(),
+                                album.getCoverArtUrl(),
+                                album.getCoverArtTrackId(),
+                                album.getTrackCount()))
+                        .toList(),
+                result.getNumber(),
+                result.getSize(),
+                result.getTotalElements());
+    }
+
+    @Override
+    public PageResult<ArtistSummary> searchArtists(
+            String query, com.norbertfila.hashtune.domain.track.TrackOrigin origin, int page, int size) {
+        Page<ArtistSummaryProjection> result =
+                repository.searchArtists(query, origin, pageRequest(page, size, Sort.by(Sort.Direction.ASC, "name")));
+        return new PageResult<>(
+                result.getContent().stream()
+                        .map(artist ->
+                                new ArtistSummary(artist.getName(), artist.getTrackCount(), artist.getAlbumCount()))
+                        .toList(),
+                result.getNumber(),
+                result.getSize(),
+                result.getTotalElements());
+    }
+
+    private PageRequest pageRequest(int page, int size, Sort sort) {
+        return PageRequest.of(page, size, sort);
     }
 
     @Override

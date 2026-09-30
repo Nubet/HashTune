@@ -1,12 +1,16 @@
 package com.norbertfila.hashtune.adapter.in.web;
 
+import com.norbertfila.hashtune.application.port.out.TrackSearchQuery;
 import com.norbertfila.hashtune.application.service.TrackApplicationService;
+import com.norbertfila.hashtune.application.service.TrackQueryService;
 import com.norbertfila.hashtune.domain.track.TrackOrigin;
-import java.util.List;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -20,10 +24,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/library/tracks")
 @RequiredArgsConstructor
 public class TrackController {
     private final TrackApplicationService service;
+    private final TrackQueryService queryService;
 
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<ApiDtos.UploadResponse> upload(@RequestPart("file") MultipartFile file) {
@@ -41,14 +47,36 @@ public class TrackController {
     }
 
     @GetMapping
-    public List<ApiDtos.TrackResponse> search(
+    public ApiDtos.PageResponse<ApiDtos.TrackResponse> search(
             @RequestParam(required = false) String query,
             @RequestParam(required = false) TrackOrigin origin,
-            @RequestParam(defaultValue = "25") int limit,
-            @RequestParam(defaultValue = "0") int offset) {
-        return service.search(query, origin, limit, offset).stream()
-                .map(ApiDtos.TrackResponse::from)
-                .toList();
+            @RequestParam(required = false) String artist,
+            @RequestParam(required = false) String album,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "25") @Min(1) @Max(100) int size) {
+        return ApiDtos.PageResponse.from(
+                queryService.searchTracks(new TrackSearchQuery(query, origin, artist, album, page, size)),
+                ApiDtos.TrackResponse::from);
+    }
+
+    @GetMapping("/albums")
+    public ApiDtos.PageResponse<ApiDtos.AlbumResponse> albums(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) TrackOrigin origin,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "25") @Min(1) @Max(100) int size) {
+        return ApiDtos.PageResponse.from(
+                queryService.searchAlbums(query, origin, page, size), ApiDtos.AlbumResponse::from);
+    }
+
+    @GetMapping("/artists")
+    public ApiDtos.PageResponse<ApiDtos.ArtistResponse> artists(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) TrackOrigin origin,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "25") @Min(1) @Max(100) int size) {
+        return ApiDtos.PageResponse.from(
+                queryService.searchArtists(query, origin, page, size), ApiDtos.ArtistResponse::from);
     }
 
     @DeleteMapping("/{id}")

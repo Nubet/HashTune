@@ -16,12 +16,14 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RecognitionApplicationService {
     private final RecognitionRepository recognitions;
     private final TrackRepository tracks;
@@ -49,13 +51,10 @@ public class RecognitionApplicationService {
         UUID recognitionId = UUID.randomUUID();
         String key = "samples/" + recognitionId + "/" + safeName(file.getOriginalFilename());
         long started = System.currentTimeMillis();
-        try (InputStream input = file.getInputStream()) {
-            storage.put(storageProperties.getTempBucket(), key, input, file.getSize(), file.getContentType());
-        } catch (IOException exception) {
-            throw new ApplicationException(
-                    org.springframework.http.HttpStatus.BAD_REQUEST, "INVALID_AUDIO", "Could not read audio sample");
-        }
         try {
+            try (InputStream input = file.getInputStream()) {
+                storage.put(storageProperties.getTempBucket(), key, input, file.getSize(), file.getContentType());
+            }
             AudioRecognitionEngine.RecognitionResult result = engine.recognize(new AudioRecognitionEngine.InputAudio(
                     storageProperties.getTempBucket(), key, file.getOriginalFilename(), ""));
             Track track = result.matched() && result.trackId() != null
@@ -71,11 +70,12 @@ public class RecognitionApplicationService {
                     result.sampleDurationMs(),
                     System.currentTimeMillis() - started,
                     Instant.now());
-            storage.delete(storageProperties.getTempBucket(), key);
             return persist ? recognitions.save(entity) : entity;
-        } catch (RuntimeException exception) {
-            storage.delete(storageProperties.getTempBucket(), key);
-            throw exception;
+        } catch (IOException exception) {
+            throw new ApplicationException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "INVALID_AUDIO", "Could not read audio sample");
+        } finally {
+            cleanupSample(key);
         }
     }
 
@@ -94,5 +94,13 @@ public class RecognitionApplicationService {
 
     private String safeName(String name) {
         return name == null ? "sample" : name.replaceAll("[^a-zA-Z0-9._-]", "_");
+    }
+
+    private void cleanupSample(String key) {
+        try {
+            storage.delete(storageProperties.getTempBucket(), key);
+        } catch (RuntimeException cleanupFailure) {
+            log.warn("Could not clean up recognition sample {}", key, cleanupFailure);
+        }
     }
 }

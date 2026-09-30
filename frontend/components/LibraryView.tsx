@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Track } from "../lib/music";
 import { MoreIcon } from "./icons";
 import { TrackArtwork } from "./TrackArtwork";
@@ -11,13 +11,9 @@ function statusLabel(status: string) {
   return "Waiting";
 }
 
-function compareTracks(left: Track, right: Track, sortBy: "title" | "artist" | "album") {
-  const leftValue =
-    (sortBy === "title" ? left.title : sortBy === "artist" ? left.artist : left.album) ?? "";
-  const rightValue =
-    (sortBy === "title" ? right.title : sortBy === "artist" ? right.artist : right.album) ?? "";
-  return leftValue.localeCompare(rightValue, undefined, { sensitivity: "base" });
-}
+type LibraryViewMode = "tracks" | "albums" | "artists";
+type LibraryOrigin = "PERSONAL" | "MTG_JAMENDO" | "ALL";
+type SelectedAlbum = { title: string; artist: string };
 
 export function LibraryView({
   tracks,
@@ -33,64 +29,95 @@ export function LibraryView({
   onAddFiles: (files: FileList) => Promise<void>;
   onReindex: (id: string) => Promise<void>;
   onRemove: (id: string) => Promise<void>;
-  origin: "PERSONAL" | "MTG_JAMENDO" | "ALL";
-  onOriginChange: (origin: "PERSONAL" | "MTG_JAMENDO" | "ALL") => void;
+  origin: LibraryOrigin;
+  onOriginChange: (origin: LibraryOrigin) => void;
 }) {
+  const [view, setView] = useState<LibraryViewMode>("tracks");
   const [query, setQuery] = useState("");
-  const [selectedArtist, setSelectedArtist] = useState("ALL");
-  const [selectedAlbum, setSelectedAlbum] = useState("ALL");
-  const [sortBy, setSortBy] = useState<"title" | "artist" | "album">("title");
-  const [groupBy, setGroupBy] = useState<"none" | "artist" | "album">("none");
+  const [selectedArtist, setSelectedArtist] = useState<string | null>(null);
+  const [selectedAlbum, setSelectedAlbum] = useState<SelectedAlbum | null>(null);
   const [pageSize, setPageSize] = useState(50);
   const [page, setPage] = useState(0);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+
   const indexedCount = tracks.filter((track) => track.status === "INDEXED").length;
   const failedCount = tracks.filter((track) => track.status === "FAILED").length;
   const pendingCount = tracks.length - indexedCount - failedCount;
-  const artists = [...new Set(tracks.map((track) => track.artist).filter(Boolean))].sort(
-    (left, right) => left.localeCompare(right, undefined, { sensitivity: "base" }),
-  );
-  const albums = [
-    ...new Set(
-      tracks
-        .filter((track) => selectedArtist === "ALL" || track.artist === selectedArtist)
-        .map((track) => track.album)
-        .filter((album): album is string => Boolean(album)),
-    ),
-  ].sort((left, right) => left.localeCompare(right, undefined, { sensitivity: "base" }));
+
   const normalizedQuery = query.trim().toLowerCase();
-  const filteredTracks = tracks
-    .filter((track) => {
-      const searchable = `${track.title} ${track.artist} ${track.album ?? ""}`.toLowerCase();
-      return (
-        (!normalizedQuery || searchable.includes(normalizedQuery)) &&
-        (selectedArtist === "ALL" || track.artist === selectedArtist) &&
-        (selectedAlbum === "ALL" || track.album === selectedAlbum)
+
+  function changeOrigin(nextOrigin: LibraryOrigin) {
+    setQuery("");
+    setSelectedArtist(null);
+    setSelectedAlbum(null);
+    setView("tracks");
+    setPage(0);
+    onOriginChange(nextOrigin);
+  }
+
+  const artists = useMemo(() => {
+    const artistSet = new Set(tracks.map((t) => t.artist).filter(Boolean));
+    return [...artistSet]
+      .filter((a) => !normalizedQuery || a.toLowerCase().includes(normalizedQuery))
+      .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  }, [tracks, normalizedQuery]);
+
+  const albums = useMemo(() => {
+    const albumMap = new Map<
+      string,
+      {
+        title: string;
+        artist: string;
+        coverArtUrl?: string;
+        color?: string;
+        trackCount: number;
+      }
+    >();
+    tracks.forEach((track) => {
+      if (track.album) {
+        const albumKey = `${track.artist}\u0000${track.album}`;
+        if (!albumMap.has(albumKey)) {
+          albumMap.set(albumKey, {
+            title: track.album,
+            artist: track.artist,
+            coverArtUrl: track.coverArtUrl,
+            color: track.color,
+            trackCount: 1,
+          });
+        } else {
+          albumMap.get(albumKey)!.trackCount++;
+        }
+      }
+    });
+    return [...albumMap.values()]
+      .filter(
+        (a) =>
+          !normalizedQuery ||
+          a.title.toLowerCase().includes(normalizedQuery) ||
+          a.artist.toLowerCase().includes(normalizedQuery),
+      )
+      .sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }));
+  }, [tracks, normalizedQuery]);
+
+  const filteredTracks = useMemo(() => {
+    return tracks
+      .filter((track) => {
+        const searchable = `${track.title} ${track.artist} ${track.album ?? ""}`.toLowerCase();
+        const matchQuery = !normalizedQuery || searchable.includes(normalizedQuery);
+        const matchArtist = !selectedArtist || track.artist === selectedArtist;
+        const matchAlbum =
+          !selectedAlbum ||
+          (track.album === selectedAlbum.title && track.artist === selectedAlbum.artist);
+        return matchQuery && matchArtist && matchAlbum;
+      })
+      .sort((left, right) =>
+        left.title.localeCompare(right.title, undefined, { sensitivity: "base" }),
       );
-    })
-    .sort((left, right) => compareTracks(left, right, sortBy));
+  }, [tracks, normalizedQuery, selectedArtist, selectedAlbum]);
+
   const pageCount = Math.max(1, Math.ceil(filteredTracks.length / pageSize));
   const currentPage = Math.min(page, pageCount - 1);
   const visibleTracks = filteredTracks.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
-  const groupedTracks = visibleTracks.reduce<Record<string, Track[]>>((groups, track) => {
-    const group = groupBy === "artist" ? track.artist : (track.album ?? "Unknown album");
-    (groups[group] ??= []).push(track);
-    return groups;
-  }, {});
-  const resetPage = () => setPage(0);
-  const clearFilters = () => {
-    setQuery("");
-    setSelectedArtist("ALL");
-    setSelectedAlbum("ALL");
-    setSortBy("title");
-    setGroupBy("none");
-    resetPage();
-  };
-
-  function changeOrigin(nextOrigin: "PERSONAL" | "MTG_JAMENDO" | "ALL") {
-    clearFilters();
-    onOriginChange(nextOrigin);
-  }
 
   function renderTrack(track: Track) {
     return (
@@ -113,12 +140,19 @@ export function LibraryView({
         </div>
         <span className="hidden text-[12px] text-muted sm:block">{track.duration}</span>
         <span
-          className={`hidden text-[10px] font-bold sm:block ${track.status === "FAILED" ? "text-red-600" : track.status === "INDEXED" ? "text-success" : "text-muted"}`}
+          className={`hidden text-[10px] font-bold sm:block ${
+            track.status === "FAILED"
+              ? "text-red-600"
+              : track.status === "INDEXED"
+                ? "text-success"
+                : "text-muted"
+          }`}
         >
           {statusLabel(track.status)}
         </span>
         <div className="relative">
           <button
+            type="button"
             className="grid size-7 place-items-center text-muted"
             aria-label={`Actions for ${track.title}`}
             onClick={() => setActiveMenu(activeMenu === track.id ? null : track.id)}
@@ -126,8 +160,13 @@ export function LibraryView({
             <MoreIcon />
           </button>
           {activeMenu === track.id && (
-            <div className="absolute right-0 top-9 z-20 w-44 border border-line bg-canvas py-1 shadow-[0_12px_35px_rgba(0,0,0,.12)]">
+            <div
+              className="absolute right-0 top-9 z-20 w-44 border border-line bg-canvas py-1 shadow-[0_12px_35px_rgba(0,0,0,.12)]"
+              role="menu"
+            >
               <button
+                type="button"
+                role="menuitem"
                 className="block w-full px-3 py-2 text-left text-[11px] hover:bg-subtle"
                 onClick={() => {
                   setActiveMenu(null);
@@ -137,6 +176,8 @@ export function LibraryView({
                 Reprocess audio
               </button>
               <button
+                type="button"
+                role="menuitem"
                 className="block w-full px-3 py-2 text-left text-[11px] text-red-500 hover:bg-subtle"
                 onClick={() => {
                   setActiveMenu(null);
@@ -168,18 +209,29 @@ export function LibraryView({
             </p>
           </div>
           <div className="flex w-full flex-wrap gap-2 sm:w-auto">
-            <select
-              value={origin}
-              onChange={(event) =>
-                changeOrigin(event.target.value as "PERSONAL" | "MTG_JAMENDO" | "ALL")
-              }
-              className="h-12 border border-line bg-canvas px-3 text-[12px] font-semibold"
+            <div
+              className="flex h-12 items-center rounded-full border border-line p-1"
+              role="group"
               aria-label="Library source"
             >
-              <option value="PERSONAL">Personal</option>
-              <option value="MTG_JAMENDO">MTG-Jamendo</option>
-              <option value="ALL">All sources</option>
-            </select>
+              {[
+                ["PERSONAL", "Personal"],
+                ["MTG_JAMENDO", "MTG-Jamendo"],
+                ["ALL", "All sources"],
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={origin === value}
+                  onClick={() => changeOrigin(value as LibraryOrigin)}
+                  className={`h-10 rounded-full px-3 text-[11px] font-semibold transition-colors ${
+                    origin === value ? "bg-ink text-canvas" : "text-muted hover:text-ink"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
             <Button onClick={() => document.getElementById("library-files")?.click()}>
               Add audio
             </Button>
@@ -207,6 +259,7 @@ export function LibraryView({
             />
           </div>
         </div>
+
         {indexingProgress !== null && (
           <div className="mt-7 bg-subtle px-5 py-4">
             <div className="flex justify-between text-[12px] font-semibold">
@@ -225,171 +278,215 @@ export function LibraryView({
             </div>
           </div>
         )}
-        <div className="mt-8 flex items-center border-b border-line">
+
+        <div
+          className="mt-8 flex gap-6 border-b border-line"
+          role="tablist"
+          aria-label="Library views"
+        >
+          {(["tracks", "albums", "artists"] as LibraryViewMode[]).map((v) => (
+            <button
+              key={v}
+              type="button"
+              role="tab"
+              aria-selected={view === v}
+              onClick={() => {
+                setView(v);
+                setSelectedArtist(null);
+                setSelectedAlbum(null);
+                setPage(0);
+              }}
+              className={`pb-3 text-[14px] font-bold capitalize transition-colors border-b-2 ${
+                view === v
+                  ? "border-brand text-brand"
+                  : "border-transparent text-muted hover:text-ink"
+              }`}
+            >
+              {v === "tracks" ? "Tracks" : v === "albums" ? "Albums" : "Artists"}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-6 flex items-center border-b border-line pb-4">
           <label className="sr-only" htmlFor="library-search">
-            Search title, artist or album
+            Search
           </label>
           <input
             id="library-search"
             value={query}
             onChange={(event) => {
               setQuery(event.target.value);
-              resetPage();
+              setPage(0);
             }}
-            className="w-full border-0 bg-transparent py-4 text-[14px] outline-none placeholder:text-muted"
-            placeholder="Search title, artist or album"
+            className="w-full border-0 bg-transparent text-[14px] outline-none placeholder:text-muted"
+            placeholder={selectedArtist || selectedAlbum ? "Search tracks..." : `Search ${view}...`}
           />
           {query && (
             <button
               className="mr-4 text-[11px] font-semibold text-muted hover:text-ink"
+              type="button"
               onClick={() => {
                 setQuery("");
-                resetPage();
+                setPage(0);
               }}
             >
               Clear
             </button>
           )}
         </div>
-        <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          <select
-            value={selectedArtist}
-            onChange={(event) => {
-              setSelectedArtist(event.target.value);
-              setSelectedAlbum("ALL");
-              resetPage();
-            }}
-            className="h-11 border border-line bg-canvas px-3 text-[12px] font-semibold"
-            aria-label="Filter by artist"
-          >
-            <option value="ALL">All artists</option>
-            {artists.map((artist) => (
-              <option key={artist} value={artist}>
-                {artist}
-              </option>
-            ))}
-          </select>
-          <select
-            value={selectedAlbum}
-            onChange={(event) => {
-              setSelectedAlbum(event.target.value);
-              resetPage();
-            }}
-            className="h-11 border border-line bg-canvas px-3 text-[12px] font-semibold"
-            aria-label="Filter by album"
-          >
-            <option value="ALL">All albums</option>
-            {albums.map((album) => (
-              <option key={album} value={album}>
-                {album}
-              </option>
-            ))}
-          </select>
-          <select
-            value={sortBy}
-            onChange={(event) => {
-              setSortBy(event.target.value as "title" | "artist" | "album");
-              resetPage();
-            }}
-            className="h-11 border border-line bg-canvas px-3 text-[12px] font-semibold"
-            aria-label="Sort tracks"
-          >
-            <option value="title">Sort: title</option>
-            <option value="artist">Sort: artist</option>
-            <option value="album">Sort: album</option>
-          </select>
-          <select
-            value={groupBy}
-            onChange={(event) => {
-              setGroupBy(event.target.value as "none" | "artist" | "album");
-              resetPage();
-            }}
-            className="h-11 border border-line bg-canvas px-3 text-[12px] font-semibold"
-            aria-label="Group tracks"
-          >
-            <option value="none">View: all tracks</option>
-            <option value="artist">View: by artist</option>
-            <option value="album">View: by album</option>
-          </select>
-        </div>
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-[11px] text-muted">
-          <span>
-            {filteredTracks.length} {filteredTracks.length === 1 ? "track" : "tracks"} found
-            {filteredTracks.length !== tracks.length ? ` of ${tracks.length}` : ""}
-          </span>
-          {(query ||
-            selectedArtist !== "ALL" ||
-            selectedAlbum !== "ALL" ||
-            sortBy !== "title" ||
-            groupBy !== "none") && (
-            <button className="font-semibold text-ink hover:text-brand" onClick={clearFilters}>
-              Reset filters
-            </button>
+
+        <div className="mt-6">
+          {(selectedArtist || selectedAlbum) && (
+            <div className="mb-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedArtist(null);
+                  setSelectedAlbum(null);
+                  setPage(0);
+                }}
+                className="mb-2 flex items-center gap-1 text-[12px] font-semibold text-brand hover:underline"
+              >
+                ← Back to {selectedAlbum ? "albums" : "artists"}
+              </button>
+              <h2 className="text-[28px] font-bold">{selectedArtist || selectedAlbum?.title}</h2>
+              {selectedAlbum && <p className="text-[13px] text-muted">{selectedAlbum.artist}</p>}
+              <p className="text-[13px] text-muted">
+                {filteredTracks.length} {filteredTracks.length === 1 ? "track" : "tracks"}
+              </p>
+            </div>
+          )}
+
+          {!selectedArtist && !selectedAlbum && view === "albums" && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+              {albums.length === 0 ? (
+                <div className="col-span-full py-16 text-center text-[14px] font-semibold">
+                  No albums found
+                </div>
+              ) : (
+                albums.map((album) => (
+                  <button
+                    key={`${album.artist}-${album.title}`}
+                    type="button"
+                    onClick={() => {
+                      setSelectedAlbum({ title: album.title, artist: album.artist });
+                      setPage(0);
+                    }}
+                    className="group block min-w-0 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
+                  >
+                    <div className="relative mb-3 aspect-square w-full overflow-hidden rounded-md border border-line bg-subtle">
+                      <TrackArtwork
+                        src={album.coverArtUrl}
+                        color={album.color ?? "#ccc"}
+                        alt={`${album.title} cover art`}
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="truncate text-[14px] font-bold" title={album.title}>
+                      {album.title}
+                    </div>
+                    <div className="truncate text-[12px] text-muted" title={album.artist}>
+                      {album.artist}
+                    </div>
+                    <div className="mt-1 text-[11px] text-muted">
+                      {album.trackCount} {album.trackCount === 1 ? "track" : "tracks"}
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+
+          {!selectedArtist && !selectedAlbum && view === "artists" && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+              {artists.length === 0 ? (
+                <div className="col-span-full py-16 text-center text-[14px] font-semibold">
+                  No artists found
+                </div>
+              ) : (
+                artists.map((artist) => (
+                  <button
+                    key={artist}
+                    type="button"
+                    onClick={() => {
+                      setSelectedArtist(artist);
+                      setPage(0);
+                    }}
+                    className="group block min-w-0 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
+                  >
+                    <div className="mb-3 flex aspect-square w-full items-center justify-center overflow-hidden rounded-full border border-line bg-subtle shadow-sm transition-transform group-hover:scale-105">
+                      <span className="text-4xl font-light text-muted">
+                        {artist.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="truncate text-[14px] font-bold" title={artist}>
+                      {artist}
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+
+          {((view === "tracks" && !selectedArtist && !selectedAlbum) ||
+            selectedArtist ||
+            selectedAlbum) && (
+            <div>
+              {visibleTracks.length === 0 ? (
+                <div className="border-y border-line py-16 text-center">
+                  <p className="text-[14px] font-semibold">No tracks match your search</p>
+                </div>
+              ) : (
+                visibleTracks.map(renderTrack)
+              )}
+
+              {filteredTracks.length > 0 && (
+                <div className="mt-6 flex items-center justify-between border-t border-line pt-4">
+                  <div className="flex items-center gap-3 text-[11px] text-muted">
+                    <span>
+                      Page {currentPage + 1} of {pageCount}
+                    </span>
+                    <label className="flex items-center gap-2">
+                      <span>Show</span>
+                      <select
+                        value={pageSize}
+                        onChange={(event) => {
+                          setPageSize(Number(event.target.value));
+                          setPage(0);
+                        }}
+                        className="border border-line bg-canvas px-2 py-1.5 text-[11px] font-semibold text-ink"
+                        aria-label="Tracks per page"
+                      >
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                      <span>per page</span>
+                    </label>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className="border border-line px-3 py-2 text-[11px] font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+                      disabled={currentPage === 0}
+                      onClick={() => setPage(currentPage - 1)}
+                    >
+                      Previous
+                    </button>
+                    <button
+                      type="button"
+                      className="border border-line px-3 py-2 text-[11px] font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+                      disabled={currentPage === pageCount - 1}
+                      onClick={() => setPage(currentPage + 1)}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
-        <div className="mt-2">
-          {visibleTracks.length === 0 ? (
-            <div className="border-y border-line py-16 text-center">
-              <p className="text-[14px] font-semibold">No tracks match these filters</p>
-              <button className="mt-3 text-[12px] font-semibold text-brand" onClick={clearFilters}>
-                Reset filters
-              </button>
-            </div>
-          ) : groupBy === "none" ? (
-            visibleTracks.map(renderTrack)
-          ) : (
-            Object.entries(groupedTracks).map(([group, groupTracks]) => (
-              <section key={group} className="border-b border-line py-4">
-                <h2 className="mb-1 text-[12px] font-bold uppercase tracking-[.12em] text-muted">
-                  {group}
-                </h2>
-                {groupTracks.map(renderTrack)}
-              </section>
-            ))
-          )}
-        </div>
-        {filteredTracks.length > 0 && (
-          <div className="mt-6 flex items-center justify-between border-t border-line pt-4">
-            <div className="flex items-center gap-3 text-[11px] text-muted">
-              <span>
-                Page {currentPage + 1} of {pageCount}
-              </span>
-              <label className="flex items-center gap-2">
-                <span>Show</span>
-                <select
-                  value={pageSize}
-                  onChange={(event) => {
-                    setPageSize(Number(event.target.value));
-                    resetPage();
-                  }}
-                  className="border border-line bg-canvas px-2 py-1.5 text-[11px] font-semibold text-ink"
-                  aria-label="Tracks per page"
-                >
-                  <option value={25}>25</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                </select>
-                <span>per page</span>
-              </label>
-            </div>
-            <div className="flex gap-2">
-              <button
-                className="border border-line px-3 py-2 text-[11px] font-semibold disabled:cursor-not-allowed disabled:opacity-40"
-                disabled={currentPage === 0}
-                onClick={() => setPage(currentPage - 1)}
-              >
-                Previous
-              </button>
-              <button
-                className="border border-line px-3 py-2 text-[11px] font-semibold disabled:cursor-not-allowed disabled:opacity-40"
-                disabled={currentPage === pageCount - 1}
-                onClick={() => setPage(currentPage + 1)}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </section>
   );

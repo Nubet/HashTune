@@ -16,7 +16,9 @@ const pendingRemovalsStorageKey = "hashtune.pending-removals";
 function readPendingRemovalIds() {
   if (typeof window === "undefined") return new Set<string>();
   try {
-    return new Set<string>(JSON.parse(window.sessionStorage.getItem(pendingRemovalsStorageKey) ?? "[]"));
+    return new Set<string>(
+      JSON.parse(window.sessionStorage.getItem(pendingRemovalsStorageKey) ?? "[]"),
+    );
   } catch {
     return new Set<string>();
   }
@@ -274,7 +276,9 @@ export default function Home() {
       const pendingAfterFailure = new Set(pendingRemovalIds);
       pendingAfterFailure.delete(id);
       replacePendingRemovalIds(pendingAfterFailure);
-      setTracks((current) => (current.some((track) => track.id === id) ? current : [removedTrack, ...current]));
+      setTracks((current) =>
+        current.some((track) => track.id === id) ? current : [removedTrack, ...current],
+      );
       setError(reason instanceof Error ? reason.message : "We couldn't remove that track.");
     }
   }
@@ -303,11 +307,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-canvas text-ink">
-      <Header
-        page={page}
-        onPageChange={changePage}
-        trackCount={tracks.length}
-      />
+      <Header page={page} onPageChange={changePage} trackCount={tracks.length} />
       <main>
         {error && (
           <div className="mx-auto max-w-[1200px] px-6 pt-6 text-[14px] text-red-600 lg:px-8">

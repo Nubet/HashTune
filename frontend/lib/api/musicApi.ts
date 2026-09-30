@@ -11,32 +11,9 @@ import {
   trackSchema,
 } from "./contracts";
 
-const trackListSchema = z.array(
-  z.object({
-    id: z.string(),
-    title: z.string(),
-    artist: z.string(),
-    album: z.string().nullable().optional(),
-    origin: z.enum(["PERSONAL", "MTG_JAMENDO"]),
-    albumArtist: z.string().nullable().optional(),
-    composer: z.string().nullable().optional(),
-    genre: z.string().nullable().optional(),
-    releaseYear: z.string().nullable().optional(),
-    trackNumber: z.number().nullable().optional(),
-    discNumber: z.number().nullable().optional(),
-    isrc: z.string().nullable().optional(),
-    barcode: z.string().nullable().optional(),
-    comment: z.string().nullable().optional(),
-    coverArtUrl: z.string().url().nullable().optional(),
-    durationMs: z.number().nullable().optional(),
-    status: z.string(),
-    createdAt: z.string(),
-  }),
-);
-
 const historyItemSchema = z.object({
   id: z.string(),
-  track: trackListSchema.element.nullable().optional(),
+  track: trackSchema.nullable().optional(),
   status: z.string(),
   confidence: z.number().nullable().optional(),
   source: z.string(),
@@ -44,30 +21,98 @@ const historyItemSchema = z.object({
 });
 
 const historySchema = z.array(historyItemSchema);
-const trackPageSize = 100;
+const albumSchema = z.object({
+  title: z.string(),
+  artist: z.string(),
+  coverArtUrl: z.string().url().nullable().optional(),
+  trackCount: z.number(),
+});
+const artistSchema = z.object({
+  name: z.string(),
+  trackCount: z.number(),
+  albumCount: z.number(),
+});
+const pageSchema = <T extends z.ZodTypeAny>(item: T) =>
+  z.object({
+    content: z.array(item),
+    page: z.number(),
+    size: z.number(),
+    totalElements: z.number(),
+    totalPages: z.number(),
+    hasNext: z.boolean(),
+    hasPrevious: z.boolean(),
+  });
+
+const trackPageSchema = pageSchema(trackSchema);
+const albumPageSchema = pageSchema(albumSchema);
+const artistPageSchema = pageSchema(artistSchema);
 
 export type ApiHistoryItem = z.infer<typeof historyItemSchema>;
+export type ApiTrackPage = z.infer<typeof trackPageSchema>;
+export type ApiAlbum = z.infer<typeof albumSchema>;
+export type ApiArtist = z.infer<typeof artistSchema>;
+export type ApiAlbumPage = z.infer<typeof albumPageSchema>;
+export type ApiArtistPage = z.infer<typeof artistPageSchema>;
 
 export const musicApi = {
-  async listTracks(query = "", origin: "PERSONAL" | "MTG_JAMENDO" | "ALL" = "PERSONAL") {
-    const tracks: ApiTrack[] = [];
+  listTracks({
+    query = "",
+    origin = "PERSONAL",
+    artist,
+    album,
+    page = 0,
+    size = 50,
+  }: {
+    query?: string;
+    origin?: "PERSONAL" | "MTG_JAMENDO" | "ALL";
+    artist?: string;
+    album?: string;
+    page?: number;
+    size?: number;
+  } = {}) {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (query) params.set("query", query);
+    if (artist) params.set("artist", artist);
+    if (album) params.set("album", album);
+    if (origin !== "ALL") params.set("origin", origin);
 
-    for (let offset = 0; ; offset += trackPageSize) {
-      const params = new URLSearchParams({
-        limit: String(trackPageSize),
-        offset: String(offset),
-      });
-      if (query) params.set("query", query);
-      if (origin !== "ALL") params.set("origin", origin);
+    return request<ApiTrackPage>(`/api/v1/library/tracks?${params}`, {}, trackPageSchema);
+  },
 
-      const page = await request<ApiTrack[]>(
-        `/api/v1/library/tracks?${params}`,
-        {},
-        trackListSchema,
-      );
-      tracks.push(...page);
-      if (page.length < trackPageSize) return tracks;
-    }
+  listAlbums({
+    query = "",
+    origin = "PERSONAL",
+    page = 0,
+    size = 50,
+  }: {
+    query?: string;
+    origin?: "PERSONAL" | "MTG_JAMENDO" | "ALL";
+    page?: number;
+    size?: number;
+  } = {}) {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (query) params.set("query", query);
+    if (origin !== "ALL") params.set("origin", origin);
+
+    return request<ApiAlbumPage>(`/api/v1/library/tracks/albums?${params}`, {}, albumPageSchema);
+  },
+
+  listArtists({
+    query = "",
+    origin = "PERSONAL",
+    page = 0,
+    size = 50,
+  }: {
+    query?: string;
+    origin?: "PERSONAL" | "MTG_JAMENDO" | "ALL";
+    page?: number;
+    size?: number;
+  } = {}) {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (query) params.set("query", query);
+    if (origin !== "ALL") params.set("origin", origin);
+
+    return request<ApiArtistPage>(`/api/v1/library/tracks/artists?${params}`, {}, artistPageSchema);
   },
 
   uploadTrack(file: File) {

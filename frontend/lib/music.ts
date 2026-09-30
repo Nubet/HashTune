@@ -19,6 +19,28 @@ export type Track = {
   status: string;
 };
 
+export type LibraryPagination = {
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+};
+
+export type AlbumSummary = {
+  title: string;
+  artist: string;
+  coverArtUrl?: string;
+  trackCount: number;
+};
+
+export type ArtistSummary = {
+  name: string;
+  trackCount: number;
+  albumCount: number;
+};
+
 export type MetadataDraft = {
   trackId: string;
   fileName: string;

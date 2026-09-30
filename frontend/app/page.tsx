@@ -3,15 +3,37 @@
 import { useRef, useState } from "react";
 import { Header, type Page } from "@/components/Header";
 import { HistoryView } from "@/components/HistoryView";
-import { LibraryView } from "@/components/LibraryView";
+import { LibraryView, type LibraryQuery } from "@/components/LibraryView";
 import { ListenView } from "@/components/ListenView";
 import { MetadataReview } from "@/components/MetadataReview";
 import { musicApi, type ApiHistoryItem } from "@/lib/api/musicApi";
 import type { ApiTrack, RecognitionResponse } from "@/lib/api/contracts";
-import type { MetadataDraft, Recognition, Track } from "@/lib/music";
+import type {
+  AlbumSummary,
+  ArtistSummary,
+  LibraryPagination,
+  MetadataDraft,
+  Recognition,
+  Track,
+} from "@/lib/music";
 
 const colors = ["#0866F5", "#6EA7F3", "#B2D1F7", "#172A42", "#0D1C2E", "#EEF0F3"];
 const pendingRemovalsStorageKey = "hashtune.pending-removals";
+let pendingRemovalIds = readPendingRemovalIds();
+const emptyPagination: LibraryPagination = {
+  page: 0,
+  size: 50,
+  totalElements: 0,
+  totalPages: 0,
+  hasNext: false,
+  hasPrevious: false,
+};
+const initialLibraryQuery: LibraryQuery = {
+  resource: "tracks",
+  query: "",
+  page: 0,
+  size: 50,
+};
 
 function readPendingRemovalIds() {
   if (typeof window === "undefined") return new Set<string>();
@@ -134,14 +156,23 @@ export default function Home() {
     "PERSONAL",
   );
   const [tracks, setTracks] = useState<Track[]>([]);
+  const [albums, setAlbums] = useState<AlbumSummary[]>([]);
+  const [artists, setArtists] = useState<ArtistSummary[]>([]);
+  const [libraryPagination, setLibraryPagination] = useState(emptyPagination);
+  const libraryQuery = useRef<LibraryQuery>(initialLibraryQuery);
+  const libraryRequestId = useRef(0);
   const [history, setHistory] = useState<Recognition[]>([]);
   const [toast, setToast] = useState("");
   const [recognition, setRecognition] = useState<Recognition | null>(null);
   const [indexProgress, setIndexProgress] = useState<number | null>(null);
-  const [pendingRemovalIds, setPendingRemovalIds] = useState<Set<string>>(readPendingRemovalIds);
+
   const [error, setError] = useState("");
   const [metadataReview, setMetadataReview] = useState<MetadataDraft | null>(null);
   const reviewResolver = useRef<((approved: boolean) => void) | null>(null);
+
+  function getPendingRemovalIds() {
+    return pendingRemovalIds;
+  }
 
   function showToast(message: string) {
     setToast(message);
@@ -149,7 +180,7 @@ export default function Home() {
   }
 
   function replacePendingRemovalIds(ids: Set<string>) {
-    setPendingRemovalIds(ids);
+    pendingRemovalIds = ids;
     persistPendingRemovalIds(ids);
   }
 
@@ -170,19 +201,63 @@ export default function Home() {
     }
   }
 
-  function loadLibrary(origin: "PERSONAL" | "MTG_JAMENDO" | "ALL") {
-    void musicApi
-      .listTracks("", origin)
-      .then((loadedTracks) => {
-        const mappedTracks = loadedTracks.map(toTrack);
+  async function loadLibrary(query: LibraryQuery, nextOrigin = libraryOrigin) {
+    const requestId = ++libraryRequestId.current;
+    libraryQuery.current = query;
+    setError("");
+
+    try {
+      const request = { ...query, origin: nextOrigin };
+
+      if (query.resource === "tracks") {
+        const page = await musicApi.listTracks(request);
+        if (requestId !== libraryRequestId.current) return;
+        setLibraryPagination({
+          page: page.page,
+          size: page.size,
+          totalElements: page.totalElements,
+          totalPages: page.totalPages,
+          hasNext: page.hasNext,
+          hasPrevious: page.hasPrevious,
+        });
+        const mappedTracks = page.content.map(toTrack);
         const loadedIds = new Set(mappedTracks.map((track) => track.id));
-        const activePendingIds = new Set([...pendingRemovalIds].filter((id) => loadedIds.has(id)));
+        const activePendingIds = new Set(
+          [...getPendingRemovalIds()].filter((id) => loadedIds.has(id)),
+        );
         replacePendingRemovalIds(activePendingIds);
         setTracks(mappedTracks.filter((track) => !activePendingIds.has(track.id)));
-      })
-      .catch((reason: unknown) =>
-        setError(reason instanceof Error ? reason.message : "We couldn't load your library."),
-      );
+      } else if (query.resource === "albums") {
+        const page = await musicApi.listAlbums(request);
+        if (requestId !== libraryRequestId.current) return;
+        setLibraryPagination({
+          page: page.page,
+          size: page.size,
+          totalElements: page.totalElements,
+          totalPages: page.totalPages,
+          hasNext: page.hasNext,
+          hasPrevious: page.hasPrevious,
+        });
+        setAlbums(
+          page.content.map((album) => ({ ...album, coverArtUrl: album.coverArtUrl ?? undefined })),
+        );
+      } else {
+        const page = await musicApi.listArtists(request);
+        if (requestId !== libraryRequestId.current) return;
+        setLibraryPagination({
+          page: page.page,
+          size: page.size,
+          totalElements: page.totalElements,
+          totalPages: page.totalPages,
+          hasNext: page.hasNext,
+          hasPrevious: page.hasPrevious,
+        });
+        setArtists(page.content);
+      }
+    } catch (reason: unknown) {
+      if (requestId !== libraryRequestId.current) return;
+      setError(reason instanceof Error ? reason.message : "We couldn't load your library.");
+    }
   }
 
   function changePage(nextPage: Page) {
@@ -190,7 +265,7 @@ export default function Home() {
     setError("");
 
     if (nextPage === "library") {
-      loadLibrary(libraryOrigin);
+      loadLibrary(libraryQuery.current);
     }
 
     if (nextPage === "history") {
@@ -228,7 +303,7 @@ export default function Home() {
         }
         setIndexProgress(Math.round(((index + 1) / files.length) * 100));
       }
-      setTracks((await musicApi.listTracks()).map(toTrack));
+      loadLibrary({ ...initialLibraryQuery });
       showToast("Library is ready");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "We couldn't add those files.");
@@ -261,19 +336,19 @@ export default function Home() {
     const removedTrack = tracks.find((track) => track.id === id);
     if (!removedTrack) return;
 
-    const pendingAfterStart = new Set(pendingRemovalIds).add(id);
+    const pendingAfterStart = new Set(getPendingRemovalIds()).add(id);
     replacePendingRemovalIds(pendingAfterStart);
     setTracks((current) => current.filter((track) => track.id !== id));
     showToast("Removing track…");
 
     try {
       await musicApi.removeTrack(id);
-      const pendingAfterSuccess = new Set(pendingRemovalIds);
+      const pendingAfterSuccess = new Set(getPendingRemovalIds());
       pendingAfterSuccess.delete(id);
       replacePendingRemovalIds(pendingAfterSuccess);
       showToast("Track removed from your library");
     } catch (reason) {
-      const pendingAfterFailure = new Set(pendingRemovalIds);
+      const pendingAfterFailure = new Set(getPendingRemovalIds());
       pendingAfterFailure.delete(id);
       replacePendingRemovalIds(pendingAfterFailure);
       setTracks((current) =>
@@ -287,7 +362,7 @@ export default function Home() {
     try {
       const job = await musicApi.reindexTrack(id);
       await musicApi.waitForIndexing(job.id);
-      setTracks((await musicApi.listTracks()).map(toTrack));
+      loadLibrary(libraryQuery.current);
       showToast("Track is ready to identify");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "We couldn't refresh that track.");
@@ -307,7 +382,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-canvas text-ink">
-      <Header page={page} onPageChange={changePage} trackCount={tracks.length} />
+      <Header page={page} onPageChange={changePage} trackCount={libraryPagination.totalElements} />
       <main>
         {error && (
           <div className="mx-auto max-w-[1200px] px-6 pt-6 text-[14px] text-red-600 lg:px-8">
@@ -318,6 +393,9 @@ export default function Home() {
         {page === "library" && (
           <LibraryView
             tracks={tracks}
+            albums={albums}
+            artists={artists}
+            pagination={libraryPagination}
             indexingProgress={indexProgress}
             onAddFiles={addFiles}
             onReindex={reindexTrack}
@@ -325,8 +403,9 @@ export default function Home() {
             origin={libraryOrigin}
             onOriginChange={(origin) => {
               setLibraryOrigin(origin);
-              loadLibrary(origin);
+              loadLibrary(initialLibraryQuery, origin);
             }}
+            onQueryChange={loadLibrary}
           />
         )}
         {page === "history" && (

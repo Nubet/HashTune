@@ -1,0 +1,15 @@
+package com.norbertfila.hashtune.configuration;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@Getter
+@Setter
+@ConfigurationProperties(prefix = "app.indexing")
+public class IndexingProperties {
+    private int maxAttempts = 3;
+    private long retryBackoffMs = 5_000;
+    private long maxRetryBackoffMs = 300_000;
+    private long processingTimeoutMs = 1_800_000;
+}

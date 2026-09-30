@@ -103,4 +103,35 @@ public record Track(
                 createdAt,
                 updatedAt);
     }
+
+    public Track withStatus(TrackStatus nextStatus) {
+        return withDurationAndStatus(durationMs, nextStatus);
+    }
+
+    public Track withDurationAndStatus(Long nextDurationMs, TrackStatus nextStatus) {
+        return new Track(
+                id,
+                title,
+                artist,
+                album,
+                origin,
+                albumArtist,
+                composer,
+                genre,
+                releaseYear,
+                trackNumber,
+                discNumber,
+                isrc,
+                barcode,
+                comment,
+                coverArtUrl,
+                coverArtObjectKey,
+                coverArtMimeType,
+                nextDurationMs,
+                audioObjectKey,
+                checksum,
+                nextStatus,
+                createdAt,
+                Instant.now());
+    }
 }

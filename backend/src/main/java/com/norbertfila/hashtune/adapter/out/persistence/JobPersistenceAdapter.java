@@ -3,6 +3,7 @@ package com.norbertfila.hashtune.adapter.out.persistence;
 import com.norbertfila.hashtune.application.port.out.IndexingJobRepository;
 import com.norbertfila.hashtune.domain.indexing.IndexingJob;
 import com.norbertfila.hashtune.domain.indexing.IndexingJobStatus;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,13 +43,25 @@ public class JobPersistenceAdapter implements IndexingJobRepository {
 
     @Override
     @Transactional
-    public Optional<IndexingJob> claimNextPending() {
-        return repository.findByStatusOrderByCreatedAtAsc(IndexingJobStatus.PENDING).stream()
+    public Optional<IndexingJob> claimNextPending(Instant now) {
+        return repository.findReadyJobs(IndexingJobStatus.PENDING, now).stream()
                 .findFirst()
                 .map(job -> {
                     job.start();
                     return toDomain(repository.save(job));
                 });
+    }
+
+    @Override
+    @Transactional
+    public int recoverStaleProcessing(Instant cutoff, Instant nextAttemptAt) {
+        return repository.recoverStaleProcessing(
+                IndexingJobStatus.PROCESSING,
+                IndexingJobStatus.PENDING,
+                cutoff,
+                nextAttemptAt,
+                "INDEXING_RECOVERED",
+                "Recovered after the indexing worker timed out");
     }
 
     private static IndexingJobEntity toEntity(IndexingJob job) {
@@ -77,6 +90,7 @@ public class JobPersistenceAdapter implements IndexingJobRepository {
                 job.getErrorMessage(),
                 job.getCreatedAt(),
                 job.getStartedAt(),
-                job.getFinishedAt());
+                job.getFinishedAt(),
+                job.getNextAttemptAt());
     }
 }

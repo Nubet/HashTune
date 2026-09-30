@@ -35,12 +35,17 @@ public class IndexingJobEntity {
     private Instant createdAt;
     private Instant startedAt;
     private Instant finishedAt;
+    private Instant nextAttemptAt;
 
     public void start() {
         status = IndexingJobStatus.PROCESSING;
         progress = 10;
         attempts++;
         startedAt = Instant.now();
+        finishedAt = null;
+        nextAttemptAt = null;
+        errorCode = null;
+        errorMessage = null;
     }
 
     public void complete() {

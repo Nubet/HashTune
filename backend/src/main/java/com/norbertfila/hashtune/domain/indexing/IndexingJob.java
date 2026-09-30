@@ -13,4 +13,19 @@ public record IndexingJob(
         String errorMessage,
         Instant createdAt,
         Instant startedAt,
-        Instant finishedAt) {}
+        Instant finishedAt,
+        Instant nextAttemptAt) {
+    public IndexingJob(
+            UUID id,
+            UUID trackId,
+            IndexingJobStatus status,
+            int progress,
+            int attempts,
+            String errorCode,
+            String errorMessage,
+            Instant createdAt,
+            Instant startedAt,
+            Instant finishedAt) {
+        this(id, trackId, status, progress, attempts, errorCode, errorMessage, createdAt, startedAt, finishedAt, null);
+    }
+}

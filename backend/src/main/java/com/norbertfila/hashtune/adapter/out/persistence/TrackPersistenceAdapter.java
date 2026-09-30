@@ -3,6 +3,7 @@ package com.norbertfila.hashtune.adapter.out.persistence;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
 import com.norbertfila.hashtune.domain.track.Track;
 import com.norbertfila.hashtune.domain.track.TrackStatus;
+import com.norbertfila.hashtune.domain.track.TrackOrigin;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -38,12 +39,16 @@ public class TrackPersistenceAdapter implements TrackRepository {
     }
 
     @Override
-    public List<Track> search(String query, int limit, int offset) {
+    public List<Track> search(String query, TrackOrigin origin, int limit, int offset) {
         String normalizedQuery = query == null || query.isBlank() ? null : query.trim();
         Page<TrackEntity> result = normalizedQuery == null
-                ? repository.findAll(PageRequest.of(offset / limit, limit, Sort.by(Sort.Direction.DESC, "createdAt")))
+                ? origin == null
+                        ? repository.findAll(PageRequest.of(offset / limit, limit, Sort.by(Sort.Direction.DESC, "createdAt")))
+                        : repository.findByOrigin(
+                                origin, PageRequest.of(offset / limit, limit, Sort.by(Sort.Direction.DESC, "createdAt")))
                 : repository.searchByQuery(
                         normalizedQuery,
+                        origin == null ? TrackOrigin.PERSONAL : origin,
                         PageRequest.of(offset / limit, limit, Sort.by(Sort.Direction.DESC, "createdAt")));
         return result.getContent().stream()
                 .map(TrackPersistenceAdapter::toDomain)
@@ -61,6 +66,7 @@ public class TrackPersistenceAdapter implements TrackRepository {
                 .title(track.title())
                 .artist(track.artist())
                 .album(track.album())
+                .origin(track.origin())
                 .albumArtist(track.albumArtist())
                 .composer(track.composer())
                 .genre(track.genre())
@@ -88,6 +94,7 @@ public class TrackPersistenceAdapter implements TrackRepository {
                 track.getTitle(),
                 track.getArtist(),
                 track.getAlbum(),
+                track.getOrigin(),
                 track.getAlbumArtist(),
                 track.getComposer(),
                 track.getGenre(),

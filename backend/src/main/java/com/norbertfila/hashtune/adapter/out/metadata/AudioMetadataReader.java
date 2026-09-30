@@ -23,6 +23,9 @@ public class AudioMetadataReader {
         if (isFlac(file)) {
             return readFlac(file);
         }
+        if (isM4a(file)) {
+            return readM4a(file);
+        }
         try (InputStream input = file.getInputStream()) {
             Metadata metadata =
                     isMp3(file) ? Mp3MetadataReader.readMetadata(input) : ImageMetadataReader.readMetadata(input);
@@ -33,9 +36,21 @@ public class AudioMetadataReader {
     }
 
     private AudioMetadata readFlac(MultipartFile file) {
+        return readTaggedAudio(file, ".flac");
+    }
+
+    private AudioMetadata readM4a(MultipartFile file) {
+        return readTaggedAudio(file, ".m4a");
+    }
+
+    private AudioMetadata readTaggedAudio(MultipartFile file, String fallbackExtension) {
         Path temporaryFile = null;
         try {
-            temporaryFile = Files.createTempFile("hashtune-", ".flac");
+            String name = file.getOriginalFilename();
+            String extension = name != null && name.lastIndexOf('.') >= 0
+                    ? name.substring(name.lastIndexOf('.'))
+                    : fallbackExtension;
+            temporaryFile = Files.createTempFile("hashtune-", extension);
             file.transferTo(temporaryFile);
             AudioFile audioFile = AudioFileIO.read(temporaryFile.toFile());
             Tag tag = audioFile.getTag();
@@ -79,6 +94,15 @@ public class AudioMetadataReader {
         String name = file.getOriginalFilename();
         return (name != null && name.toLowerCase(Locale.ROOT).endsWith(".flac"))
                 || "audio/flac".equalsIgnoreCase(file.getContentType());
+    }
+
+    private boolean isM4a(MultipartFile file) {
+        String name = file.getOriginalFilename();
+        if (name == null) {
+            return false;
+        }
+        String lowerName = name.toLowerCase(Locale.ROOT);
+        return lowerName.endsWith(".m4a") || lowerName.endsWith(".mp4");
     }
 
     private String first(Tag tag, FieldKey field) {

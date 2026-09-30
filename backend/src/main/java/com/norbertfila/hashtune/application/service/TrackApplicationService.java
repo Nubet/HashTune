@@ -1,6 +1,7 @@
 package com.norbertfila.hashtune.application.service;
 
 import com.norbertfila.hashtune.adapter.out.metadata.AudioMetadataReader;
+import com.norbertfila.hashtune.adapter.out.storage.StorageException;
 import com.norbertfila.hashtune.application.port.out.AudioRecognitionEngine;
 import com.norbertfila.hashtune.application.port.out.CoverArtProvider;
 import com.norbertfila.hashtune.application.port.out.FingerprintRepository;
@@ -12,6 +13,7 @@ import com.norbertfila.hashtune.configuration.StorageProperties;
 import com.norbertfila.hashtune.domain.indexing.IndexingJob;
 import com.norbertfila.hashtune.domain.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.domain.track.Track;
+import com.norbertfila.hashtune.domain.track.TrackOrigin;
 import com.norbertfila.hashtune.domain.track.TrackStatus;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -45,16 +47,35 @@ public class TrackApplicationService {
     public UploadResult upload(MultipartFile file) {
         validate(file);
         String checksum = checksum(file);
-        tracks.findByChecksum(checksum).ifPresent(existing -> {
-            throw new ApplicationException(
-                    org.springframework.http.HttpStatus.CONFLICT, "TRACK_ALREADY_EXISTS", "Track already exists");
-        });
+        ensureNew(checksum);
+        return saveUpload(file, checksum, TrackOrigin.PERSONAL, null, IndexingJobStatus.AWAITING_CONFIRMATION);
+    }
+
+    @Transactional
+    public ImportResult importTrack(MultipartFile file, TrackOrigin origin, String relativePath) {
+        validate(file);
+        String checksum = checksum(file);
+        Track existing = tracks.findByChecksum(checksum).orElse(null);
+        if (existing != null) {
+            return new ImportResult("DUPLICATE", existing, jobs.findByTrackId(existing.id()).orElse(null));
+        }
+        UploadResult result = saveUpload(file, checksum, origin, relativePath, IndexingJobStatus.PENDING);
+        return new ImportResult("IMPORTED", result.track(), result.job());
+    }
+
+    private UploadResult saveUpload(
+            MultipartFile file,
+            String checksum,
+            TrackOrigin origin,
+            String relativePath,
+            IndexingJobStatus initialJobStatus) {
         UUID id = UUID.randomUUID();
         String key = "audio/" + id + "/original-" + safeName(file.getOriginalFilename());
         AudioMetadataReader.AudioMetadata metadata = metadataReader.read(file);
-        String title = firstValue(metadata.title(), title(file));
-        String artist = firstValue(metadata.artist(), "Unknown");
-        String album = metadata.album();
+        PathMetadata pathMetadata = PathMetadata.from(relativePath, file.getOriginalFilename());
+        String title = firstValue(metadata.title(), pathMetadata.title());
+        String artist = firstValue(metadata.artist(), firstValue(pathMetadata.artist(), "Unknown"));
+        String album = firstValue(metadata.album(), pathMetadata.album());
         String coverArtObjectKey = metadata.artwork() == null ? null : "artwork/" + id + "/cover";
         String coverArtMimeType =
                 metadata.artwork() == null ? null : metadata.artwork().mimeType();
@@ -81,6 +102,7 @@ public class TrackApplicationService {
                 title,
                 artist,
                 album,
+                origin,
                 metadata.albumArtist(),
                 metadata.composer(),
                 metadata.genre(),
@@ -102,7 +124,7 @@ public class TrackApplicationService {
         IndexingJob job = jobs.save(new IndexingJob(
                 UUID.randomUUID(),
                 track.id(),
-                IndexingJobStatus.AWAITING_CONFIRMATION,
+                initialJobStatus,
                 0,
                 0,
                 null,
@@ -113,8 +135,8 @@ public class TrackApplicationService {
         return new UploadResult(track, job);
     }
 
-    public List<Track> search(String query, int limit, int offset) {
-        return tracks.search(query, Math.min(limit, 100), Math.max(offset, 0));
+    public List<Track> search(String query, TrackOrigin origin, int limit, int offset) {
+        return tracks.search(query, origin, Math.min(limit, 100), Math.max(offset, 0));
     }
 
     @Transactional
@@ -244,6 +266,8 @@ public class TrackApplicationService {
             return new CoverArt(input.readAllBytes(), track.coverArtMimeType());
         } catch (IOException exception) {
             throw new IllegalStateException("Could not read cover art", exception);
+        } catch (StorageException exception) {
+            throw notFound("COVER_ART_NOT_FOUND", "Embedded cover art not found");
         }
     }
 
@@ -260,6 +284,7 @@ public class TrackApplicationService {
                 title,
                 artist,
                 album,
+                track.origin(),
                 track.albumArtist(),
                 track.composer(),
                 track.genre(),
@@ -301,12 +326,6 @@ public class TrackApplicationService {
         }
     }
 
-    private String title(MultipartFile file) {
-        String name = safeName(file.getOriginalFilename());
-        int extension = name.lastIndexOf('.');
-        return extension > 0 ? name.substring(0, extension) : name;
-    }
-
     private String safeName(String name) {
         return name == null ? "audio" : name.replaceAll("[^a-zA-Z0-9._-]", "_");
     }
@@ -315,11 +334,40 @@ public class TrackApplicationService {
         return value == null || value.isBlank() ? fallback : value.trim();
     }
 
+    private void ensureNew(String checksum) {
+        tracks.findByChecksum(checksum).ifPresent(existing -> {
+            throw new ApplicationException(
+                    org.springframework.http.HttpStatus.CONFLICT, "TRACK_ALREADY_EXISTS", "Track already exists");
+        });
+    }
+
     private ApplicationException notFound(String code, String message) {
         return new ApplicationException(org.springframework.http.HttpStatus.NOT_FOUND, code, message);
     }
 
     public record UploadResult(Track track, IndexingJob job) {}
+
+    public record ImportResult(String status, Track track, IndexingJob job) {}
+
+    private record PathMetadata(String title, String artist, String album) {
+        static PathMetadata from(String relativePath, String originalFilename) {
+            String fallbackTitle = titleFrom(originalFilename);
+            if (relativePath == null || relativePath.isBlank()) {
+                return new PathMetadata(fallbackTitle, null, null);
+            }
+            String[] parts = relativePath.replace('\\', '/').split("/");
+            if (parts.length < 3) {
+                return new PathMetadata(fallbackTitle, null, null);
+            }
+            return new PathMetadata(fallbackTitle, parts[parts.length - 3], parts[parts.length - 2]);
+        }
+
+        private static String titleFrom(String filename) {
+            String safe = filename == null || filename.isBlank() ? "audio" : filename;
+            int extension = safe.lastIndexOf('.');
+            return extension > 0 ? safe.substring(0, extension) : safe;
+        }
+    }
 
     public record CoverArt(byte[] data, String mimeType) {}
 }

@@ -1,6 +1,7 @@
 package com.norbertfila.hashtune.adapter.in.web;
 
 import com.norbertfila.hashtune.application.service.TrackApplicationService;
+import com.norbertfila.hashtune.domain.track.TrackOrigin;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -30,12 +31,22 @@ public class TrackController {
         return ResponseEntity.accepted().body(ApiDtos.UploadResponse.from(result.track(), result.job()));
     }
 
+    @PostMapping(value = "/imports", consumes = "multipart/form-data")
+    public ApiDtos.ImportResponse importTrack(
+            @RequestPart("file") MultipartFile file,
+            @RequestParam(defaultValue = "PERSONAL") TrackOrigin origin,
+            @RequestParam(required = false) String relativePath) {
+        TrackApplicationService.ImportResult result = service.importTrack(file, origin, relativePath);
+        return ApiDtos.ImportResponse.from(result.track(), result);
+    }
+
     @GetMapping
     public List<ApiDtos.TrackResponse> search(
             @RequestParam(required = false) String query,
+            @RequestParam(required = false) TrackOrigin origin,
             @RequestParam(defaultValue = "25") int limit,
             @RequestParam(defaultValue = "0") int offset) {
-        return service.search(query, limit, offset).stream()
+        return service.search(query, origin, limit, offset).stream()
                 .map(ApiDtos.TrackResponse::from)
                 .toList();
     }

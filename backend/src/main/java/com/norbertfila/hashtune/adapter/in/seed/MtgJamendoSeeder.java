@@ -11,6 +11,7 @@ import com.norbertfila.hashtune.domain.indexing.IndexingJob;
 import com.norbertfila.hashtune.domain.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.domain.track.Track;
 import com.norbertfila.hashtune.domain.track.TrackStatus;
+import com.norbertfila.hashtune.domain.track.TrackOrigin;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -58,16 +59,17 @@ public class MtgJamendoSeeder implements ApplicationRunner {
             String checksum = sha256(audio);
             Optional<Track> existing = tracks.findByChecksum(checksum);
             if (existing.isPresent()) {
-                refreshCoverArt(existing.get());
-                if (!jobs.existsByTrackId(existing.get().id())
+                Track existingTrack = markAsMtgJamendo(existing.get());
+                refreshCoverArt(existingTrack);
+                if (!jobs.existsByTrackId(existingTrack.id())
                         || (fingerprints.countByTrackId(existing.get().id()) == 0
                                 && !jobs.existsByTrackIdAndStatusIn(
-                                        existing.get().id(),
+                                        existingTrack.id(),
                                         List.of(IndexingJobStatus.PENDING, IndexingJobStatus.PROCESSING)))) {
                     Instant now = Instant.now();
                     jobs.save(new IndexingJob(
                             UUID.randomUUID(),
-                            existing.get().id(),
+                            existingTrack.id(),
                             IndexingJobStatus.PENDING,
                             0,
                             0,
@@ -94,6 +96,7 @@ public class MtgJamendoSeeder implements ApplicationRunner {
                     required(row, "title"),
                     required(row, "artist"),
                     required(row, "album"),
+                    TrackOrigin.MTG_JAMENDO,
                     null,
                     Math.round(Double.parseDouble(required(row, "duration_seconds")) * 1000),
                     objectKey,
@@ -121,7 +124,19 @@ public class MtgJamendoSeeder implements ApplicationRunner {
                         track.title(),
                         track.artist(),
                         track.album(),
+                        track.origin(),
+                        track.albumArtist(),
+                        track.composer(),
+                        track.genre(),
+                        track.releaseYear(),
+                        track.trackNumber(),
+                        track.discNumber(),
+                        track.isrc(),
+                        track.barcode(),
+                        track.comment(),
                         url,
+                        track.coverArtObjectKey(),
+                        track.coverArtMimeType(),
                         track.durationMs(),
                         track.audioObjectKey(),
                         track.checksum(),
@@ -129,6 +144,36 @@ public class MtgJamendoSeeder implements ApplicationRunner {
                         track.createdAt(),
                         Instant.now())))
                 .orElse(track);
+    }
+
+    private Track markAsMtgJamendo(Track track) {
+        if (track.origin() == TrackOrigin.MTG_JAMENDO) {
+            return track;
+        }
+        return tracks.save(new Track(
+                track.id(),
+                track.title(),
+                track.artist(),
+                track.album(),
+                TrackOrigin.MTG_JAMENDO,
+                track.albumArtist(),
+                track.composer(),
+                track.genre(),
+                track.releaseYear(),
+                track.trackNumber(),
+                track.discNumber(),
+                track.isrc(),
+                track.barcode(),
+                track.comment(),
+                track.coverArtUrl(),
+                track.coverArtObjectKey(),
+                track.coverArtMimeType(),
+                track.durationMs(),
+                track.audioObjectKey(),
+                track.checksum(),
+                track.status(),
+                track.createdAt(),
+                Instant.now()));
     }
 
     static List<Map<String, String>> parseCsv(String input) {

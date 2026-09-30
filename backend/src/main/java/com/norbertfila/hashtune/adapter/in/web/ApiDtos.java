@@ -3,6 +3,7 @@ package com.norbertfila.hashtune.adapter.in.web;
 import com.norbertfila.hashtune.domain.indexing.IndexingJob;
 import com.norbertfila.hashtune.domain.recognition.Recognition;
 import com.norbertfila.hashtune.domain.track.Track;
+import com.norbertfila.hashtune.domain.track.TrackOrigin;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -16,6 +17,7 @@ public final class ApiDtos {
             String title,
             String artist,
             String album,
+            TrackOrigin origin,
             String albumArtist,
             String composer,
             String genre,
@@ -35,6 +37,7 @@ public final class ApiDtos {
                     track.title(),
                     track.artist(),
                     track.album(),
+                    track.origin(),
                     track.albumArtist(),
                     track.composer(),
                     track.genre(),
@@ -59,6 +62,16 @@ public final class ApiDtos {
     public record UploadResponse(UUID trackId, UUID indexingJobId, String status, TrackResponse track) {
         static UploadResponse from(Track track, IndexingJob job) {
             return new UploadResponse(track.id(), job.id(), job.status().name(), TrackResponse.from(track));
+        }
+    }
+
+    public record ImportResponse(String status, UUID trackId, UUID indexingJobId, TrackResponse track) {
+        static ImportResponse from(Track track, com.norbertfila.hashtune.application.service.TrackApplicationService.ImportResult result) {
+            return new ImportResponse(
+                    result.status(),
+                    track == null ? null : track.id(),
+                    result.job() == null ? null : result.job().id(),
+                    track == null ? null : TrackResponse.from(track));
         }
     }
 

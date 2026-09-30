@@ -1,6 +1,7 @@
 package com.norbertfila.hashtune.adapter.out.persistence;
 
 import com.norbertfila.hashtune.domain.track.TrackStatus;
+import com.norbertfila.hashtune.domain.track.TrackOrigin;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -16,10 +17,14 @@ interface SpringDataTrackRepository extends JpaRepository<TrackEntity, UUID> {
 
     @Query("""
             SELECT track FROM TrackEntity track
-            WHERE LOWER(track.title) LIKE LOWER(CONCAT('%', :query, '%'))
+            WHERE (:origin IS NULL OR track.origin = :origin)
+               AND (LOWER(track.title) LIKE LOWER(CONCAT('%', :query, '%'))
                OR LOWER(track.artist) LIKE LOWER(CONCAT('%', :query, '%'))
-               OR LOWER(track.album) LIKE LOWER(CONCAT('%', :query, '%'))
+               OR LOWER(track.album) LIKE LOWER(CONCAT('%', :query, '%')))
             ORDER BY track.createdAt DESC
             """)
-    Page<TrackEntity> searchByQuery(@Param("query") String query, Pageable pageable);
+    Page<TrackEntity> searchByQuery(
+            @Param("query") String query, @Param("origin") TrackOrigin origin, Pageable pageable);
+
+    Page<TrackEntity> findByOrigin(TrackOrigin origin, Pageable pageable);
 }

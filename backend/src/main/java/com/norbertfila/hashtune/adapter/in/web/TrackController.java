@@ -97,6 +97,14 @@ public class TrackController {
         return ResponseEntity.accepted().body(ApiDtos.IndexingJobResponse.from(service.reindex(id)));
     }
 
+    @PostMapping("/reindex")
+    public ResponseEntity<ApiDtos.ReindexAllResponse> reindexAll() {
+        TrackApplicationService.ReindexAllResult result = service.reindexAll();
+        return ResponseEntity.accepted()
+                .body(new ApiDtos.ReindexAllResponse(
+                        result.scheduled(), result.alreadyProcessing(), result.awaitingConfirmation()));
+    }
+
     @GetMapping("/{id}/cover")
     public ResponseEntity<byte[]> cover(@PathVariable UUID id) {
         TrackApplicationService.CoverArt cover = service.getCoverArt(id);

@@ -8,6 +8,7 @@ import com.norbertfila.hashtune.application.port.out.TrackRepository;
 import com.norbertfila.hashtune.application.port.out.TrackSearchQuery;
 import com.norbertfila.hashtune.domain.track.Track;
 import com.norbertfila.hashtune.domain.track.TrackStatus;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,13 @@ public class TrackPersistenceAdapter implements TrackRepository, TrackQueryRepos
     @Override
     public Optional<Track> findByChecksum(String checksum) {
         return repository.findByChecksum(checksum).map(TrackPersistenceAdapter::toDomain);
+    }
+
+    @Override
+    public List<Track> findAll() {
+        return repository.findAll(Sort.by(Sort.Direction.ASC, "createdAt")).stream()
+                .map(TrackPersistenceAdapter::toDomain)
+                .toList();
     }
 
     @Override

@@ -144,6 +144,8 @@ public final class ApiDtos {
         }
     }
 
+    public record ReindexAllResponse(int scheduled, int alreadyProcessing, int awaitingConfirmation) {}
+
     public record RecognitionResponse(
             String status,
             TrackResponse track,

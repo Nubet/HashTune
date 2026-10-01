@@ -2,9 +2,11 @@ package com.norbertfila.hashtune.application.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,6 +37,7 @@ class RecognitionApplicationServiceTest {
     @BeforeEach
     void setUp() {
         storageProperties.setTempBucket("temp");
+        storageProperties.setAudioBucket("audio");
         audioProperties.setMaxFileSizeBytes(10_000);
         service = new RecognitionApplicationService(
                 recognitions, tracks, storage, engine, storageProperties, audioProperties);
@@ -75,5 +78,16 @@ class RecognitionApplicationServiceTest {
         service.probe(file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.MICROPHONE);
 
         verify(recognitions).save(any());
+    }
+
+    @Test
+    void doesNotStoreAudioFileAsMicrophoneRecording() {
+        MockMultipartFile file = new MockMultipartFile("file", "sample.mp3", "audio/mpeg", new byte[] {1, 2, 3});
+        when(engine.recognize(any()))
+                .thenReturn(new AudioRecognitionEngine.RecognitionResult(false, null, 0.0, 0L, 5_000, 1, 1));
+
+        service.recognize(file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.AUDIO_FILE);
+
+        verify(storage, never()).put(eq("audio"), any(), any(), anyLong(), any());
     }
 }

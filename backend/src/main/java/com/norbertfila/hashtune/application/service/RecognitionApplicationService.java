@@ -51,6 +51,7 @@ public class RecognitionApplicationService {
         }
         UUID recognitionId = UUID.randomUUID();
         String key = "samples/" + recognitionId + "/" + safeName(file.getOriginalFilename());
+        String recordingKey = "microphone-recordings/" + recognitionId + "/" + safeName(file.getOriginalFilename());
         long started = System.currentTimeMillis();
         try {
             try (InputStream input = file.getInputStream()) {
@@ -70,8 +71,27 @@ public class RecognitionApplicationService {
                     source,
                     result.sampleDurationMs(),
                     System.currentTimeMillis() - started,
+                    source == RecognitionSource.MICROPHONE && (persist || result.matched()) ? recordingKey : null,
+                    source == RecognitionSource.MICROPHONE && (persist || result.matched())
+                            ? file.getContentType()
+                            : null,
+                    source == RecognitionSource.MICROPHONE && (persist || result.matched())
+                            ? safeName(file.getOriginalFilename())
+                            : null,
                     Instant.now());
-            return persist || entity.status() == RecognitionStatus.MATCHED ? recognitions.save(entity) : entity;
+            boolean shouldPersist = persist || entity.status() == RecognitionStatus.MATCHED;
+            if (!shouldPersist) return entity;
+            if (entity.recordingObjectKey() != null) {
+                try (InputStream recording = storage.get(storageProperties.getTempBucket(), key)) {
+                    storage.put(
+                            storageProperties.getAudioBucket(),
+                            entity.recordingObjectKey(),
+                            recording,
+                            file.getSize(),
+                            entity.recordingContentType());
+                }
+            }
+            return recognitions.save(entity);
         } catch (IOException exception) {
             throw new ApplicationException(
                     org.springframework.http.HttpStatus.BAD_REQUEST, "INVALID_AUDIO", "Could not read audio sample");
@@ -88,8 +108,29 @@ public class RecognitionApplicationService {
         return tracks.findById(id).orElse(null);
     }
 
+    public Recording recording(UUID id) {
+        Recognition recognition = recognitions
+                .findById(id)
+                .orElseThrow(() -> new ApplicationException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "RECORDING_NOT_FOUND", "Recording not found"));
+        if (recognition.recordingObjectKey() == null) {
+            throw new ApplicationException(
+                    org.springframework.http.HttpStatus.NOT_FOUND, "RECORDING_NOT_FOUND", "Recording not found");
+        }
+        return new Recording(
+                storage.get(storageProperties.getAudioBucket(), recognition.recordingObjectKey()),
+                recognition.recordingContentType() == null
+                        ? "application/octet-stream"
+                        : recognition.recordingContentType(),
+                recognition.recordingFileName() == null ? "microphone-recording" : recognition.recordingFileName());
+    }
+
     @Transactional
     public void clearHistory() {
+        recognitions.findAll().stream()
+                .map(Recognition::recordingObjectKey)
+                .filter(java.util.Objects::nonNull)
+                .forEach(this::deleteRecording);
         recognitions.deleteAll();
     }
 
@@ -104,4 +145,14 @@ public class RecognitionApplicationService {
             log.warn("Could not clean up recognition sample {}", key, cleanupFailure);
         }
     }
+
+    private void deleteRecording(String key) {
+        try {
+            storage.delete(storageProperties.getAudioBucket(), key);
+        } catch (RuntimeException cleanupFailure) {
+            log.warn("Could not clean up microphone recording {}", key, cleanupFailure);
+        }
+    }
+
+    public record Recording(InputStream content, String contentType, String fileName) {}
 }

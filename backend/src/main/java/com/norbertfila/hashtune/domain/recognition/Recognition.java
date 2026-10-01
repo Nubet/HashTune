@@ -12,4 +12,7 @@ public record Recognition(
         RecognitionSource source,
         Long sampleDurationMs,
         Long recognitionTimeMs,
+        String recordingObjectKey,
+        String recordingContentType,
+        String recordingFileName,
         Instant createdAt) {}

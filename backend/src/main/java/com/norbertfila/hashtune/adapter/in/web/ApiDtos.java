@@ -163,7 +163,14 @@ public final class ApiDtos {
     }
 
     public record HistoryResponse(
-            UUID id, TrackResponse track, String status, Double confidence, String source, Instant createdAt) {
+            UUID id,
+            TrackResponse track,
+            String status,
+            Double confidence,
+            String source,
+            String recordingUrl,
+            String downloadUrl,
+            Instant createdAt) {
         static HistoryResponse from(Recognition recognition, Track track) {
             return new HistoryResponse(
                     recognition.id(),
@@ -171,7 +178,16 @@ public final class ApiDtos {
                     recognition.status().name(),
                     recognition.confidence(),
                     recognition.source().name(),
+                    recognition.recordingObjectKey() == null ? null : recordingUrl(recognition.id(), false),
+                    recognition.recordingObjectKey() == null ? null : recordingUrl(recognition.id(), true),
                     recognition.createdAt());
+        }
+
+        private static String recordingUrl(UUID id, boolean download) {
+            var builder = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/api/v1/recognition-history/{id}/recording")
+                    .buildAndExpand(id);
+            return download ? builder.toUriString() + "?download=true" : builder.toUriString();
         }
     }
 

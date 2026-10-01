@@ -74,4 +74,6 @@ export type Recognition = {
   sampleDurationMs?: number;
   recognitionTimeMs?: number;
   status: string;
+  recordingUrl?: string;
+  downloadUrl?: string;
 };

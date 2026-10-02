@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
@@ -26,7 +27,8 @@ interface SpringDataJobRepository extends JpaRepository<IndexingJobEntity, UUID>
               AND (job.nextAttemptAt IS NULL OR job.nextAttemptAt <= :now)
             ORDER BY job.createdAt ASC
             """)
-    List<IndexingJobEntity> findReadyJobs(@Param("status") IndexingJobStatus status, @Param("now") Instant now);
+    List<IndexingJobEntity> findReadyJobs(
+            @Param("status") IndexingJobStatus status, @Param("now") Instant now, Pageable pageable);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""

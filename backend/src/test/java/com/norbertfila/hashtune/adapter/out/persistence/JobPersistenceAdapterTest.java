@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Pageable;
 
 class JobPersistenceAdapterTest {
     private final SpringDataJobRepository repository = mock(SpringDataJobRepository.class);
@@ -29,14 +30,15 @@ class JobPersistenceAdapterTest {
                 .attempts(1)
                 .createdAt(Instant.now())
                 .build();
-        when(repository.findReadyJobs(eq(IndexingJobStatus.PENDING), any())).thenReturn(List.of(entity));
+        when(repository.findReadyJobs(eq(IndexingJobStatus.PENDING), any(), any(Pageable.class)))
+                .thenReturn(List.of(entity));
         when(repository.save(entity)).thenReturn(entity);
 
         Optional<IndexingJob> claimed = adapter.claimNextPending(Instant.now());
 
         assertThat(claimed).isPresent().get().extracting(IndexingJob::status).isEqualTo(IndexingJobStatus.PROCESSING);
         assertThat(entity.getAttempts()).isEqualTo(2);
-        verify(repository).findReadyJobs(eq(IndexingJobStatus.PENDING), any());
+        verify(repository).findReadyJobs(eq(IndexingJobStatus.PENDING), any(), any(Pageable.class));
     }
 
     @Test

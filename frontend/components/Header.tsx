@@ -16,41 +16,52 @@ export function Header({
     { id: "library", label: "Library" },
     { id: "history", label: "History" },
   ];
+
   return (
-    <header className="h-16 border-b border-line bg-canvas">
-      <div className="mx-auto flex h-full max-w-300 items-center px-6 lg:px-8">
-        <div className="flex items-center gap-2 font-bold tracking-[-.03em]">
-          <img
-            src="/hashtune-logo-blue.svg"
-            alt=""
-            aria-hidden="true"
-            className="logo-mark logo-mark-blue size-7"
-          />
-          <img
-            src="/hashtune-logo-white.svg"
-            alt=""
-            aria-hidden="true"
-            className="logo-mark logo-mark-white size-7"
-          />
-          HashTune
+    <header className="sticky top-0 z-40 border-b border-line bg-canvas/80 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-300 items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-6 lg:gap-10">
+          <div className="flex items-center gap-2 font-bold tracking-tight text-[15px]">
+            <img
+              src="/hashtune-logo-blue.svg"
+              alt=""
+              aria-hidden="true"
+              className="logo-mark logo-mark-blue size-7"
+            />
+            <img
+              src="/hashtune-logo-white.svg"
+              alt=""
+              aria-hidden="true"
+              className="logo-mark logo-mark-white size-7"
+            />
+            <span className="hidden sm:inline-block">HashTune</span>
+          </div>
+
+          <nav className="flex gap-1 sm:gap-4 overflow-x-auto no-scrollbar">
+            {links.map((link) => (
+              <button
+                key={link.id}
+                onClick={() => onPageChange(link.id)}
+                className={`relative rounded-full px-3 py-1.5 text-[13px] font-semibold transition-colors ${
+                  page === link.id
+                    ? "bg-ink text-canvas shadow-sm"
+                    : "text-muted hover:text-ink hover:bg-subtle"
+                }`}
+              >
+                {link.label}
+              </button>
+            ))}
+          </nav>
         </div>
-        <nav className="ml-10 flex gap-7">
-          {links.map((link) => (
-            <button
-              key={link.id}
-              onClick={() => onPageChange(link.id)}
-              className={`relative text-[13px] font-semibold transition-colors ${page === link.id ? "text-ink after:absolute after:-bottom-5.75 after:left-0 after:right-0 after:h-0.5 after:bg-ink" : "text-muted hover:text-ink"}`}
-            >
-              {link.label}
-            </button>
-          ))}
-        </nav>
-        <div className="ml-auto flex items-center gap-4 text-[11px] text-muted">
-          <div className="flex items-center gap-2">
-            <i className="size-1.5 rounded-full bg-success" />
+
+        <div className="flex items-center gap-4 text-[11px] text-muted">
+          <div className="hidden sm:flex items-center gap-2 font-medium tracking-wide">
+            <i
+              className={`size-2 rounded-full ${trackCount === null ? "bg-muted" : "bg-success animate-pulse"}`}
+            />
             {trackCount === null ? "—" : trackCount} {trackCount === 1 ? "TRACK" : "TRACKS"}
           </div>
-          <div className="h-4 w-px bg-line" />
+          <div className="hidden sm:block h-4 w-px bg-line" />
           <ThemeToggle />
         </div>
       </div>

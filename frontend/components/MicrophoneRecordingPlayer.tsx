@@ -20,7 +20,6 @@ export function MicrophoneRecordingPlayer({
   const [duration, setDuration] = useState(
     initialDurationMs && initialDurationMs > 0 ? initialDurationMs / 1000 : 0,
   );
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   function updateDuration(audio: HTMLAudioElement) {
     if (Number.isFinite(audio.duration) && audio.duration > 0) {
@@ -60,7 +59,7 @@ export function MicrophoneRecordingPlayer({
   }
 
   return (
-    <div className="mt-5 max-w-120 overflow-hidden rounded-2xl border border-line bg-canvas shadow-[0_14px_30px_rgb(7_17_29/0.07)]">
+    <div className="w-full max-w-sm rounded-xl border border-line bg-canvas p-4 shadow-sm">
       <audio
         ref={audioRef}
         src={src}
@@ -81,58 +80,34 @@ export function MicrophoneRecordingPlayer({
           setCurrentTime(0);
         }}
       />
-      <div className="flex items-center gap-3 px-4 pb-3 pt-4">
+      <div className="flex items-center gap-4">
         <button
           type="button"
           onClick={() => void togglePlayback()}
-          className="grid size-11 shrink-0 place-items-center rounded-full bg-brand text-white shadow-[0_8px_18px_rgb(8_102_245/0.28)] transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand active:scale-95"
+          className="grid size-10 shrink-0 place-items-center rounded-full bg-brand text-white transition-[background-color,transform] hover:bg-brand-hover hover:scale-105 active:scale-95"
           aria-label={isPlaying ? "Pause microphone recording" : "Play microphone recording"}
         >
-          <span className="text-[15px] leading-none">{isPlaying ? "Ⅱ" : "▶"}</span>
+          <span className="text-[14px] leading-none">{isPlaying ? "Ⅱ" : "▶"}</span>
         </button>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
-                Microphone recording
-              </div>
-              <div className="mt-1 text-[13px] font-medium text-ink">
-                {isPlaying ? "Playing captured sample" : "Review captured sample"}
-              </div>
-            </div>
-            <span className="rounded-full bg-subtle px-2 py-1 text-[11px] font-medium tabular-nums text-muted">
-              {formatTime(duration)}
+        <div className="min-w-0 flex-1 flex flex-col justify-center">
+          <div className="flex items-center justify-between mb-1">
+            <div className="text-[12px] font-bold text-ink truncate mr-2">Microphone recording</div>
+            <span className="text-[11px] font-medium tabular-nums text-muted shrink-0">
+              {formatTime(currentTime)} / {formatTime(duration)}
             </span>
           </div>
-        </div>
-      </div>
-      <div className="px-4 pb-4">
-        <div className="mb-2 flex h-5 items-center gap-0.75" aria-hidden="true">
-          {Array.from({ length: 32 }, (_, index) => (
-            <span
-              key={index}
-              className="w-0.5 rounded-full bg-brand/30"
-              style={{ height: `${5 + ((index * 7) % 12)}px` }}
-            />
-          ))}
-        </div>
-        <input
-          type="range"
-          min="0"
-          max={duration || 0}
-          step="0.01"
-          value={Math.min(currentTime, duration || 0)}
-          onChange={(event) => seek(event.target.value)}
-          className="h-1.5 w-full cursor-pointer accent-brand"
-          style={{
-            background: `linear-gradient(to right, var(--brand-primary-blue) ${progress}%, var(--border-line) ${progress}%)`,
-          }}
-          aria-label="Seek microphone recording"
-          disabled={!duration}
-        />
-        <div className="mt-1 flex justify-between text-[11px] tabular-nums text-muted">
-          <span>{formatTime(currentTime)}</span>
-          <span>{formatTime(duration)}</span>
+
+          <input
+            type="range"
+            min="0"
+            max={duration || 0}
+            step="0.01"
+            value={Math.min(currentTime, duration || 0)}
+            onChange={(event) => seek(event.target.value)}
+            className="w-full h-1.5 cursor-pointer accent-brand rounded-full bg-line appearance-none"
+            aria-label="Seek microphone recording"
+            disabled={!duration}
+          />
         </div>
       </div>
     </div>

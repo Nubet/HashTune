@@ -40,8 +40,13 @@ export function MetadataReview({
 
   return (
     <div className="fixed inset-0 z-40 grid place-items-center bg-navy/45 px-5">
-      <form onSubmit={submit} className="w-full max-w-130 bg-canvas p-6 shadow-[0_20px_60px_rgba(0,0,0,.2)]">
-        <div className="text-[11px] font-bold uppercase tracking-widest text-brand">Review metadata</div>
+      <form
+        onSubmit={submit}
+        className="w-full max-w-130 bg-canvas p-6 shadow-[0_20px_60px_rgba(0,0,0,.2)]"
+      >
+        <div className="text-[11px] font-bold uppercase tracking-widest text-brand">
+          Review metadata
+        </div>
         <h2 className="mt-2 text-[26px] font-bold tracking-[-.035em]">Confirm this track</h2>
         <p className="mt-2 truncate text-[12px] text-muted" title={draft.fileName}>
           {draft.fileName}
@@ -62,7 +67,10 @@ export function MetadataReview({
         )}
         <div className="mt-6 grid gap-4">
           {(["title", "artist", "album"] as const).map((field) => (
-            <label key={field} className="grid gap-1 text-[11px] font-semibold uppercase tracking-[.08em]">
+            <label
+              key={field}
+              className="grid gap-1 text-[11px] font-semibold uppercase tracking-[.08em]"
+            >
               {field}
               <input
                 required={field !== "album"}

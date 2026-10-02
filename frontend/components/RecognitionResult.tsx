@@ -18,8 +18,14 @@ export function RecognitionResult({ recognition }: { recognition: Recognition })
             className="grid size-24 shrink-0 place-items-center text-[10px] font-bold tracking-[.15em] text-navy"
           />
           <div>
-            <div className={`text-[11px] font-bold uppercase tracking-[.1em] ${isMatch ? "text-success" : "text-muted"}`}>
-              {isMatch ? `Match found · ${recognition.score}` : isInvalidAudio ? "Audio not readable" : "No match"}
+            <div
+              className={`text-[11px] font-bold uppercase tracking-[.1em] ${isMatch ? "text-success" : "text-muted"}`}
+            >
+              {isMatch
+                ? `Match found · ${recognition.score}`
+                : isInvalidAudio
+                  ? "Audio not readable"
+                  : "No match"}
             </div>
             <div className="mt-1 text-[28px] font-bold tracking-[-.035em]">{recognition.title}</div>
             <div className="text-[14px] text-muted">
@@ -82,7 +88,9 @@ export function RecognitionResult({ recognition }: { recognition: Recognition })
             </div>
             <div>
               <span className="text-muted">Source</span>
-              <b className="ml-2">{recognition.source === "MICROPHONE" ? "Microphone" : "Audio file"}</b>
+              <b className="ml-2">
+                {recognition.source === "MICROPHONE" ? "Microphone" : "Audio file"}
+              </b>
             </div>
           </div>
         )}

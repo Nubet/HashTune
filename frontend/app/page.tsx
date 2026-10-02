@@ -6,6 +6,7 @@ import { HistoryView } from "@/components/HistoryView";
 import { LibraryView, type LibraryQuery } from "@/components/LibraryView";
 import { ListenView } from "@/components/ListenView";
 import { MetadataReview } from "@/components/MetadataReview";
+import { Toast } from "@/components/Toast";
 import { musicApi, type ApiHistoryItem } from "@/lib/api/musicApi";
 import type { ApiTrack, RecognitionResponse } from "@/lib/api/contracts";
 import type {
@@ -17,7 +18,7 @@ import type {
   Track,
 } from "@/lib/music";
 
-const colors = ["#0866F5", "#6EA7F3", "#B2D1F7", "#172A42", "#0D1C2E", "#EEF0F3"];
+const colors = ["#0A58CA", "#3B82F6", "#BFDBFE", "#1E293B", "#0F172A", "#F8FAFC"];
 const pendingRemovalsStorageKey = "hashtune.pending-removals";
 let pendingRemovalIds = readPendingRemovalIds();
 const emptyPagination: LibraryPagination = {
@@ -169,6 +170,9 @@ export default function Home() {
   const [recognition, setRecognition] = useState<Recognition | null>(null);
   const [indexProgress, setIndexProgress] = useState<number | null>(null);
 
+  const [isLoadingLibrary, setIsLoadingLibrary] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
   const [error, setError] = useState("");
   const [metadataReview, setMetadataReview] = useState<MetadataDraft | null>(null);
   const reviewResolver = useRef<((approved: boolean) => void) | null>(null);
@@ -179,7 +183,6 @@ export default function Home() {
 
   function showToast(message: string) {
     setToast(message);
-    window.setTimeout(() => setToast(""), 1800);
   }
 
   function replacePendingRemovalIds(ids: Set<string>) {
@@ -208,6 +211,7 @@ export default function Home() {
     const requestId = ++libraryRequestId.current;
     libraryQuery.current = query;
     setError("");
+    setIsLoadingLibrary(true);
 
     try {
       const request = { ...query, origin: nextOrigin };
@@ -260,6 +264,10 @@ export default function Home() {
     } catch (reason: unknown) {
       if (requestId !== libraryRequestId.current) return;
       setError(reason instanceof Error ? reason.message : "We couldn't load your library.");
+    } finally {
+      if (requestId === libraryRequestId.current) {
+        setIsLoadingLibrary(false);
+      }
     }
   }
 
@@ -272,14 +280,19 @@ export default function Home() {
     }
 
     if (nextPage === "history") {
+      setIsLoadingHistory(true);
       void musicApi
         .history()
-        .then((loadedHistory) => setHistory(loadedHistory.map(toHistoryItem)))
-        .catch((reason: unknown) =>
+        .then((loadedHistory) => {
+          setHistory(loadedHistory.map(toHistoryItem));
+          setIsLoadingHistory(false);
+        })
+        .catch((reason: unknown) => {
           setError(
             reason instanceof Error ? reason.message : "We couldn't load your search history.",
-          ),
-        );
+          );
+          setIsLoadingHistory(false);
+        });
     }
   }
 
@@ -384,11 +397,11 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-canvas text-ink">
+    <div className="min-h-screen bg-canvas text-ink flex flex-col">
       <Header page={page} onPageChange={changePage} trackCount={libraryPagination.totalElements} />
-      <main>
+      <main className="flex-1 pb-20">
         {error && (
-          <div className="mx-auto max-w-[1200px] px-6 pt-6 text-[14px] text-red-600 lg:px-8">
+          <div className="mx-auto max-w-[1200px] px-4 py-4 mt-6 text-[13px] font-semibold text-red-700 bg-red-50 dark:bg-red-950/30 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-lg lg:px-6 shadow-sm">
             {error}
           </div>
         )}
@@ -400,6 +413,7 @@ export default function Home() {
             artists={artists}
             pagination={libraryPagination}
             indexingProgress={indexProgress}
+            isLoading={isLoadingLibrary}
             onAddFiles={addFiles}
             onReindex={reindexTrack}
             onRemove={removeTrack}
@@ -412,7 +426,12 @@ export default function Home() {
           />
         )}
         {page === "history" && (
-          <HistoryView history={history} onClear={clearHistory} onToast={showToast} />
+          <HistoryView
+            history={history}
+            isLoading={isLoadingHistory}
+            onClear={clearHistory}
+            onToast={showToast}
+          />
         )}
       </main>
       {metadataReview && (
@@ -422,11 +441,7 @@ export default function Home() {
           onSkip={skipMetadataReview}
         />
       )}
-      {toast && (
-        <div className="pointer-events-none fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-ink px-4 py-2.5 text-[11px] font-semibold text-white animate-enter">
-          {toast}
-        </div>
-      )}
+      <Toast message={toast} onClose={() => setToast("")} />
     </div>
   );
 }

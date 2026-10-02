@@ -1,8 +1,8 @@
 import { useState } from "react";
 import type { AlbumSummary, ArtistSummary, LibraryPagination, Track } from "../lib/music";
-import { MoreIcon } from "./icons";
+import { MoreIcon, SearchIcon, UploadIcon, InfoIcon } from "./icons";
 import { TrackArtwork } from "./TrackArtwork";
-import { Button, SectionLabel } from "./ui";
+import { Button, SectionLabel, Skeleton, Badge } from "./ui";
 
 type LibraryViewMode = "tracks" | "albums" | "artists";
 type LibraryOrigin = "PERSONAL" | "MTG_JAMENDO" | "ALL";
@@ -20,8 +20,15 @@ export type LibraryQuery = {
 function statusLabel(status: string) {
   if (status === "INDEXED") return "Ready";
   if (status === "PROCESSING") return "Preparing";
-  if (status === "FAILED") return "Needs attention";
+  if (status === "FAILED") return "Failed";
   return "Waiting";
+}
+
+function statusVariant(status: string) {
+  if (status === "INDEXED") return "success";
+  if (status === "FAILED") return "danger";
+  if (status === "PROCESSING") return "warning";
+  return "default";
 }
 
 function TrackRow({
@@ -40,36 +47,30 @@ function TrackRow({
   const menuOpen = activeMenu === track.id;
 
   return (
-    <div className="grid grid-cols-[44px_1fr_auto_36px] items-center gap-3 border-b border-line py-3 transition-colors hover:bg-subtle sm:grid-cols-[44px_1fr_76px_90px_36px] sm:gap-4">
+    <div className="grid grid-cols-[44px_1fr_auto_36px] items-center gap-3 border-b border-line py-3 transition-colors hover:bg-subtle sm:grid-cols-[44px_1fr_76px_90px_36px] sm:gap-4 group">
       <TrackArtwork
         src={track.coverArtUrl}
         alt={`${track.title} cover art`}
         color={track.color}
-        className="size-10"
+        className="size-11 rounded-md shadow-sm"
       />
       <div className="min-w-0">
-        <b className="block truncate text-[14px]">{track.title}</b>
-        <div className="mt-1 truncate text-[12px] text-muted">
+        <b className="block truncate text-[14px] font-semibold text-ink group-hover:text-brand transition-colors">
+          {track.title}
+        </b>
+        <div className="mt-0.5 truncate text-[12px] text-muted">
           {track.artist}
           {track.album ? ` · ${track.album}` : ""}
         </div>
       </div>
-      <span className="hidden text-[12px] text-muted sm:block">{track.duration}</span>
-      <span
-        className={`hidden text-[10px] font-bold sm:block ${
-          track.status === "FAILED"
-            ? "text-red-600"
-            : track.status === "INDEXED"
-              ? "text-success"
-              : "text-muted"
-        }`}
-      >
-        {statusLabel(track.status)}
+      <span className="hidden text-[12px] text-muted font-medium sm:block">{track.duration}</span>
+      <span className="hidden sm:flex justify-end">
+        <Badge variant={statusVariant(track.status)}>{statusLabel(track.status)}</Badge>
       </span>
       <div className="relative">
         <button
           type="button"
-          className="grid size-7 place-items-center text-muted"
+          className="grid size-8 place-items-center text-muted hover:bg-line rounded-full transition-colors"
           aria-label={`Actions for ${track.title}`}
           aria-expanded={menuOpen}
           onClick={() => onMenuChange(menuOpen ? null : track.id)}
@@ -77,33 +78,41 @@ function TrackRow({
           <MoreIcon />
         </button>
         {menuOpen && (
-          <div
-            className="absolute right-0 top-9 z-20 w-44 border border-line bg-canvas py-1 shadow-[0_12px_35px_rgba(0,0,0,.12)]"
-            role="menu"
-          >
+          <>
             <button
               type="button"
-              role="menuitem"
-              className="block w-full px-3 py-2 text-left text-[11px] hover:bg-subtle"
-              onClick={() => {
-                onMenuChange(null);
-                void onReindex(track.id);
-              }}
+              className="fixed inset-0 z-10 cursor-default"
+              aria-label="Close track actions"
+              onClick={() => onMenuChange(null)}
+            />
+            <div
+              className="absolute right-0 top-10 z-20 w-44 rounded-md border border-line bg-canvas py-1.5 shadow-xl animate-toast-enter"
+              role="menu"
             >
-              Reprocess audio
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="block w-full px-3 py-2 text-left text-[11px] text-red-500 hover:bg-subtle"
-              onClick={() => {
-                onMenuChange(null);
-                void onRemove(track.id);
-              }}
-            >
-              Remove track
-            </button>
-          </div>
+              <button
+                type="button"
+                role="menuitem"
+                className="block w-full px-4 py-2 text-left text-[12px] font-medium text-ink hover:bg-subtle"
+                onClick={() => {
+                  onMenuChange(null);
+                  void onReindex(track.id);
+                }}
+              >
+                Reprocess audio
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                className="block w-full px-4 py-2 text-left text-[12px] font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                onClick={() => {
+                  onMenuChange(null);
+                  void onRemove(track.id);
+                }}
+              >
+                Remove track
+              </button>
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -124,8 +133,8 @@ function LibraryPagination({
   if (pagination.totalElements === 0) return null;
 
   return (
-    <div className="mt-6 flex items-center justify-between border-t border-line pt-4">
-      <div className="flex items-center gap-3 text-[11px] text-muted">
+    <div className="mt-8 flex flex-col sm:flex-row items-center justify-between border-t border-line pt-6 gap-4">
+      <div className="flex items-center gap-4 text-[12px] text-muted font-medium">
         <span>
           Page {pagination.page + 1} of {pagination.totalPages}
         </span>
@@ -134,7 +143,7 @@ function LibraryPagination({
           <select
             value={pageSize}
             onChange={(event) => onPageSizeChange(Number(event.target.value))}
-            className="border border-line bg-canvas px-2 py-1.5 text-[11px] font-semibold text-ink"
+            className="rounded-md border border-line bg-canvas px-2 py-1 text-[12px] font-semibold text-ink outline-none focus:border-brand"
             aria-label="Items per page"
           >
             <option value={25}>25</option>
@@ -143,24 +152,73 @@ function LibraryPagination({
           </select>
         </label>
       </div>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          className="border border-line px-3 py-2 text-[11px] font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+      <div className="flex gap-2 w-full sm:w-auto">
+        <Button
+          variant="secondary"
+          size="sm"
+          className="flex-1 sm:flex-none"
           disabled={!pagination.hasPrevious}
           onClick={() => onPageChange(pagination.page - 1)}
         >
           Previous
-        </button>
-        <button
-          type="button"
-          className="border border-line px-3 py-2 text-[11px] font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          className="flex-1 sm:flex-none"
           disabled={!pagination.hasNext}
           onClick={() => onPageChange(pagination.page + 1)}
         >
           Next
-        </button>
+        </Button>
       </div>
+    </div>
+  );
+}
+
+function Skeletons({ view }: { view: LibraryViewMode }) {
+  if (view === "tracks") {
+    return (
+      <div className="flex flex-col">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 border-b border-line py-3">
+            <Skeleton className="size-11 rounded-md" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-3 w-1/4" />
+            </div>
+            <Skeleton className="h-4 w-12 hidden sm:block" />
+            <Skeleton className="h-5 w-16 rounded-full hidden sm:block" />
+            <Skeleton className="size-8 rounded-full" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (view === "albums") {
+    return (
+      <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} className="space-y-3">
+            <Skeleton className="aspect-square w-full rounded-md" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-3 w-1/2" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      {Array.from({ length: 10 }).map((_, i) => (
+        <div key={i} className="flex flex-col items-center space-y-3">
+          <Skeleton className="aspect-square w-full rounded-full" />
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-3 w-1/2" />
+        </div>
+      ))}
     </div>
   );
 }
@@ -171,6 +229,7 @@ export function LibraryView({
   artists,
   pagination,
   indexingProgress,
+  isLoading = false,
   onAddFiles,
   onReindex,
   onRemove,
@@ -183,6 +242,7 @@ export function LibraryView({
   artists: ArtistSummary[];
   pagination: LibraryPagination;
   indexingProgress: number | null;
+  isLoading?: boolean;
   onAddFiles: (files: FileList) => Promise<void>;
   onReindex: (id: string) => Promise<void>;
   onRemove: (id: string) => Promise<void>;
@@ -246,57 +306,70 @@ export function LibraryView({
 
   function updateQuery(nextQuery: string) {
     setQuery(nextQuery);
-    requestPage(0, selectedResource, {
-      artist: selectedArtist ?? undefined,
-      album: selectedAlbum?.title,
-    }, nextQuery);
+    requestPage(
+      0,
+      selectedResource,
+      {
+        artist: selectedArtist ?? undefined,
+        album: selectedAlbum?.title,
+      },
+      nextQuery,
+    );
   }
 
   return (
     <section>
-      <div className="mx-auto max-w-300 px-6 py-14 lg:px-8">
-        <div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-end">
+      <div className="mx-auto max-w-[1200px] px-4 py-10 lg:px-8">
+        <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
           <div>
             <SectionLabel>Your collection</SectionLabel>
-            <h1 className="mt-1 text-[40px] font-bold tracking-[-.045em]">Library</h1>
-            <p className="mt-3 text-[14px] text-muted">
-              {pagination.totalElements === 0
+            <h1 className="mt-2 text-4xl font-extrabold tracking-tight">Library</h1>
+            <p className="mt-2 text-[14px] text-muted">
+              {pagination.totalElements === 0 && !isLoading
                 ? "Add music to start identifying tracks."
                 : `${pagination.totalElements} ${pagination.totalElements === 1 ? "item" : "items"}`}
             </p>
           </div>
-          <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+          <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
             <div
-              className="flex h-12 items-center rounded-full border border-line p-1"
+              className="flex h-11 items-center rounded-full bg-subtle p-1 mr-2"
               role="group"
               aria-label="Library source"
             >
               {[
                 ["PERSONAL", "Personal"],
                 ["MTG_JAMENDO", "MTG-Jamendo"],
-                ["ALL", "All sources"],
+                ["ALL", "All"],
               ].map(([value, label]) => (
                 <button
                   key={value}
                   type="button"
                   aria-pressed={origin === value}
                   onClick={() => changeOrigin(value as LibraryOrigin)}
-                  className={`h-10 rounded-full px-3 text-[11px] font-semibold transition-colors ${
-                    origin === value ? "bg-ink text-canvas" : "text-muted hover:text-ink"
+                  className={`h-9 rounded-full px-4 text-[12px] font-semibold transition-[color,background-color,box-shadow] ${
+                    origin === value
+                      ? "bg-white dark:bg-ink text-ink dark:text-canvas shadow-sm"
+                      : "text-muted hover:text-ink"
                   }`}
                 >
                   {label}
                 </button>
               ))}
             </div>
-            <Button onClick={() => document.getElementById("library-files")?.click()}>
-              Add audio
+
+            <Button
+              variant="secondary"
+              onClick={() => document.getElementById("library-files")?.click()}
+            >
+              <UploadIcon className="size-4" />
+              Files
             </Button>
             <Button
               variant="primary"
               onClick={() => document.getElementById("library-folder")?.click()}
             >
-              Add folder
+              <UploadIcon className="size-4" />
+              Folder
             </Button>
             <input
               id="library-files"
@@ -312,20 +385,25 @@ export function LibraryView({
               accept="audio/*"
               multiple
               hidden
+              /* @ts-expect-error directory upload */
+              webkitdirectory=""
+              directory=""
               onChange={(event) => event.target.files && void onAddFiles(event.target.files)}
             />
           </div>
         </div>
 
         {indexingProgress !== null && (
-          <div className="mt-7 bg-subtle px-5 py-4">
-            <div className="flex justify-between text-[12px] font-semibold">
-              <span>Preparing your library…</span>
-              <span>{indexingProgress}%</span>
+          <div className="mt-8 rounded-xl bg-subtle px-6 py-5 border border-line">
+            <div className="flex justify-between text-[13px] font-bold text-ink mb-3">
+              <span className="flex items-center gap-2">
+                <InfoIcon className="size-4 text-brand" /> Preparing your library…
+              </span>
+              <span className="text-brand">{indexingProgress}%</span>
             </div>
-            <div className="mt-3 h-1 bg-line">
+            <div className="h-2 rounded-full bg-line overflow-hidden">
               <div
-                className="h-full bg-brand transition-[width]"
+                className="h-full bg-brand transition-[width] duration-300 ease-out"
                 style={{ width: `${indexingProgress}%` }}
               />
             </div>
@@ -333,7 +411,7 @@ export function LibraryView({
         )}
 
         <div
-          className="mt-8 flex gap-6 border-b border-line"
+          className="mt-10 flex gap-2 border-b border-line/50 overflow-x-auto no-scrollbar"
           role="tablist"
           aria-label="Library views"
         >
@@ -344,10 +422,10 @@ export function LibraryView({
               role="tab"
               aria-selected={view === value}
               onClick={() => selectView(value)}
-              className={`border-b-2 pb-3 text-[14px] font-bold capitalize transition-colors ${
+              className={`px-5 py-3 text-[14px] font-bold capitalize transition-colors border-b-2 ${
                 view === value
                   ? "border-brand text-brand"
-                  : "border-transparent text-muted hover:text-ink"
+                  : "border-transparent text-muted hover:text-ink hover:border-line"
               }`}
             >
               {value}
@@ -355,7 +433,8 @@ export function LibraryView({
           ))}
         </div>
 
-        <div className="mt-6 flex items-center border-b border-line pb-4">
+        <div className="mt-6 flex items-center rounded-lg border border-line bg-canvas px-4 py-1 focus-within:border-brand focus-within:ring-1 focus-within:ring-brand transition-[border-color,box-shadow] shadow-sm">
+          <SearchIcon className="size-5 text-muted mr-2" />
           <label className="sr-only" htmlFor="library-search">
             Search library
           </label>
@@ -363,13 +442,13 @@ export function LibraryView({
             id="library-search"
             value={query}
             onChange={(event) => updateQuery(event.target.value)}
-            className="w-full border-0 bg-transparent text-[14px] outline-none placeholder:text-muted"
+            className="w-full bg-transparent py-3 text-[14px] outline-none placeholder:text-muted"
             placeholder={selectedArtist || selectedAlbum ? "Search tracks..." : `Search ${view}...`}
           />
           {query && (
             <button
               type="button"
-              className="mr-4 text-[11px] font-semibold text-muted hover:text-ink"
+              className="text-[12px] font-semibold text-muted hover:text-ink px-2 py-1 rounded hover:bg-subtle"
               onClick={() => updateQuery("")}
             >
               Clear
@@ -377,113 +456,140 @@ export function LibraryView({
           )}
         </div>
 
-        <div className="mt-6">
+        <div className="mt-8">
           {(selectedArtist || selectedAlbum) && (
-            <div className="mb-6">
+            <div className="mb-8">
               <button
                 type="button"
                 onClick={goBack}
-                className="mb-2 flex items-center gap-1 text-[12px] font-semibold text-brand hover:underline"
+                className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-subtle px-3 py-1.5 text-[12px] font-semibold text-ink hover:bg-line transition-colors"
               >
                 ← Back to {selectedAlbum ? "albums" : "artists"}
               </button>
-              <h2 className="text-[28px] font-bold">{selectedArtist || selectedAlbum?.title}</h2>
-              {selectedAlbum && <p className="text-[13px] text-muted">{selectedAlbum.artist}</p>}
-              <p className="text-[13px] text-muted">
+              <h2 className="text-3xl font-extrabold">{selectedArtist || selectedAlbum?.title}</h2>
+              {selectedAlbum && (
+                <p className="mt-1 text-[15px] font-medium text-muted">{selectedAlbum.artist}</p>
+              )}
+              <p className="mt-2 text-[13px] text-muted font-medium">
                 {pagination.totalElements} {pagination.totalElements === 1 ? "track" : "tracks"}
               </p>
             </div>
           )}
 
-          {!selectedArtist && !selectedAlbum && view === "albums" && (
-            <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-              {albums.length === 0 ? (
-                <div className="col-span-full py-16 text-center text-[14px] font-semibold">
-                  No albums found
+          {isLoading ? (
+            <Skeletons view={view} />
+          ) : (
+            <>
+              {!selectedArtist && !selectedAlbum && view === "albums" && (
+                <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                  {albums.length === 0 ? (
+                    <div className="col-span-full py-20 text-center">
+                      <div className="mx-auto size-16 rounded-full bg-subtle flex items-center justify-center mb-4">
+                        <InfoIcon className="size-8 text-muted" />
+                      </div>
+                      <p className="text-[16px] font-bold">No albums found</p>
+                      <p className="text-[14px] text-muted mt-1">
+                        Try adjusting your search or source.
+                      </p>
+                    </div>
+                  ) : (
+                    albums.map((album) => (
+                      <button
+                        key={`${album.artist}-${album.title}`}
+                        type="button"
+                        onClick={() => selectAlbum(album)}
+                        className="group block min-w-0 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
+                      >
+                        <div className="relative mb-3 aspect-square w-full overflow-hidden rounded-xl border border-line bg-subtle shadow-sm group-hover:shadow-md transition-[box-shadow]">
+                          <TrackArtwork
+                            src={album.coverArtUrl}
+                            color="#64748b"
+                            alt={`${album.title} cover art`}
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        </div>
+                        <div
+                          className="truncate text-[15px] font-bold text-ink group-hover:text-brand transition-colors"
+                          title={album.title}
+                        >
+                          {album.title}
+                        </div>
+                        <div
+                          className="truncate text-[13px] text-muted mt-0.5"
+                          title={album.artist}
+                        >
+                          {album.artist}
+                        </div>
+                      </button>
+                    ))
+                  )}
                 </div>
-              ) : (
-                albums.map((album) => (
-                  <button
-                    key={`${album.artist}-${album.title}`}
-                    type="button"
-                    onClick={() => selectAlbum(album)}
-                    className="group block min-w-0 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
-                  >
-                    <div className="relative mb-3 aspect-square w-full overflow-hidden rounded-md border border-line bg-subtle">
-                      <TrackArtwork
-                        src={album.coverArtUrl}
-                        color="#64748b"
-                        alt={`${album.title} cover art`}
-                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+              )}
+
+              {!selectedArtist && !selectedAlbum && view === "artists" && (
+                <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                  {artists.length === 0 ? (
+                    <div className="col-span-full py-20 text-center">
+                      <div className="mx-auto size-16 rounded-full bg-subtle flex items-center justify-center mb-4">
+                        <InfoIcon className="size-8 text-muted" />
+                      </div>
+                      <p className="text-[16px] font-bold">No artists found</p>
+                    </div>
+                  ) : (
+                    artists.map((artist) => (
+                      <button
+                        key={artist.name}
+                        type="button"
+                        onClick={() => selectArtist(artist)}
+                        className="group block min-w-0 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
+                      >
+                        <div className="mb-4 flex mx-auto aspect-square w-full max-w-[160px] items-center justify-center overflow-hidden rounded-full border border-line bg-subtle shadow-sm transition-transform duration-500 group-hover:scale-105 group-hover:shadow-md">
+                          <span className="text-5xl font-light text-muted">
+                            {artist.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div
+                          className="truncate text-[15px] font-bold text-ink group-hover:text-brand transition-colors"
+                          title={artist.name}
+                        >
+                          {artist.name}
+                        </div>
+                        <div className="mt-1 text-[12px] font-medium text-muted">
+                          {artist.trackCount} tracks
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {((view === "tracks" && !selectedArtist && !selectedAlbum) ||
+                selectedArtist ||
+                selectedAlbum) && (
+                <div className="flex flex-col">
+                  {tracks.length === 0 ? (
+                    <div className="py-20 text-center border-y border-line/50 rounded-xl mt-4">
+                      <div className="mx-auto size-16 rounded-full bg-subtle flex items-center justify-center mb-4">
+                        <InfoIcon className="size-8 text-muted" />
+                      </div>
+                      <p className="text-[16px] font-bold">No tracks match your search</p>
+                      <p className="text-[14px] text-muted mt-1">Try adding more music.</p>
+                    </div>
+                  ) : (
+                    tracks.map((track) => (
+                      <TrackRow
+                        key={track.id}
+                        track={track}
+                        activeMenu={activeMenu}
+                        onMenuChange={setActiveMenu}
+                        onReindex={onReindex}
+                        onRemove={onRemove}
                       />
-                    </div>
-                    <div className="truncate text-[14px] font-bold" title={album.title}>
-                      {album.title}
-                    </div>
-                    <div className="truncate text-[12px] text-muted" title={album.artist}>
-                      {album.artist}
-                    </div>
-                    <div className="mt-1 text-[11px] text-muted">
-                      {album.trackCount} {album.trackCount === 1 ? "track" : "tracks"}
-                    </div>
-                  </button>
-                ))
-              )}
-            </div>
-          )}
-
-          {!selectedArtist && !selectedAlbum && view === "artists" && (
-            <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-              {artists.length === 0 ? (
-                <div className="col-span-full py-16 text-center text-[14px] font-semibold">
-                  No artists found
+                    ))
+                  )}
                 </div>
-              ) : (
-                artists.map((artist) => (
-                  <button
-                    key={artist.name}
-                    type="button"
-                    onClick={() => selectArtist(artist)}
-                    className="group block min-w-0 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
-                  >
-                    <div className="mb-3 flex aspect-square w-full items-center justify-center overflow-hidden rounded-full border border-line bg-subtle shadow-sm transition-transform group-hover:scale-105">
-                      <span className="text-4xl font-light text-muted">
-                        {artist.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="truncate text-[14px] font-bold" title={artist.name}>
-                      {artist.name}
-                    </div>
-                    <div className="mt-1 text-[11px] text-muted">
-                      {artist.trackCount} tracks · {artist.albumCount} albums
-                    </div>
-                  </button>
-                ))
               )}
-            </div>
-          )}
-
-          {((view === "tracks" && !selectedArtist && !selectedAlbum) ||
-            selectedArtist ||
-            selectedAlbum) && (
-            <div>
-              {tracks.length === 0 ? (
-                <div className="border-y border-line py-16 text-center">
-                  <p className="text-[14px] font-semibold">No tracks match your search</p>
-                </div>
-              ) : (
-                tracks.map((track) => (
-                  <TrackRow
-                    key={track.id}
-                    track={track}
-                    activeMenu={activeMenu}
-                    onMenuChange={setActiveMenu}
-                    onReindex={onReindex}
-                    onRemove={onRemove}
-                  />
-                ))
-              )}
-            </div>
+            </>
           )}
 
           <LibraryPagination

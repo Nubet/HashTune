@@ -51,11 +51,9 @@ const albumPageSchema = pageSchema(albumSchema);
 const artistPageSchema = pageSchema(artistSchema);
 
 export type ApiHistoryItem = z.infer<typeof historyItemSchema>;
-export type ApiTrackPage = z.infer<typeof trackPageSchema>;
-export type ApiAlbum = z.infer<typeof albumSchema>;
-export type ApiArtist = z.infer<typeof artistSchema>;
-export type ApiAlbumPage = z.infer<typeof albumPageSchema>;
-export type ApiArtistPage = z.infer<typeof artistPageSchema>;
+type ApiTrackPage = z.infer<typeof trackPageSchema>;
+type ApiAlbumPage = z.infer<typeof albumPageSchema>;
+type ApiArtistPage = z.infer<typeof artistPageSchema>;
 
 export const musicApi = {
   listTracks({

@@ -50,24 +50,6 @@
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-@keyframes breathe {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.3;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.8;
-  }
-}
-
-@keyframes orbit {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @keyframes toast-enter {
   from {
     opacity: 0;
@@ -90,24 +72,6 @@
   }
 }
 
-@keyframes spin-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes spin-reverse-slow {
-  from {
-    transform: rotate(360deg);
-  }
-  to {
-    transform: rotate(0deg);
-  }
-}
-
 @keyframes ripple {
   0% {
     transform: scale(0.8);
@@ -119,23 +83,11 @@
   }
 }
 
-@utility animate-breathe {
-  animation: breathe 4s ease-in-out infinite;
-}
-@utility animate-orbit {
-  animation: orbit 15s linear infinite;
-}
 @utility animate-toast-enter {
   animation: toast-enter 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 @utility animate-toast-leave {
   animation: toast-leave 0.2s ease-in forwards;
-}
-@utility animate-spin-slow {
-  animation: spin-slow 20s linear infinite;
-}
-@utility animate-spin-reverse-slow {
-  animation: spin-reverse-slow 25s linear infinite;
 }
 @utility animate-ripple {
   animation: ripple 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;

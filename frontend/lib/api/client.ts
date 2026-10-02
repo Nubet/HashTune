@@ -2,7 +2,7 @@ import { problemSchema } from "./contracts";
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8080";
 
-export class ApiError extends Error {
+class ApiError extends Error {
   constructor(
     message: string,
     readonly status: number,
@@ -53,8 +53,4 @@ export function multipart(file: File, field = "file") {
   const body = new FormData();
   body.append(field, file);
   return body;
-}
-
-export function apiUrl(path: string) {
-  return `${baseUrl}${path}`;
 }

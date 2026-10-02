@@ -225,6 +225,176 @@ function Skeletons({ view }: { view: LibraryViewMode }) {
   );
 }
 
+function EmptyState({ title, message }: { title: string; message?: string }) {
+  return (
+    <div className="col-span-full mt-4 rounded-xl border-y border-line/50 py-20 text-center">
+      <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-subtle">
+        <InfoIcon className="size-8 text-muted" />
+      </div>
+      <p className="text-[16px] font-bold">{title}</p>
+      {message && <p className="mt-1 text-[14px] text-muted">{message}</p>}
+    </div>
+  );
+}
+
+function AlbumGrid({
+  albums,
+  onSelect,
+}: {
+  albums: AlbumSummary[];
+  onSelect: (album: AlbumSummary) => void;
+}) {
+  if (albums.length === 0)
+    return <EmptyState title="No albums found" message="Try adjusting your search or source." />;
+
+  return (
+    <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      {albums.map((album) => (
+        <button
+          key={`${album.artist}-${album.title}`}
+          type="button"
+          onClick={() => onSelect(album)}
+          className="group block min-w-0 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
+        >
+          <div className="relative mb-3 aspect-square w-full overflow-hidden rounded-xl border border-line bg-subtle shadow-sm transition-[box-shadow] group-hover:shadow-md">
+            <TrackArtwork
+              src={album.coverArtUrl}
+              color="#64748b"
+              alt={`${album.title} cover art`}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          </div>
+          <div
+            className="truncate text-[15px] font-bold text-ink transition-colors group-hover:text-brand"
+            title={album.title}
+          >
+            {album.title}
+          </div>
+          <div className="mt-0.5 truncate text-[13px] text-muted" title={album.artist}>
+            {album.artist}
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ArtistGrid({
+  artists,
+  onSelect,
+}: {
+  artists: ArtistSummary[];
+  onSelect: (artist: ArtistSummary) => void;
+}) {
+  if (artists.length === 0) return <EmptyState title="No artists found" />;
+
+  return (
+    <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      {artists.map((artist) => (
+        <button
+          key={artist.name}
+          type="button"
+          onClick={() => onSelect(artist)}
+          className="group block min-w-0 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
+        >
+          <div className="mx-auto mb-4 flex aspect-square w-full max-w-[160px] items-center justify-center overflow-hidden rounded-full border border-line bg-subtle shadow-sm transition-transform duration-500 group-hover:scale-105 group-hover:shadow-md">
+            <span className="text-5xl font-light text-muted">
+              {artist.name.charAt(0).toUpperCase()}
+            </span>
+          </div>
+          <div
+            className="truncate text-[15px] font-bold text-ink transition-colors group-hover:text-brand"
+            title={artist.name}
+          >
+            {artist.name}
+          </div>
+          <div className="mt-1 text-[12px] font-medium text-muted">{artist.trackCount} tracks</div>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function TrackList({
+  tracks,
+  activeMenu,
+  onMenuChange,
+  onReindex,
+  onRemove,
+}: {
+  tracks: Track[];
+  activeMenu: string | null;
+  onMenuChange: (id: string | null) => void;
+  onReindex: (id: string) => Promise<void>;
+  onRemove: (id: string) => Promise<void>;
+}) {
+  if (tracks.length === 0)
+    return <EmptyState title="No tracks match your search" message="Try adding more music." />;
+
+  return (
+    <div className="flex flex-col">
+      {tracks.map((track) => (
+        <TrackRow
+          key={track.id}
+          track={track}
+          activeMenu={activeMenu}
+          onMenuChange={onMenuChange}
+          onReindex={onReindex}
+          onRemove={onRemove}
+        />
+      ))}
+    </div>
+  );
+}
+
+function LibraryResults({
+  view,
+  selectedArtist,
+  selectedAlbum,
+  isLoading,
+  tracks,
+  albums,
+  artists,
+  activeMenu,
+  onSelectAlbum,
+  onSelectArtist,
+  onMenuChange,
+  onReindex,
+  onRemove,
+}: {
+  view: LibraryViewMode;
+  selectedArtist: string | null;
+  selectedAlbum: SelectedAlbum | null;
+  isLoading: boolean;
+  tracks: Track[];
+  albums: AlbumSummary[];
+  artists: ArtistSummary[];
+  activeMenu: string | null;
+  onSelectAlbum: (album: AlbumSummary) => void;
+  onSelectArtist: (artist: ArtistSummary) => void;
+  onMenuChange: (id: string | null) => void;
+  onReindex: (id: string) => Promise<void>;
+  onRemove: (id: string) => Promise<void>;
+}) {
+  if (isLoading) return <Skeletons view={view} />;
+  if (!selectedArtist && !selectedAlbum && view === "albums")
+    return <AlbumGrid albums={albums} onSelect={onSelectAlbum} />;
+  if (!selectedArtist && !selectedAlbum && view === "artists")
+    return <ArtistGrid artists={artists} onSelect={onSelectArtist} />;
+  if (view === "tracks" || selectedArtist || selectedAlbum) {
+    return (
+      <TrackList
+        tracks={tracks}
+        activeMenu={activeMenu}
+        onMenuChange={onMenuChange}
+        onReindex={onReindex}
+        onRemove={onRemove}
+      />
+    );
+  }
+  return null;
+}
+
 export function LibraryView({
   tracks,
   albums,
@@ -478,121 +648,21 @@ export function LibraryView({
             </div>
           )}
 
-          {isLoading ? (
-            <Skeletons view={view} />
-          ) : (
-            <>
-              {!selectedArtist && !selectedAlbum && view === "albums" && (
-                <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                  {albums.length === 0 ? (
-                    <div className="col-span-full py-20 text-center">
-                      <div className="mx-auto size-16 rounded-full bg-subtle flex items-center justify-center mb-4">
-                        <InfoIcon className="size-8 text-muted" />
-                      </div>
-                      <p className="text-[16px] font-bold">No albums found</p>
-                      <p className="text-[14px] text-muted mt-1">
-                        Try adjusting your search or source.
-                      </p>
-                    </div>
-                  ) : (
-                    albums.map((album) => (
-                      <button
-                        key={`${album.artist}-${album.title}`}
-                        type="button"
-                        onClick={() => selectAlbum(album)}
-                        className="group block min-w-0 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
-                      >
-                        <div className="relative mb-3 aspect-square w-full overflow-hidden rounded-xl border border-line bg-subtle shadow-sm group-hover:shadow-md transition-[box-shadow]">
-                          <TrackArtwork
-                            src={album.coverArtUrl}
-                            color="#64748b"
-                            alt={`${album.title} cover art`}
-                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                        </div>
-                        <div
-                          className="truncate text-[15px] font-bold text-ink group-hover:text-brand transition-colors"
-                          title={album.title}
-                        >
-                          {album.title}
-                        </div>
-                        <div
-                          className="truncate text-[13px] text-muted mt-0.5"
-                          title={album.artist}
-                        >
-                          {album.artist}
-                        </div>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-
-              {!selectedArtist && !selectedAlbum && view === "artists" && (
-                <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                  {artists.length === 0 ? (
-                    <div className="col-span-full py-20 text-center">
-                      <div className="mx-auto size-16 rounded-full bg-subtle flex items-center justify-center mb-4">
-                        <InfoIcon className="size-8 text-muted" />
-                      </div>
-                      <p className="text-[16px] font-bold">No artists found</p>
-                    </div>
-                  ) : (
-                    artists.map((artist) => (
-                      <button
-                        key={artist.name}
-                        type="button"
-                        onClick={() => selectArtist(artist)}
-                        className="group block min-w-0 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
-                      >
-                        <div className="mb-4 flex mx-auto aspect-square w-full max-w-[160px] items-center justify-center overflow-hidden rounded-full border border-line bg-subtle shadow-sm transition-transform duration-500 group-hover:scale-105 group-hover:shadow-md">
-                          <span className="text-5xl font-light text-muted">
-                            {artist.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div
-                          className="truncate text-[15px] font-bold text-ink group-hover:text-brand transition-colors"
-                          title={artist.name}
-                        >
-                          {artist.name}
-                        </div>
-                        <div className="mt-1 text-[12px] font-medium text-muted">
-                          {artist.trackCount} tracks
-                        </div>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-
-              {((view === "tracks" && !selectedArtist && !selectedAlbum) ||
-                selectedArtist ||
-                selectedAlbum) && (
-                <div className="flex flex-col">
-                  {tracks.length === 0 ? (
-                    <div className="py-20 text-center border-y border-line/50 rounded-xl mt-4">
-                      <div className="mx-auto size-16 rounded-full bg-subtle flex items-center justify-center mb-4">
-                        <InfoIcon className="size-8 text-muted" />
-                      </div>
-                      <p className="text-[16px] font-bold">No tracks match your search</p>
-                      <p className="text-[14px] text-muted mt-1">Try adding more music.</p>
-                    </div>
-                  ) : (
-                    tracks.map((track) => (
-                      <TrackRow
-                        key={track.id}
-                        track={track}
-                        activeMenu={activeMenu}
-                        onMenuChange={setActiveMenu}
-                        onReindex={onReindex}
-                        onRemove={onRemove}
-                      />
-                    ))
-                  )}
-                </div>
-              )}
-            </>
-          )}
+          <LibraryResults
+            view={view}
+            selectedArtist={selectedArtist}
+            selectedAlbum={selectedAlbum}
+            isLoading={isLoading}
+            tracks={tracks}
+            albums={albums}
+            artists={artists}
+            activeMenu={activeMenu}
+            onSelectAlbum={selectAlbum}
+            onSelectArtist={selectArtist}
+            onMenuChange={setActiveMenu}
+            onReindex={onReindex}
+            onRemove={onRemove}
+          />
 
           <LibraryPagination
             pagination={pagination}

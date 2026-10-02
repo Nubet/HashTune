@@ -99,17 +99,16 @@ function useObjectUrl(file: File | null) {
   return url;
 }
 
-export function ListenView({
-  recognition,
-  onRecognize,
-}: {
+type ListenViewProps = {
   recognition: Recognition | null;
   onRecognize: (
     file: File,
     source: "MICROPHONE" | "AUDIO_FILE",
     probe?: boolean,
   ) => Promise<boolean>;
-}) {
+};
+
+function useListenController(onRecognize: ListenViewProps["onRecognize"]) {
   const [isListening, setIsListening] = useState(false);
   const [fileName, setFileName] = useState("");
   const [microphoneStream, setMicrophoneStream] = useState<MediaStream>();
@@ -193,6 +192,28 @@ export function ListenView({
       setIsListening(false);
     }
   }
+
+  return {
+    isListening,
+    fileName,
+    microphoneStream,
+    microphoneRecordingUrl,
+    waveformLevel,
+    recognizeFile,
+    recordMicrophone,
+  };
+}
+
+export function ListenView({ recognition, onRecognize }: ListenViewProps) {
+  const {
+    isListening,
+    fileName,
+    microphoneStream,
+    microphoneRecordingUrl,
+    waveformLevel,
+    recognizeFile,
+    recordMicrophone,
+  } = useListenController(onRecognize);
 
   return (
     <>

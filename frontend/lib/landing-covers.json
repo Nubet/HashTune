@@ -1,0 +1,93 @@
+[
+  {
+    "id": "5274cf51-ec40-4637-908c-4230ee7785cf",
+    "title": "(Feels Like) Heaven",
+    "artist": "Fiction Factory",
+    "album": "Throw the Warped Wheel Out",
+    "cover": "/landing-covers/01.jpg"
+  },
+  {
+    "id": "d499b067-d570-4871-92fb-3ec6715907ff",
+    "title": "(I Just) Died in Your Arms",
+    "artist": "Cutting Crew",
+    "album": "Broadcast",
+    "cover": "/landing-covers/02.jpg"
+  },
+  {
+    "id": "5f744a5e-96c7-4229-898b-f23f16b1ebab",
+    "title": "A World Without You",
+    "artist": "Bad Boys Blue",
+    "album": "My Blue World",
+    "cover": "/landing-covers/03.jpg"
+  },
+  {
+    "id": "dc3c9954-eb10-4077-b83a-78ec3bb58318",
+    "title": "Bad Romance",
+    "artist": "Lady Gaga",
+    "album": "The Fame Monster (Deluxe Edition)",
+    "cover": "/landing-covers/04.jpg"
+  },
+  {
+    "id": "3100ae5f-c559-4bff-9bbf-327362125218",
+    "title": "Brother Louie",
+    "artist": "Modern Talking",
+    "album": "Ready for Romance",
+    "cover": "/landing-covers/05.jpg"
+  },
+  {
+    "id": "87964eb6-8ed4-481d-9d40-12f6f7a690f2",
+    "title": "Gonna Fly Now (Theme From \"Rocky\")",
+    "artist": "Bill Conti",
+    "album": "Rocky (Original Motion Picture Score)",
+    "cover": "/landing-covers/06.jpg"
+  },
+  {
+    "id": "7fb03eb6-f966-4d09-b5f4-8d1bcc96d6f5",
+    "title": "I'm Gonna Miss You",
+    "artist": "Milli Vanilli",
+    "album": "All or Nothing",
+    "cover": "/landing-covers/07.jpg"
+  },
+  {
+    "id": "9a1db727-13f8-43d5-a01b-169c659338e3",
+    "title": "All By Myself",
+    "artist": "Eric Carmen",
+    "album": "Eric Carmen",
+    "cover": "/landing-covers/08.jpg"
+  },
+  {
+    "id": "c5c58f40-9783-485d-9bae-a77ddbfc54bb",
+    "title": "Chiquitita",
+    "artist": "ABBA",
+    "album": "Voulez-Vous (Bonus Track Version)",
+    "cover": "/landing-covers/09.jpg"
+  },
+  {
+    "id": "9c8a4269-b347-4861-97d9-9f128ef57dbb",
+    "title": "Blue Monday",
+    "artist": "New Order",
+    "album": "Substance",
+    "cover": "/landing-covers/10.jpg"
+  },
+  {
+    "id": "14bb887d-8c81-45f6-b1bf-c1f0af72bd85",
+    "title": "castles",
+    "artist": "Lil Peep & Lil Tracy",
+    "album": "castles - Single",
+    "cover": "/landing-covers/11.jpg"
+  },
+  {
+    "id": "8d0e9254-c441-4ca1-a8df-d5b68d4fac6f",
+    "title": "Caravansary",
+    "artist": "KITARO",
+    "album": "The Definitive Kitaro Collection",
+    "cover": "/landing-covers/12.jpg"
+  },
+  {
+    "id": "0e749989-7d08-4a6f-b24f-7bd614e7d3fb",
+    "title": "Better Off Alone",
+    "artist": "Alice Deejay",
+    "album": "Who Needs Guitars Anyway?",
+    "cover": "/landing-covers/13.jpg"
+  }
+]

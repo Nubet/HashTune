@@ -65,7 +65,7 @@ function formatDuration(durationMs?: number | null) {
 }
 
 function matchLabel(status: string) {
-  return status === "MATCHED" ? "Strong match" : "--";
+  return status === "MATCHED" ? "match" : "--";
 }
 
 function toTrack(track: ApiTrack): Track {

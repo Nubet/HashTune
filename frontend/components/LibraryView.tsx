@@ -65,7 +65,9 @@ function TrackRow({
       </div>
       <span className="hidden text-[12px] text-muted font-medium sm:block">{track.duration}</span>
       <span className="hidden sm:flex justify-end">
-        <Badge variant={statusVariant(track.status)}>{statusLabel(track.status)}</Badge>
+        {track.status !== "INDEXED" && (
+          <Badge variant={statusVariant(track.status)}>{statusLabel(track.status)}</Badge>
+        )}
       </span>
       <div className="relative">
         <button

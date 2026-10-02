@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { GithubIcon, LinkedInIcon, MicIcon, UploadIcon } from "@/components/icons";
 import ImageStreamHero from "@/components/ImageStreamHero";
+import { TextRoll } from "@/components/TextRoll";
 import landingCovers from "@/lib/landing-covers.json";
 
 type LandingTrack = (typeof landingCovers)[number];
@@ -106,7 +107,9 @@ function LandingHero({ tracks }: { tracks: LandingTrack[] }) {
         {tracks[0] && <FloatingCover track={tracks[0]} side="left" />}
         {tracks[1] && <FloatingCover track={tracks[1]} side="right" />}
         <h1 className="max-w-[800px] text-[clamp(3rem,6vw,5.5rem)] font-semibold leading-[1.05] tracking-tight text-white drop-shadow-xl">
-          Turn a sound into a discovery
+          <TextRoll className="inline-block" transition={{ ease: [0.22, 1, 0.36, 1] }}>
+            Turn a sound into a discovery
+          </TextRoll>
         </h1>
         <p className="mt-6 max-w-[500px] text-[18px] font-medium text-white/90 drop-shadow-md">
           Capture a song you do not recognize. HashTune brings the matching track, artwork, and

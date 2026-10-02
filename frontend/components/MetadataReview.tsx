@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { MetadataDraft } from "../lib/music";
+import type { MetadataDraft } from "@/lib/music";
 import { Button } from "./ui";
 import { TrackArtwork } from "./TrackArtwork";
 

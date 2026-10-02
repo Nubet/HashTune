@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { AlbumSummary, ArtistSummary, LibraryPagination, Track } from "../lib/music";
+import type { AlbumSummary, ArtistSummary, LibraryPagination, Track } from "@/lib/music";
 import { MoreIcon, SearchIcon, UploadIcon, InfoIcon } from "./icons";
 import { TrackArtwork } from "./TrackArtwork";
 import { Button, SectionLabel, Skeleton, Badge } from "./ui";

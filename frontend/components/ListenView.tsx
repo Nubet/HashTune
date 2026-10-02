@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Recognition } from "../lib/music";
+import type { Recognition } from "@/lib/music";
 import { MicIcon, UploadIcon } from "./icons";
 import { MicrophoneRecordingPlayer } from "./MicrophoneRecordingPlayer";
 import { RecognitionResult } from "./RecognitionResult";
@@ -197,7 +197,7 @@ export function ListenView({
   return (
     <>
       <section className="bg-canvas overflow-hidden border-b border-line/40">
-        <div className="mx-auto grid min-h-[400px] max-w-[1000px] grid-cols-1 items-center gap-10 px-6 py-10 lg:grid-cols-[1fr_380px] lg:gap-12 lg:py-16 lg:px-8">
+        <div className="mx-auto grid min-h-100 max-w-250 grid-cols-1 items-center gap-10 px-6 py-10 lg:grid-cols-[1fr_380px] lg:gap-12 lg:py-16 lg:px-8">
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left z-10">
             <SectionLabel>Local recognition</SectionLabel>
             <h1 className="mt-2 text-4xl sm:text-5xl font-extrabold tracking-tight text-ink leading-[1.1]">
@@ -264,16 +264,15 @@ export function ListenView({
           </div>
 
           <div className="relative mx-auto flex size-72 items-center justify-center mt-6 lg:mt-0">
-            {/* Seamless expanding ripple rings */}
             <div
-              className={`absolute inset-16 rounded-full border ${isListening ? "border-brand/60" : "border-brand/20 dark:border-brand/30"} animate-ripple`}
+              className={`absolute inset-16 rounded-full border ${isListening ? "border-brand/60" : "border-brand/20"} animate-ripple`}
             />
             <div
-              className={`absolute inset-16 rounded-full border ${isListening ? "border-brand/50" : "border-brand/20 dark:border-brand/30"} animate-ripple`}
+              className={`absolute inset-16 rounded-full border ${isListening ? "border-brand/50" : "border-brand/20"} animate-ripple`}
               style={{ animationDelay: "1.33s" }}
             />
             <div
-              className={`absolute inset-16 rounded-full border ${isListening ? "border-brand/40" : "border-brand/20 dark:border-brand/30"} animate-ripple`}
+              className={`absolute inset-16 rounded-full border ${isListening ? "border-brand/40" : "border-brand/20"} animate-ripple`}
               style={{ animationDelay: "2.66s" }}
             />
 

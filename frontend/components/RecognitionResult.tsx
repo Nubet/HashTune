@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Recognition } from "../lib/music";
+import type { Recognition } from "@/lib/music";
 import { TrackArtwork } from "./TrackArtwork";
 
 export function RecognitionResult({ recognition }: { recognition: Recognition }) {

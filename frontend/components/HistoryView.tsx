@@ -1,4 +1,4 @@
-import type { Recognition } from "../lib/music";
+import type { Recognition } from "@/lib/music";
 import { SectionLabel, Skeleton, Badge, Button } from "./ui";
 import { TrackArtwork } from "./TrackArtwork";
 import { MicrophoneRecordingPlayer } from "./MicrophoneRecordingPlayer";

@@ -61,11 +61,7 @@ public class MtgJamendoSeeder implements ApplicationRunner {
             if (existing.isPresent()) {
                 Track existingTrack = markAsMtgJamendo(existing.get());
                 refreshCoverArt(existingTrack);
-                if (!jobs.existsByTrackId(existingTrack.id())
-                        || (fingerprints.countByTrackId(existing.get().id()) == 0
-                                && !jobs.existsByTrackIdAndStatusIn(
-                                        existingTrack.id(),
-                                        List.of(IndexingJobStatus.PENDING, IndexingJobStatus.PROCESSING)))) {
+                if (!jobs.existsByTrackId(existingTrack.id())) {
                     Instant now = Instant.now();
                     jobs.save(new IndexingJob(
                             UUID.randomUUID(),

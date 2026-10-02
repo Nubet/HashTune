@@ -19,6 +19,7 @@ const historyItemSchema = z.object({
   source: z.string(),
   recordingUrl: z.string().url().nullable().optional(),
   downloadUrl: z.string().url().nullable().optional(),
+  sampleDurationMs: z.number().nullable().optional(),
   createdAt: z.string(),
 });
 

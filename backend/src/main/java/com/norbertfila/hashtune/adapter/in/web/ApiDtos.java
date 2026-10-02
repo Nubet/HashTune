@@ -172,6 +172,7 @@ public final class ApiDtos {
             String source,
             String recordingUrl,
             String downloadUrl,
+            Long sampleDurationMs,
             Instant createdAt) {
         static HistoryResponse from(Recognition recognition, Track track) {
             return new HistoryResponse(
@@ -182,6 +183,7 @@ public final class ApiDtos {
                     recognition.source().name(),
                     recognition.recordingObjectKey() == null ? null : recordingUrl(recognition.id(), false),
                     recognition.recordingObjectKey() == null ? null : recordingUrl(recognition.id(), true),
+                    recognition.sampleDurationMs(),
                     recognition.createdAt());
         }
 

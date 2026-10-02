@@ -7,11 +7,19 @@ function formatTime(seconds: number) {
   return `${minutes}:${String(remainder).padStart(2, "0")}`;
 }
 
-export function MicrophoneRecordingPlayer({ src }: { src: string }) {
+export function MicrophoneRecordingPlayer({
+  src,
+  initialDurationMs,
+}: {
+  src: string;
+  initialDurationMs?: number;
+}) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
+  const [duration, setDuration] = useState(
+    initialDurationMs && initialDurationMs > 0 ? initialDurationMs / 1000 : 0,
+  );
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   function updateDuration(audio: HTMLAudioElement) {

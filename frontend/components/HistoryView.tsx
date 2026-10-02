@@ -53,7 +53,10 @@ export function HistoryView({
                 <span className="text-right text-[12px] text-muted">{item.time}</span>
                 {item.source === "MICROPHONE" && item.recordingUrl && (
                   <div className="md:col-span-5 md:pl-14">
-                    <MicrophoneRecordingPlayer src={item.recordingUrl} />
+                    <MicrophoneRecordingPlayer
+                      src={item.recordingUrl}
+                      initialDurationMs={item.sampleDurationMs}
+                    />
                     {item.downloadUrl && (
                       <a
                         href={item.downloadUrl}

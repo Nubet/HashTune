@@ -149,6 +149,7 @@ function toHistoryItem(item: ApiHistoryItem): Recognition {
     status: item.status,
     recordingUrl: item.source === "MICROPHONE" ? (item.recordingUrl ?? undefined) : undefined,
     downloadUrl: item.source === "MICROPHONE" ? (item.downloadUrl ?? undefined) : undefined,
+    sampleDurationMs: item.sampleDurationMs ?? undefined,
   };
 }
 

@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HashTune | Music Recognition",
-  description: "Local music recognition and fingerprint library.",
+  title: "HashTune | Private music recognition",
+  description: "Identify music against your own library with HashTune.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

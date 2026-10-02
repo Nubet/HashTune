@@ -11,4 +11,12 @@ public class AudioProperties {
     private String engine;
     private String ffmpegBinary;
     private long maxFileSizeBytes;
+    private FingerprintProperties fingerprint = new FingerprintProperties();
+
+    @Getter
+    @Setter
+    public static class FingerprintProperties {
+        private int maxPeaksPerSecond = 30;
+        private int fanOut = 20;
+    }
 }

@@ -37,5 +37,8 @@ public class RecognitionEntity {
 
     private Long sampleDurationMs;
     private Long recognitionTimeMs;
+    private String recordingObjectKey;
+    private String recordingContentType;
+    private String recordingFileName;
     private Instant createdAt;
 }

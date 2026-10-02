@@ -12,6 +12,7 @@ import com.norbertfila.hashtune.domain.track.TrackStatus;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class IndexingJobApplicationService {
     private final AudioRecognitionEngine engine;
     private final StorageProperties storageProperties;
     private final IndexingProperties indexingProperties;
+    private final Executor indexingExecutor;
 
     @Transactional
     public IndexingJob retry(UUID id) {
@@ -61,9 +63,10 @@ public class IndexingJobApplicationService {
 
     @Scheduled(fixedDelayString = "${app.indexing.worker-delay-ms:1000}")
     public void processNextJob() {
+        if (!indexingProperties.isWorkerEnabled()) return;
         Instant now = Instant.now();
         jobs.recoverStaleProcessing(now.minusMillis(indexingProperties.getProcessingTimeoutMs()), now);
-        jobs.claimNextPending(now).ifPresent(this::process);
+        jobs.claimNextPending(now).ifPresent(job -> indexingExecutor.execute(() -> process(job)));
     }
 
     private void process(IndexingJob job) {

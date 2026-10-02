@@ -147,6 +147,8 @@ function toHistoryItem(item: ApiHistoryItem): Recognition {
     source: item.source,
     color: colorFor(track?.id ?? "no-match"),
     status: item.status,
+    recordingUrl: item.source === "MICROPHONE" ? (item.recordingUrl ?? undefined) : undefined,
+    downloadUrl: item.source === "MICROPHONE" ? (item.downloadUrl ?? undefined) : undefined,
   };
 }
 

@@ -1,6 +1,7 @@
 import type { Recognition } from "../lib/music";
 import { SectionLabel } from "./ui";
 import { TrackArtwork } from "./TrackArtwork";
+import { MicrophoneRecordingPlayer } from "./MicrophoneRecordingPlayer";
 
 export function HistoryView({
   history,
@@ -32,8 +33,8 @@ export function HistoryView({
           {history.length ? (
             history.map((item) => (
               <div
-                key={`${item.title}-${item.time}-${item.source}`}
-                className="grid grid-cols-[44px_1fr_100px_110px_80px] items-center gap-4 border-b border-line py-4"
+                key={item.id}
+                className="grid gap-3 border-b border-line py-4 md:grid-cols-[44px_1fr_100px_110px_80px] md:items-center md:gap-4"
               >
                 <TrackArtwork
                   src={item.coverArtUrl}
@@ -50,6 +51,20 @@ export function HistoryView({
                   {item.source === "MICROPHONE" ? "Microphone" : "Audio file"}
                 </span>
                 <span className="text-right text-[12px] text-muted">{item.time}</span>
+                {item.source === "MICROPHONE" && item.recordingUrl && (
+                  <div className="md:col-span-5 md:pl-14">
+                    <MicrophoneRecordingPlayer src={item.recordingUrl} />
+                    {item.downloadUrl && (
+                      <a
+                        href={item.downloadUrl}
+                        className="mt-2 inline-block text-[12px] font-semibold text-brand hover:underline"
+                        download
+                      >
+                        Download recording
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             ))
           ) : (

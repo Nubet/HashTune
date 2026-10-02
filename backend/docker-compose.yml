@@ -21,6 +21,9 @@ services:
       S3_SECRET_KEY: hashtune-secret
       AUDIO_ENGINE: spectral
       FFMPEG_BINARY: ffmpeg
+      INDEXING_WORKER_ENABLED: "true"
+      INDEXING_WORKER_DELAY_MS: "100"
+      HIBERNATE_BATCH_SIZE: "1000"
       MTG_JAMENDO_SEED_ENABLED: "true"
       MTG_JAMENDO_SEED_DIRECTORY: /app/data/dev/mtg_jamendo_mini
       ALLOWED_ORIGIN: http://localhost:3000,http://127.0.0.1:3000

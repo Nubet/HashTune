@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,21 +15,24 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class FingerprintPersistenceAdapter implements FingerprintRepository {
     private static final int MAX_HASHES_PER_QUERY = 10_000;
+    private static final int INSERT_BATCH_SIZE = 1_000;
 
     private final SpringDataFingerprintRepository repository;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     @Transactional
     public void replace(UUID trackId, List<FingerprintOccurrence> fingerprints) {
         repository.deleteByTrackId(trackId);
-        repository.saveAll(fingerprints.stream()
-                .map(fingerprint -> FingerprintEntity.builder()
-                        .id(UUID.randomUUID())
-                        .hash(fingerprint.hash())
-                        .trackId(trackId)
-                        .anchorOffsetMs(fingerprint.anchorOffsetMs())
-                        .build())
-                .toList());
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO audio_fingerprints (hash, track_id, anchor_offset_ms) VALUES (?, ?, ?)",
+                fingerprints,
+                INSERT_BATCH_SIZE,
+                (statement, fingerprint) -> {
+                    statement.setLong(1, fingerprint.hash());
+                    statement.setObject(2, trackId);
+                    statement.setInt(3, fingerprint.anchorOffsetMs());
+                });
     }
 
     @Override

@@ -3,6 +3,8 @@ package com.norbertfila.hashtune.adapter.out.persistence;
 import com.norbertfila.hashtune.application.port.out.RecognitionRepository;
 import com.norbertfila.hashtune.domain.recognition.Recognition;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -32,6 +34,18 @@ public class RecognitionPersistenceAdapter implements RecognitionRepository {
     }
 
     @Override
+    public List<Recognition> findAll() {
+        return repository.findAll(Sort.by(Sort.Direction.DESC, "createdAt")).stream()
+                .map(RecognitionPersistenceAdapter::toDomain)
+                .toList();
+    }
+
+    @Override
+    public Optional<Recognition> findById(UUID id) {
+        return repository.findById(id).map(RecognitionPersistenceAdapter::toDomain);
+    }
+
+    @Override
     public void deleteAll() {
         repository.deleteAllInBatch();
     }
@@ -46,6 +60,9 @@ public class RecognitionPersistenceAdapter implements RecognitionRepository {
                 .source(recognition.source())
                 .sampleDurationMs(recognition.sampleDurationMs())
                 .recognitionTimeMs(recognition.recognitionTimeMs())
+                .recordingObjectKey(recognition.recordingObjectKey())
+                .recordingContentType(recognition.recordingContentType())
+                .recordingFileName(recognition.recordingFileName())
                 .createdAt(recognition.createdAt())
                 .build();
     }
@@ -60,6 +77,9 @@ public class RecognitionPersistenceAdapter implements RecognitionRepository {
                 recognition.getSource(),
                 recognition.getSampleDurationMs(),
                 recognition.getRecognitionTimeMs(),
+                recognition.getRecordingObjectKey(),
+                recognition.getRecordingContentType(),
+                recognition.getRecordingFileName(),
                 recognition.getCreatedAt());
     }
 }

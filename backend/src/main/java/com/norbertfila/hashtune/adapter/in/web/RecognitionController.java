@@ -4,9 +4,13 @@ import com.norbertfila.hashtune.application.service.RecognitionApplicationServic
 import com.norbertfila.hashtune.domain.recognition.RecognitionSource;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,5 +47,25 @@ public class RecognitionController {
     public ResponseEntity<Void> clearHistory() {
         service.clearHistory();
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/recognition-history/{id}/recording")
+    public ResponseEntity<InputStreamResource> recording(
+            @PathVariable java.util.UUID id, @RequestParam(defaultValue = "false") boolean download) {
+        var recording = service.recording(id);
+        return ResponseEntity.ok()
+                .contentType(contentType(recording.contentType()))
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        (download ? "attachment" : "inline") + "; filename=\"" + recording.fileName() + "\"")
+                .body(new InputStreamResource(recording.content()));
+    }
+
+    private MediaType contentType(String value) {
+        try {
+            return MediaType.parseMediaType(value);
+        } catch (IllegalArgumentException ignored) {
+            return MediaType.APPLICATION_OCTET_STREAM;
+        }
     }
 }

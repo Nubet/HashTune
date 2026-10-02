@@ -37,7 +37,8 @@ class IndexingJobApplicationServiceTest {
         indexingProperties.setRetryBackoffMs(100);
         indexingProperties.setMaxRetryBackoffMs(1_000);
         indexingProperties.setProcessingTimeoutMs(60_000);
-        service = new IndexingJobApplicationService(tracks, jobs, engine, storageProperties, indexingProperties);
+        service = new IndexingJobApplicationService(
+                tracks, jobs, engine, storageProperties, indexingProperties, Runnable::run);
         when(jobs.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 

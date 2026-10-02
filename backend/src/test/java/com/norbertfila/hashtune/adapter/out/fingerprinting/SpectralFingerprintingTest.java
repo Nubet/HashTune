@@ -53,10 +53,32 @@ class SpectralFingerprintingTest {
         assertThatIllegalArgumentException().isThrownBy(() -> fingerprinting.fingerprint(new double[] {1}, 44_101));
     }
 
+    @Test
+    void fanOutConfigurationChangesFingerprintCount() {
+        double[] samples = multiTone(TEST_SAMPLE_RATE, TEST_DURATION_SECONDS);
+
+        List<FingerprintOccurrence> dense = new SpectralFingerprinting(30, 20).fingerprint(samples, TEST_SAMPLE_RATE);
+        List<FingerprintOccurrence> sparse = new SpectralFingerprinting(30, 5).fingerprint(samples, TEST_SAMPLE_RATE);
+
+        assertThat(sparse).isNotEmpty().hasSizeLessThan(dense.size());
+    }
+
     private static double[] sineWave(int sampleRate, int seconds, double frequency) {
         double[] samples = new double[sampleRate * seconds];
         for (int index = 0; index < samples.length; index++) {
             samples[index] = Math.sin(2 * Math.PI * frequency * index / sampleRate);
+        }
+        return samples;
+    }
+
+    private static double[] multiTone(int sampleRate, int seconds) {
+        double[] samples = new double[sampleRate * seconds];
+        for (int index = 0; index < samples.length; index++) {
+            double sample = 0;
+            for (int frequency = 350; frequency <= 3_850; frequency += 100) {
+                sample += Math.sin(2 * Math.PI * frequency * index / sampleRate);
+            }
+            samples[index] = sample / 36;
         }
         return samples;
     }

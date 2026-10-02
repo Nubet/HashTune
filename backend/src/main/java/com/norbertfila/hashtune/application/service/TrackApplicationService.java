@@ -196,10 +196,50 @@ public class TrackApplicationService {
 
     @Transactional
     public IndexingJob reindex(UUID id) {
-        Track track = get(id);
-        track = tracks.save(track.withStatus(TrackStatus.UPLOADED));
-        return jobs.save(new IndexingJob(
-                UUID.randomUUID(), track.id(), IndexingJobStatus.PENDING, 0, 0, null, null, Instant.now(), null, null));
+        Track track = tracks.save(get(id).withStatus(TrackStatus.UPLOADED));
+        IndexingJob existingJob = jobs.findByTrackId(track.id()).orElse(null);
+        if (existingJob != null && existingJob.status() == IndexingJobStatus.PROCESSING) {
+            return existingJob;
+        }
+        return jobs.save(resetJob(existingJob, track.id()));
+    }
+
+    @Transactional
+    public ReindexAllResult reindexAll() {
+        int scheduled = 0;
+        int alreadyProcessing = 0;
+        int awaitingConfirmation = 0;
+        for (Track track : tracks.findAll()) {
+            IndexingJob job = jobs.findByTrackId(track.id()).orElse(null);
+            if (job != null && job.status() == IndexingJobStatus.AWAITING_CONFIRMATION) {
+                awaitingConfirmation++;
+                continue;
+            }
+            if (job != null && job.status() == IndexingJobStatus.PROCESSING) {
+                alreadyProcessing++;
+                continue;
+            }
+            tracks.save(track.withStatus(TrackStatus.UPLOADED));
+            jobs.save(resetJob(job, track.id()));
+            scheduled++;
+        }
+        return new ReindexAllResult(scheduled, alreadyProcessing, awaitingConfirmation);
+    }
+
+    private IndexingJob resetJob(IndexingJob job, UUID trackId) {
+        Instant createdAt = job == null ? Instant.now() : job.createdAt();
+        return new IndexingJob(
+                job == null ? UUID.randomUUID() : job.id(),
+                trackId,
+                IndexingJobStatus.PENDING,
+                0,
+                0,
+                null,
+                null,
+                createdAt,
+                null,
+                null,
+                null);
     }
 
     private void cleanupUploadedObjects(List<String> objectKeys) {
@@ -307,6 +347,8 @@ public class TrackApplicationService {
     public record UploadResult(Track track, IndexingJob job) {}
 
     public record ImportResult(String status, Track track, IndexingJob job) {}
+
+    public record ReindexAllResult(int scheduled, int alreadyProcessing, int awaitingConfirmation) {}
 
     private record PathMetadata(String title, String artist, String album) {
         static PathMetadata from(String relativePath, String originalFilename) {

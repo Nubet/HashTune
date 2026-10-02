@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +45,7 @@ public class JobPersistenceAdapter implements IndexingJobRepository {
     @Override
     @Transactional
     public Optional<IndexingJob> claimNextPending(Instant now) {
-        return repository.findReadyJobs(IndexingJobStatus.PENDING, now).stream()
+        return repository.findReadyJobs(IndexingJobStatus.PENDING, now, PageRequest.of(0, 1)).stream()
                 .findFirst()
                 .map(job -> {
                     job.start();

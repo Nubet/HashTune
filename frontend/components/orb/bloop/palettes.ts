@@ -16,6 +16,7 @@ export type BloopPalette = {
 export const BloopPaletteName = {
   blue: "BLUE",
   light: "LIGHT",
+  dark: "DARK",
 } as const;
 
 export type BloopPaletteName = (typeof BloopPaletteName)[keyof typeof BloopPaletteName];
@@ -32,5 +33,11 @@ export const BLOOP_PALETTES: Record<BloopPaletteName, BloopPalette> = {
     low: hexToRgb("#E05A00"),
     mid: hexToRgb("#FFB020"),
     high: hexToRgb("#FFF8EA"),
+  },
+  [BloopPaletteName.dark]: {
+    main: hexToRgb("#F3FBFF"),
+    low: hexToRgb("#0047FF"),
+    mid: hexToRgb("#00CFFF"),
+    high: hexToRgb("#FFFFFF"),
   },
 };

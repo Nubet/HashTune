@@ -75,38 +75,43 @@ function FloatingCover({ track, side }: { track: LandingTrack; side: "left" | "r
   );
 }
 
+function LandingHeader() {
+  return (
+    <div className="relative z-50 -mb-[5rem] sticky top-0 border-b border-white/[0.08] bg-black/[0.16] text-white backdrop-blur-md backdrop-brightness-90">
+      <nav className="mx-auto flex w-full max-w-[87.5rem] items-center justify-between px-6 py-4 sm:px-8 sm:py-[1.125rem] lg:py-5">
+        <Link href="/" className="flex items-center gap-3">
+          <img
+            src="/hashtune-logo-white.svg"
+            alt="HashTune"
+            className="size-6 drop-shadow-md sm:size-7"
+          />
+          <span className="text-[clamp(1rem,1.1vw,1.125rem)] font-bold tracking-tight drop-shadow-md">
+            HashTune
+          </span>
+        </Link>
+        <div className="flex items-center gap-5 text-[clamp(0.875rem,1vw,1rem)] font-medium text-white/90 drop-shadow-md sm:gap-7">
+          <Link href="#features" className="hidden transition-colors hover:text-white sm:block">
+            Features
+          </Link>
+          <Link href="#faq" className="hidden transition-colors hover:text-white sm:block">
+            FAQ
+          </Link>
+          <Link
+            href="/app"
+            className="rounded-full bg-white px-4 py-2 text-[clamp(0.875rem,1vw,1rem)] font-bold text-black shadow-lg transition-colors hover:bg-white/90 sm:px-5 sm:py-2.5"
+          >
+            Open App
+          </Link>
+        </div>
+      </nav>
+    </div>
+  );
+}
+
 function LandingHero({ tracks }: { tracks: LandingTrack[] }) {
   return (
     <section className="relative flex min-h-[90vh] flex-col overflow-hidden">
       <GradientBackground />
-      <div className="relative z-20 border-b border-white/[0.08] bg-black/[0.16] backdrop-blur-md backdrop-brightness-90">
-        <nav className="mx-auto flex w-full max-w-[87.5rem] items-center justify-between px-6 py-4 sm:px-8 sm:py-[1.125rem] lg:py-5">
-          <Link href="/" className="flex items-center gap-3">
-            <img
-              src="/hashtune-logo-white.svg"
-              alt="HashTune"
-              className="size-6 drop-shadow-md sm:size-7"
-            />
-            <span className="text-[clamp(1rem,1.1vw,1.125rem)] font-bold tracking-tight drop-shadow-md">
-              HashTune
-            </span>
-          </Link>
-          <div className="flex items-center gap-5 text-[clamp(0.875rem,1vw,1rem)] font-medium text-white/90 drop-shadow-md sm:gap-7">
-            <Link href="#features" className="hidden transition-colors hover:text-white sm:block">
-              Features
-            </Link>
-            <Link href="#faq" className="hidden transition-colors hover:text-white sm:block">
-              FAQ
-            </Link>
-            <Link
-              href="/app"
-              className="rounded-full bg-white px-4 py-2 text-[clamp(0.875rem,1vw,1rem)] font-bold text-black shadow-lg transition-colors hover:bg-white/90 sm:px-5 sm:py-2.5"
-            >
-              Open App
-            </Link>
-          </div>
-        </nav>
-      </div>
 
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 pb-32 pt-12 text-center">
         {tracks[0] && <FloatingCover track={tracks[0]} side="left" />}
@@ -333,7 +338,6 @@ function Footer() {
           >
             <GithubIcon className="size-4" />
           </a>
-          <span>English</span>
         </div>
       </div>
     </footer>
@@ -360,6 +364,7 @@ function FooterColumn({ title, links }: { title: string; links: string[] }) {
 export default function LandingPage() {
   return (
     <main className="min-h-screen bg-[#09090b] pb-24 font-sans text-white selection:bg-[#3B82F6] selection:text-white">
+      <LandingHeader />
       <LandingHero tracks={landingCovers} />
       <CoverStream tracks={landingCovers} />
       <FeatureSection />

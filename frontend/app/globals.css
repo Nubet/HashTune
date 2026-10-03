@@ -15,7 +15,6 @@
   --text-ink: var(--brand-navy);
   --text-muted: #64748b;
   --border-line: #e2e8f0;
-
   --background: var(--bg-canvas);
   --foreground: var(--text-ink);
 }
@@ -26,6 +25,8 @@
   --text-ink: var(--brand-white);
   --text-muted: #94a3b8;
   --border-line: #1e293b;
+  --background: var(--bg-canvas);
+  --foreground: var(--text-ink);
 }
 
 .app-shell {
@@ -114,7 +115,8 @@
 }
 
 @keyframes float-subtle {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {

@@ -4,6 +4,7 @@ import { MicIcon, UploadIcon } from "./icons";
 import { MicrophoneRecordingPlayer } from "./MicrophoneRecordingPlayer";
 import { RecognitionResult } from "./RecognitionResult";
 import FluidFieldBackground from "./FluidFieldBackground";
+import { AudioOrb } from "./AudioOrb";
 import { useTheme } from "@/lib/theme";
 
 const RECOGNITION_STAGES_MS = [5_000, 8_000, 12_000] as const;
@@ -43,46 +44,6 @@ function finishRecording(recorder: MediaRecorder, chunks: Blob[]) {
   });
 }
 
-function useAudioLevel(stream: MediaStream | undefined) {
-  const [level, setLevel] = useState(0);
-
-  useEffect(() => {
-    if (!stream) {
-      setLevel(0);
-      return;
-    }
-
-    const context = new AudioContext();
-    const source = context.createMediaStreamSource(stream);
-    const analyser = context.createAnalyser();
-    const samples = new Uint8Array(256);
-    let frame = 0;
-
-    analyser.fftSize = 256;
-    source.connect(analyser);
-    void context.resume();
-
-    const measure = () => {
-      analyser.getByteTimeDomainData(samples);
-      const rms = Math.sqrt(
-        samples.reduce((sum, sample) => sum + (sample - 128) ** 2, 0) / samples.length,
-      );
-      setLevel(Math.min(1, rms / 32));
-      frame = requestAnimationFrame(measure);
-    };
-
-    measure();
-    return () => {
-      cancelAnimationFrame(frame);
-      source.disconnect();
-      analyser.disconnect();
-      void context.close();
-    };
-  }, [stream]);
-
-  return level;
-}
-
 function useObjectUrl(file: File | null) {
   const [url, setUrl] = useState<string>();
 
@@ -114,9 +75,7 @@ function useListenController(onRecognize: ListenViewProps["onRecognize"]) {
   const [fileName, setFileName] = useState("");
   const [microphoneStream, setMicrophoneStream] = useState<MediaStream>();
   const [microphoneRecording, setMicrophoneRecording] = useState<File | null>(null);
-  const audioLevel = useAudioLevel(microphoneStream);
   const microphoneRecordingUrl = useObjectUrl(microphoneRecording);
-  const waveformLevel = Math.min(1, Math.sqrt(audioLevel) * 1.5);
 
   async function recognizeFile(file: File, source: "MICROPHONE" | "AUDIO_FILE") {
     setIsListening(true);
@@ -199,7 +158,6 @@ function useListenController(onRecognize: ListenViewProps["onRecognize"]) {
     fileName,
     microphoneStream,
     microphoneRecordingUrl,
-    waveformLevel,
     recognizeFile,
     recordMicrophone,
   };
@@ -211,7 +169,6 @@ export function ListenView({ recognition, onRecognize }: ListenViewProps) {
     fileName,
     microphoneStream,
     microphoneRecordingUrl,
-    waveformLevel,
     recognizeFile,
     recordMicrophone,
   } = useListenController(onRecognize);
@@ -268,7 +225,7 @@ export function ListenView({ recognition, onRecognize }: ListenViewProps) {
               <button
                 onClick={() => void recordMicrophone()}
                 disabled={isListening}
-                className={`flex h-11 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold text-white transition-[background-color,box-shadow,transform] sm:text-[0.9375rem] ${
+                className={`relative isolate flex h-11 shrink-0 items-center justify-center gap-2 overflow-hidden rounded-full border border-transparent bg-clip-padding px-5 text-sm font-semibold text-white outline-none transition-[background-color,box-shadow,transform] sm:text-[0.9375rem] ${
                   isListening
                     ? "bg-white/20 animate-pulse"
                     : "bg-gradient-to-r from-blue-600 to-cyan-500 shadow-[0_0_1.25rem_rgba(59,130,246,0.3)] hover:scale-105 hover:shadow-[0_0_1.5rem_rgba(59,130,246,0.5)]"
@@ -306,37 +263,7 @@ export function ListenView({ recognition, onRecognize }: ListenViewProps) {
             )}
           </div>
 
-          <div className="relative mx-auto mt-16 flex size-64 items-center justify-center">
-            <div
-              className={`absolute inset-12 rounded-full border ${isListening ? "border-brand/50 dark:border-blue-500/50" : "border-brand/20 dark:border-white/10"} animate-ripple`}
-            />
-            <div
-              className={`absolute inset-12 rounded-full border ${isListening ? "border-brand/40 dark:border-blue-500/40" : "border-brand/15 dark:border-white/5"} animate-ripple`}
-              style={{ animationDelay: "1.33s" }}
-            />
-            <div
-              className={`absolute inset-12 rounded-full border ${isListening ? "border-brand/25 dark:border-blue-500/20" : "border-brand/10 dark:border-white/5"} animate-ripple`}
-              style={{ animationDelay: "2.66s" }}
-            />
-
-            <div
-              className={`logo-disc relative z-20 flex size-28 items-center justify-center rounded-full border border-line bg-canvas shadow-[0_0.75rem_2.5rem_rgba(15,23,42,0.12)] transition-transform duration-75 ease-out dark:border-white/10 dark:bg-[#121216] dark:shadow-[0_0.75rem_2.5rem_rgba(0,0,0,0.35)] ${isListening ? "shadow-[0_0_2.5rem_rgba(59,130,246,0.4)]" : ""}`}
-              style={isListening ? { transform: `scale(${1 + waveformLevel * 0.15})` } : undefined}
-            >
-              <img
-                src="/hashtune-logo-blue.svg"
-                alt=""
-                aria-hidden="true"
-                className="logo-mark logo-mark-blue size-12"
-              />
-              <img
-                src="/hashtune-logo-white.svg"
-                alt=""
-                aria-hidden="true"
-                className="logo-mark logo-mark-white size-12 opacity-90"
-              />
-            </div>
-          </div>
+          {isListening && microphoneStream && <AudioOrb audioStream={microphoneStream} />}
         </div>
       </section>
       {recognition && <RecognitionResult recognition={recognition} />}

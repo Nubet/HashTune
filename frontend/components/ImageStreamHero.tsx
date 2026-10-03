@@ -110,7 +110,7 @@ function ImageStreamHero({
               return (
                 <div
                   key={`${keyframes}-${index}`}
-                  className={`${cardClass} absolute overflow-hidden shadow-[0_24px_50px_rgb(0_0_0/0.35)]`}
+                  className={`${cardClass} absolute overflow-hidden shadow-[0_1.5rem_3.125rem_rgb(0_0_0/0.35)]`}
                   style={{
                     left: "50%",
                     top: `${axis}%`,

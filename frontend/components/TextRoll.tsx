@@ -1,7 +1,9 @@
 "use client";
 
 import {
-  motion,
+  LazyMotion,
+  domAnimation,
+  m,
   type Target,
   type TargetAndTransition,
   type Transition,
@@ -52,38 +54,40 @@ export function TextRoll({
   const letters = children.split("");
 
   return (
-    <span className={className}>
-      {letters.map((letter, index) => {
-        const content = letter === " " ? "\u00A0" : letter;
+    <LazyMotion features={domAnimation}>
+      <span className={className}>
+        {letters.map((letter, index) => {
+          const content = letter === " " ? "\u00A0" : letter;
 
-        return (
-          <span
-            key={`${letter}-${index}`}
-            className="relative inline-block [perspective:10000px] [transform-style:preserve-3d]"
-            aria-hidden="true"
-          >
-            <motion.span
-              className="absolute inline-block [backface-visibility:hidden] [transform-origin:50%_25%]"
-              initial={variants?.enter.initial ?? defaultVariants.enter.initial}
-              animate={variants?.enter.animate ?? defaultVariants.enter.animate}
-              transition={{ ...transition, duration, delay: getEnterDelay(index) }}
+          return (
+            <span
+              key={`${letter}-${index}`}
+              className="relative inline-block [perspective:625rem] [transform-style:preserve-3d]"
+              aria-hidden="true"
             >
-              {content}
-            </motion.span>
-            <motion.span
-              className="absolute inline-block [backface-visibility:hidden] [transform-origin:50%_100%]"
-              initial={variants?.exit.initial ?? defaultVariants.exit.initial}
-              animate={variants?.exit.animate ?? defaultVariants.exit.animate}
-              transition={{ ...transition, duration, delay: getExitDelay(index) }}
-              onAnimationComplete={letters.length === index + 1 ? onAnimationComplete : undefined}
-            >
-              {content}
-            </motion.span>
-            <span className="invisible">{content}</span>
-          </span>
-        );
-      })}
-      <span className="sr-only">{children}</span>
-    </span>
+              <m.span
+                className="absolute inline-block [backface-visibility:hidden] [transform-origin:50%_25%]"
+                initial={variants?.enter.initial ?? defaultVariants.enter.initial}
+                animate={variants?.enter.animate ?? defaultVariants.enter.animate}
+                transition={{ ...transition, duration, delay: getEnterDelay(index) }}
+              >
+                {content}
+              </m.span>
+              <m.span
+                className="absolute inline-block [backface-visibility:hidden] [transform-origin:50%_100%]"
+                initial={variants?.exit.initial ?? defaultVariants.exit.initial}
+                animate={variants?.exit.animate ?? defaultVariants.exit.animate}
+                transition={{ ...transition, duration, delay: getExitDelay(index) }}
+                onAnimationComplete={letters.length === index + 1 ? onAnimationComplete : undefined}
+              >
+                {content}
+              </m.span>
+              <span className="invisible">{content}</span>
+            </span>
+          );
+        })}
+        <span className="sr-only">{children}</span>
+      </span>
+    </LazyMotion>
   );
 }

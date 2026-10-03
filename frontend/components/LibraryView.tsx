@@ -462,7 +462,7 @@ export function LibraryView({
   function selectAlbum(album: AlbumSummary) {
     const selection = { title: album.title, artist: album.artist };
     setSelectedAlbum(selection);
-    requestPage(0, "tracks", { artist: album.artist, album: album.title });
+    requestPage(0, "tracks", { artist: undefined, album: album.title });
   }
 
   function selectArtist(artist: ArtistSummary) {

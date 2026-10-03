@@ -33,27 +33,29 @@ interface SpringDataTrackRepository extends JpaRepository<TrackEntity, UUID> {
 
     @Query(value = """
             SELECT t.album AS title,
-                   t.artist AS artist,
+                   COALESCE(MAX(NULLIF(TRIM(t.album_artist), '')), MIN(t.artist)) AS artist,
                    MAX(t.cover_art_url) AS cover_art_url,
                    (array_agg(t.id ORDER BY t.created_at)
                        FILTER (WHERE t.cover_art_object_key IS NOT NULL))[1] AS cover_art_track_id,
                    COUNT(t.id) AS track_count
             FROM tracks t
             WHERE t.album IS NOT NULL
-              AND (:query = '' OR LOWER(t.album) LIKE CONCAT('%', LOWER(:query), '%')
-                   OR LOWER(t.artist) LIKE CONCAT('%', LOWER(:query), '%'))
+               AND (:query = '' OR LOWER(t.album) LIKE CONCAT('%', LOWER(:query), '%')
+                    OR LOWER(t.artist) LIKE CONCAT('%', LOWER(:query), '%')
+                    OR LOWER(t.album_artist) LIKE CONCAT('%', LOWER(:query), '%'))
               AND (CAST(:origin AS VARCHAR) IS NULL OR t.origin = CAST(:origin AS VARCHAR))
-            GROUP BY t.album, t.artist
-            ORDER BY t.album, t.artist
-            """, countQuery = """
+             GROUP BY t.album, COALESCE(NULLIF(TRIM(t.album_artist), ''), '')
+             ORDER BY t.album, artist
+             """, countQuery = """
             SELECT COUNT(*) FROM (
-                SELECT t.album, t.artist
+                SELECT t.album, COALESCE(NULLIF(TRIM(t.album_artist), ''), '') AS album_artist
                 FROM tracks t
                 WHERE t.album IS NOT NULL
-                  AND (:query = '' OR LOWER(t.album) LIKE CONCAT('%', LOWER(:query), '%')
-                       OR LOWER(t.artist) LIKE CONCAT('%', LOWER(:query), '%'))
+                   AND (:query = '' OR LOWER(t.album) LIKE CONCAT('%', LOWER(:query), '%')
+                        OR LOWER(t.artist) LIKE CONCAT('%', LOWER(:query), '%')
+                        OR LOWER(t.album_artist) LIKE CONCAT('%', LOWER(:query), '%'))
                   AND (CAST(:origin AS VARCHAR) IS NULL OR t.origin = CAST(:origin AS VARCHAR))
-                GROUP BY t.album, t.artist
+                GROUP BY t.album, COALESCE(NULLIF(TRIM(t.album_artist), ''), '')
             ) albums
             """, nativeQuery = true)
     Page<AlbumSummaryProjection> searchAlbums(

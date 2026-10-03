@@ -129,10 +129,12 @@ def inspect_file(path: Path, relative_path: str) -> dict[str, Any]:
             title = tag(tags, "title")
             artist = tag(tags, "artist")
             album = tag(tags, "album")
+            album_artist = tag(tags, "albumartist")
         else:
             title = tag(tags, "\xa9nam")
             artist = tag(tags, "\xa9ART")
             album = tag(tags, "\xa9alb")
+            album_artist = tag(tags, "aART")
         if not title:
             warnings.append("MISSING_TITLE")
         if not artist:
@@ -143,7 +145,7 @@ def inspect_file(path: Path, relative_path: str) -> dict[str, Any]:
             warnings.append("MISSING_EMBEDDED_COVER")
     except Exception as error:
         warnings.append(f"METADATA_READ_FAILED: {error}")
-        title = artist = album = None
+        title = artist = album = album_artist = None
 
     if not title or not artist or not album:
         warnings.append("PATH_METADATA_FALLBACK")
@@ -155,6 +157,7 @@ def inspect_file(path: Path, relative_path: str) -> dict[str, Any]:
         "title": title,
         "artist": artist,
         "album": album,
+        "albumArtist": album_artist,
         "warnings": sorted(set(warnings)),
         "errors": [],
     }
@@ -244,7 +247,7 @@ def sha256(path: Path) -> str:
 
 
 def tag(tags: Any, name: str) -> str | None:
-    values = tags.get(name.upper()) or tags.get(name.lower())
+    values = tags.get(name) or tags.get(name.upper()) or tags.get(name.lower())
     return str(values[0]).strip() if values and str(values[0]).strip() else None
 
 

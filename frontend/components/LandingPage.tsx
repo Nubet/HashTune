@@ -50,24 +50,31 @@ function FloatingCover({ track, side }: { track: LandingTrack; side: "left" | "r
 
   return (
     <div
-      className={`absolute hidden -translate-y-1/2 cursor-pointer shadow-2xl transition-[transform] duration-500 hover:scale-105 lg:block ${isLeft ? "left-[5%] -rotate-12 hover:-rotate-6" : "right-[5%] rotate-12 hover:rotate-6"}`}
-      style={{ top: isLeft ? "40%" : "45%" }}
+      className={`absolute hidden lg:block animate-float-subtle ${isLeft ? "left-[5%]" : "right-[5%]"}`}
+      style={{ 
+        top: isLeft ? "40%" : "45%",
+        animationDelay: isLeft ? "0s" : "-3s" 
+      }}
     >
       <div
-        className={`${isLeft ? "h-56 w-56" : "h-64 w-64"} group relative overflow-hidden rounded-xl border border-white/20 bg-black`}
+        className={`-translate-y-1/2 cursor-pointer shadow-2xl transition-[transform] duration-500 hover:scale-105 ${isLeft ? "-rotate-12 hover:-rotate-6" : "rotate-12 hover:rotate-6"}`}
       >
-        <img
-          src={track.cover}
-          alt={`${track.title} cover art`}
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-        />
-        <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
-          <div
-            className={`${isLeft ? "size-12" : "size-14"} grid place-items-center rounded-full border border-white/30 bg-black/60 backdrop-blur-md`}
-          >
-            <span
-              className={`${isLeft ? "border-l-[0.625rem] border-y-[0.375rem]" : "border-l-[0.75rem] border-y-[0.5rem]"} ml-1 h-0 w-0 border-y-transparent border-l-white`}
-            />
+        <div
+          className={`${isLeft ? "h-56 w-56" : "h-64 w-64"} group relative overflow-hidden rounded-xl border border-white/20 bg-black`}
+        >
+          <img
+            src={track.cover}
+            alt={`${track.title} cover art`}
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
+            <div
+              className={`${isLeft ? "size-12" : "size-14"} grid place-items-center rounded-full border border-white/30 bg-black/60 backdrop-blur-md`}
+            >
+              <span
+                className={`${isLeft ? "border-l-[0.625rem] border-y-[0.375rem]" : "border-l-[0.75rem] border-y-[0.5rem]"} ml-1 h-0 w-0 border-y-transparent border-l-white`}
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -113,6 +113,19 @@
   animation: ripple 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+@keyframes float-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-16px);
+  }
+}
+
+@utility animate-float-subtle {
+  animation: float-subtle 6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

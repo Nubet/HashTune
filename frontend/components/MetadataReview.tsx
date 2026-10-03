@@ -42,16 +42,16 @@ export function MetadataReview({
     <div className="fixed inset-0 z-40 grid place-items-center bg-navy/45 px-5">
       <form
         onSubmit={submit}
-        className="w-full max-w-130 bg-canvas p-6 shadow-[0_20px_60px_rgba(0,0,0,.2)]"
+        className="w-full max-w-130 bg-canvas p-6 shadow-[0_1.25rem_3.75rem_rgba(0,0,0,.2)]"
       >
-        <div className="text-[11px] font-bold uppercase tracking-widest text-brand">
+        <div className="text-[0.6875rem] font-bold uppercase tracking-widest text-brand">
           Review metadata
         </div>
-        <h2 className="mt-2 text-[26px] font-bold tracking-[-.035em]">Confirm this track</h2>
-        <p className="mt-2 truncate text-[12px] text-muted" title={draft.fileName}>
+        <h2 className="mt-2 text-[1.625rem] font-bold tracking-[-.035em]">Confirm this track</h2>
+        <p className="mt-2 truncate text-xs text-muted" title={draft.fileName}>
           {draft.fileName}
         </p>
-        <p className="mt-4 text-[13px] text-muted">
+        <p className="mt-4 text-[0.8125rem] text-muted">
           We found these tags in the file. Correct anything before adding it to your library.
         </p>
         {draft.coverArtUrl && (
@@ -62,21 +62,21 @@ export function MetadataReview({
               color="#17212b"
               className="size-16 shrink-0"
             />
-            <span className="text-[12px] text-muted">Embedded cover found in the file</span>
+            <span className="text-xs text-muted">Embedded cover found in the file</span>
           </div>
         )}
         <div className="mt-6 grid gap-4">
           {(["title", "artist", "album"] as const).map((field) => (
             <label
               key={field}
-              className="grid gap-1 text-[11px] font-semibold uppercase tracking-[.08em]"
+              className="grid gap-1 text-[0.6875rem] font-semibold uppercase tracking-[.08em]"
             >
               {field}
               <input
                 required={field !== "album"}
                 value={metadata[field]}
                 onChange={(event) => setMetadata({ ...metadata, [field]: event.target.value })}
-                className="border bg-transparent px-3 py-2 text-[14px] font-normal normal-case tracking-normal outline-none focus:border-brand"
+                className="border bg-transparent px-3 py-2 text-sm font-normal normal-case tracking-normal outline-none focus:border-brand"
               />
             </label>
           ))}

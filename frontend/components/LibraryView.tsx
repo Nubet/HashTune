@@ -47,7 +47,7 @@ function TrackRow({
   const menuOpen = activeMenu === track.id;
 
   return (
-    <div className="grid grid-cols-[44px_1fr_auto_36px] items-center gap-3 border-b border-line py-3 transition-colors hover:bg-subtle sm:grid-cols-[44px_1fr_76px_90px_36px] sm:gap-4 group">
+    <div className="group grid grid-cols-[2.75rem_1fr_auto_2.25rem] items-center gap-3 border-b border-line py-3 transition-colors hover:bg-subtle sm:grid-cols-[2.75rem_1fr_4.75rem_5.625rem_2.25rem] sm:gap-4">
       <TrackArtwork
         src={track.coverArtUrl}
         alt={`${track.title} cover art`}
@@ -55,15 +55,15 @@ function TrackRow({
         className="size-11 rounded-md shadow-sm"
       />
       <div className="min-w-0">
-        <b className="block truncate text-[14px] font-semibold text-ink group-hover:text-brand transition-colors">
+        <b className="block truncate text-sm font-semibold text-ink group-hover:text-brand transition-colors">
           {track.title}
         </b>
-        <div className="mt-0.5 truncate text-[12px] text-muted">
+        <div className="mt-0.5 truncate text-xs text-muted">
           {track.artist}
           {track.album ? ` · ${track.album}` : ""}
         </div>
       </div>
-      <span className="hidden text-[12px] text-muted font-medium sm:block">{track.duration}</span>
+      <span className="hidden text-xs text-muted font-medium sm:block">{track.duration}</span>
       <span className="hidden sm:flex justify-end">
         {track.status !== "INDEXED" && (
           <Badge variant={statusVariant(track.status)}>{statusLabel(track.status)}</Badge>
@@ -94,7 +94,7 @@ function TrackRow({
               <button
                 type="button"
                 role="menuitem"
-                className="block w-full px-4 py-2 text-left text-[12px] font-medium text-ink hover:bg-subtle"
+                className="block w-full px-4 py-2 text-left text-xs font-medium text-ink hover:bg-subtle"
                 onClick={() => {
                   onMenuChange(null);
                   void onReindex(track.id);
@@ -105,7 +105,7 @@ function TrackRow({
               <button
                 type="button"
                 role="menuitem"
-                className="block w-full px-4 py-2 text-left text-[12px] font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                className="block w-full px-4 py-2 text-left text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
                 onClick={() => {
                   onMenuChange(null);
                   void onRemove(track.id);
@@ -136,7 +136,7 @@ function LibraryPagination({
 
   return (
     <div className="mt-8 flex flex-col sm:flex-row items-center justify-between border-t border-line pt-6 gap-4">
-      <div className="flex items-center gap-4 text-[12px] text-muted font-medium">
+      <div className="flex items-center gap-4 text-xs text-muted font-medium">
         <span>
           Page {pagination.page + 1} of {pagination.totalPages}
         </span>
@@ -145,7 +145,7 @@ function LibraryPagination({
           <select
             value={pageSize}
             onChange={(event) => onPageSizeChange(Number(event.target.value))}
-            className="rounded-md border border-line bg-canvas px-2 py-1 text-[12px] font-semibold text-ink outline-none focus:border-brand"
+            className="rounded-md border border-line bg-canvas px-2 py-1 text-xs font-semibold text-ink outline-none focus:border-brand"
             aria-label="Items per page"
           >
             <option value={25}>25</option>
@@ -231,8 +231,8 @@ function EmptyState({ title, message }: { title: string; message?: string }) {
       <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-subtle">
         <InfoIcon className="size-8 text-muted" />
       </div>
-      <p className="text-[16px] font-bold">{title}</p>
-      {message && <p className="mt-1 text-[14px] text-muted">{message}</p>}
+      <p className="text-base font-bold">{title}</p>
+      {message && <p className="mt-1 text-sm text-muted">{message}</p>}
     </div>
   );
 }
@@ -265,12 +265,12 @@ function AlbumGrid({
             />
           </div>
           <div
-            className="truncate text-[15px] font-bold text-ink transition-colors group-hover:text-brand"
+            className="truncate text-[0.9375rem] font-bold text-ink transition-colors group-hover:text-brand"
             title={album.title}
           >
             {album.title}
           </div>
-          <div className="mt-0.5 truncate text-[13px] text-muted" title={album.artist}>
+          <div className="mt-0.5 truncate text-[0.8125rem] text-muted" title={album.artist}>
             {album.artist}
           </div>
         </button>
@@ -297,18 +297,18 @@ function ArtistGrid({
           onClick={() => onSelect(artist)}
           className="group block min-w-0 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
         >
-          <div className="mx-auto mb-4 flex aspect-square w-full max-w-[160px] items-center justify-center overflow-hidden rounded-full border border-line bg-subtle shadow-sm transition-transform duration-500 group-hover:scale-105 group-hover:shadow-md">
+          <div className="mx-auto mb-4 flex aspect-square w-full max-w-[10rem] items-center justify-center overflow-hidden rounded-full border border-line bg-subtle shadow-sm transition-transform duration-500 group-hover:scale-105 group-hover:shadow-md">
             <span className="text-5xl font-light text-muted">
               {artist.name.charAt(0).toUpperCase()}
             </span>
           </div>
           <div
-            className="truncate text-[15px] font-bold text-ink transition-colors group-hover:text-brand"
+            className="truncate text-[0.9375rem] font-bold text-ink transition-colors group-hover:text-brand"
             title={artist.name}
           >
             {artist.name}
           </div>
-          <div className="mt-1 text-[12px] font-medium text-muted">{artist.trackCount} tracks</div>
+          <div className="mt-1 text-xs font-medium text-muted">{artist.trackCount} tracks</div>
         </button>
       ))}
     </div>
@@ -491,12 +491,12 @@ export function LibraryView({
 
   return (
     <section>
-      <div className="mx-auto max-w-[1200px] px-4 py-10 lg:px-8">
+      <div className="mx-4 my-6 max-w-[75rem] rounded-[1.75rem] border border-white/10 bg-[#17171b] px-4 py-8 shadow-[0_1.125rem_3.125rem_rgba(0,0,0,0.25)] sm:mx-auto lg:px-8">
         <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
           <div>
             <SectionLabel>Your collection</SectionLabel>
             <h1 className="mt-2 text-4xl font-extrabold tracking-tight">Library</h1>
-            <p className="mt-2 text-[14px] text-muted">
+            <p className="mt-2 text-sm text-muted">
               {pagination.totalElements === 0 && !isLoading
                 ? "Add music to start identifying tracks."
                 : `${pagination.totalElements} ${pagination.totalElements === 1 ? "item" : "items"}`}
@@ -518,7 +518,7 @@ export function LibraryView({
                   type="button"
                   aria-pressed={origin === value}
                   onClick={() => changeOrigin(value as LibraryOrigin)}
-                  className={`h-9 rounded-full px-4 text-[12px] font-semibold transition-[color,background-color,box-shadow] ${
+                  className={`h-9 rounded-full px-4 text-xs font-semibold transition-[color,background-color,box-shadow] ${
                     origin === value
                       ? "bg-white dark:bg-ink text-ink dark:text-canvas shadow-sm"
                       : "text-muted hover:text-ink"
@@ -567,7 +567,7 @@ export function LibraryView({
 
         {indexingProgress !== null && (
           <div className="mt-8 rounded-xl bg-subtle px-6 py-5 border border-line">
-            <div className="flex justify-between text-[13px] font-bold text-ink mb-3">
+            <div className="mb-3 flex justify-between text-[0.8125rem] font-bold text-ink">
               <span className="flex items-center gap-2">
                 <InfoIcon className="size-4 text-brand" /> Preparing your library…
               </span>
@@ -594,7 +594,7 @@ export function LibraryView({
               role="tab"
               aria-selected={view === value}
               onClick={() => selectView(value)}
-              className={`px-5 py-3 text-[14px] font-bold capitalize transition-colors border-b-2 ${
+              className={`border-b-2 px-5 py-3 text-sm font-bold capitalize transition-colors ${
                 view === value
                   ? "border-brand text-brand"
                   : "border-transparent text-muted hover:text-ink hover:border-line"
@@ -614,13 +614,13 @@ export function LibraryView({
             id="library-search"
             value={query}
             onChange={(event) => updateQuery(event.target.value)}
-            className="w-full bg-transparent py-3 text-[14px] outline-none placeholder:text-muted"
+            className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted"
             placeholder={selectedArtist || selectedAlbum ? "Search tracks..." : `Search ${view}...`}
           />
           {query && (
             <button
               type="button"
-              className="text-[12px] font-semibold text-muted hover:text-ink px-2 py-1 rounded hover:bg-subtle"
+              className="rounded px-2 py-1 text-xs font-semibold text-muted hover:bg-subtle hover:text-ink"
               onClick={() => updateQuery("")}
             >
               Clear
@@ -634,15 +634,17 @@ export function LibraryView({
               <button
                 type="button"
                 onClick={goBack}
-                className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-subtle px-3 py-1.5 text-[12px] font-semibold text-ink hover:bg-line transition-colors"
+                className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-subtle px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-line"
               >
                 ← Back to {selectedAlbum ? "albums" : "artists"}
               </button>
               <h2 className="text-3xl font-extrabold">{selectedArtist || selectedAlbum?.title}</h2>
               {selectedAlbum && (
-                <p className="mt-1 text-[15px] font-medium text-muted">{selectedAlbum.artist}</p>
+                <p className="mt-1 text-[0.9375rem] font-medium text-muted">
+                  {selectedAlbum.artist}
+                </p>
               )}
-              <p className="mt-2 text-[13px] text-muted font-medium">
+              <p className="mt-2 text-[0.8125rem] font-medium text-muted">
                 {pagination.totalElements} {pagination.totalElements === 1 ? "track" : "tracks"}
               </p>
             </div>

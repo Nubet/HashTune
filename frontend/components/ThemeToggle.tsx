@@ -26,7 +26,7 @@ function applyTheme(theme: Theme) {
   window.dispatchEvent(new Event(themeChangeEvent));
 }
 
-export function ThemeToggle() {
+export function ThemeToggle({ className = "" }: { className?: string }) {
   const theme = useSyncExternalStore(subscribe, getTheme, getServerTheme);
 
   function toggleTheme() {
@@ -36,7 +36,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="grid size-8 place-items-center rounded-full text-muted transition-colors hover:bg-subtle hover:text-ink focus:outline-none"
+      className={`grid size-9 place-items-center rounded-full text-muted transition-colors hover:bg-subtle hover:text-ink focus:outline-none ${className}`}
       aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
     >
       {theme === "dark" ? <SunIcon /> : <MoonIcon />}

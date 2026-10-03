@@ -3,7 +3,7 @@ import type { Recognition } from "@/lib/music";
 import { MicIcon, UploadIcon } from "./icons";
 import { MicrophoneRecordingPlayer } from "./MicrophoneRecordingPlayer";
 import { RecognitionResult } from "./RecognitionResult";
-import { Button, SectionLabel } from "./ui";
+import FluidFieldBackground from "./FluidFieldBackground";
 
 const RECOGNITION_STAGES_MS = [5_000, 8_000, 12_000] as const;
 
@@ -214,50 +214,68 @@ export function ListenView({ recognition, onRecognize }: ListenViewProps) {
     recognizeFile,
     recordMicrophone,
   } = useListenController(onRecognize);
+  const heading = isListening
+    ? "Listening…"
+    : recognition?.status === "MATCHED"
+      ? "Song identified"
+      : "Discover the music";
+  const description = isListening
+    ? microphoneStream
+      ? "Listening to your microphone. Checking the clip against the library."
+      : fileName
+        ? "Checking the clip against the library."
+        : "Capturing a short sample from your microphone."
+    : recognition?.status === "MATCHED"
+      ? "This track matches something in your library."
+      : "Use your microphone or choose an audio clip to search your local library.";
 
   return (
     <>
-      <section className="bg-canvas overflow-hidden border-b border-line/40">
-        <div className="mx-auto grid min-h-100 max-w-250 grid-cols-1 items-center gap-10 px-6 py-10 lg:grid-cols-[1fr_380px] lg:gap-12 lg:py-16 lg:px-8">
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left z-10">
-            <SectionLabel>Local recognition</SectionLabel>
-            <h1 className="mt-2 text-4xl sm:text-5xl font-extrabold tracking-tight text-ink leading-[1.1]">
-              {isListening
-                ? "Listening…"
-                : recognition?.status === "MATCHED"
-                  ? "Song identified"
-                  : "Identify music"}
+      <section className="relative overflow-hidden bg-[#0a0a0c] text-white">
+        {/* Fluid WebGL background */}
+        <div className="absolute inset-0 z-0 opacity-80 mix-blend-screen">
+          <FluidFieldBackground />
+        </div>
+
+        <div className="mx-auto flex min-h-[calc(100vh-4.5rem)] max-w-[62.5rem] flex-col items-center justify-center px-6 py-16 text-center lg:px-8">
+          <div className="z-10 flex w-full flex-col items-center">
+            <h1 className="mt-3 text-[clamp(2.75rem,6vw,4.5rem)] font-semibold leading-[1.05] tracking-tight text-white drop-shadow-sm">
+              {heading}
             </h1>
-            <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-muted font-medium">
-              {isListening
-                ? microphoneStream
-                  ? "Listening to your microphone. Checking the clip against the library."
-                  : fileName
-                    ? "Checking the clip against the library."
-                    : "Capturing a short sample from your microphone."
-                : recognition?.status === "MATCHED"
-                  ? "This track matches something in your library."
-                  : "Use your microphone or choose an audio clip to search your local library."}
+            <p className="mt-4 max-w-lg text-[0.9375rem] font-medium leading-relaxed text-white/60 sm:text-base">
+              {description}
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-              <Button
-                variant="primary"
-                size="md"
-                onClick={() => void recordMicrophone()}
-                disabled={isListening}
-                className={isListening ? "animate-pulse" : "shadow-md shadow-brand/20"}
-              >
-                <MicIcon className="size-4" />
-                {isListening ? "Checking…" : "Use microphone"}
-              </Button>
-              <Button
-                size="md"
+
+            {/* Suno-like input bar */}
+            <div className="mt-12 flex w-full max-w-[40rem] items-center justify-between rounded-full border border-white/10 bg-white/5 p-2 pr-2.5 shadow-[0_0.75rem_2.5rem_rgba(0,0,0,0.4)] backdrop-blur-md transition-[background-color,border-color,box-shadow] focus-within:border-white/20 focus-within:bg-white/10 hover:border-white/20 hover:bg-white/[0.07]">
+              <button
                 onClick={() => document.getElementById("sample-input")?.click()}
                 disabled={isListening}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/5 text-white/70 transition-colors hover:bg-white/15 hover:text-white"
+                title="Upload audio file"
               >
-                <UploadIcon className="size-4" />
-                Upload file
-              </Button>
+                <UploadIcon className="size-[1.125rem]" />
+              </button>
+
+              <div className="flex-1 px-4 text-left text-sm font-medium text-white/50 sm:text-[0.9375rem]">
+                {isListening
+                  ? "Listening to your microphone..."
+                  : "Upload a file or use your microphone..."}
+              </div>
+
+              <button
+                onClick={() => void recordMicrophone()}
+                disabled={isListening}
+                className={`flex h-11 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold text-white transition-[background-color,box-shadow,transform] sm:text-[0.9375rem] ${
+                  isListening
+                    ? "bg-white/20 animate-pulse"
+                    : "bg-gradient-to-r from-blue-600 to-cyan-500 shadow-[0_0_1.25rem_rgba(59,130,246,0.3)] hover:scale-105 hover:shadow-[0_0_1.5rem_rgba(59,130,246,0.5)]"
+                }`}
+              >
+                <MicIcon className="size-[1.125rem]" />
+                {isListening ? "Listening" : "Identify"}
+              </button>
+
               <input
                 id="sample-input"
                 type="file"
@@ -269,13 +287,15 @@ export function ListenView({ recognition, onRecognize }: ListenViewProps) {
                 }}
               />
             </div>
+
             {fileName && (
-              <div className="mt-4 px-3 py-1.5 rounded-full bg-subtle text-[11px] font-bold text-muted border border-line shadow-sm">
+              <div className="mt-6 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs font-bold text-white/60 shadow-sm backdrop-blur-md">
                 {fileName}
               </div>
             )}
+
             {microphoneRecordingUrl && (
-              <div className="mt-6 w-full flex lg:justify-start justify-center">
+              <div className="mt-6 flex w-full justify-center">
                 <MicrophoneRecordingPlayer
                   key={microphoneRecordingUrl}
                   src={microphoneRecordingUrl}
@@ -284,34 +304,28 @@ export function ListenView({ recognition, onRecognize }: ListenViewProps) {
             )}
           </div>
 
-          <div className="relative mx-auto flex size-72 items-center justify-center mt-6 lg:mt-0">
+          <div className="relative mx-auto mt-16 flex size-64 items-center justify-center">
             <div
-              className={`absolute inset-16 rounded-full border ${isListening ? "border-brand/60" : "border-brand/20"} animate-ripple`}
+              className={`absolute inset-12 rounded-full border ${isListening ? "border-blue-500/50" : "border-white/10"} animate-ripple`}
             />
             <div
-              className={`absolute inset-16 rounded-full border ${isListening ? "border-brand/50" : "border-brand/20"} animate-ripple`}
+              className={`absolute inset-12 rounded-full border ${isListening ? "border-blue-500/40" : "border-white/5"} animate-ripple`}
               style={{ animationDelay: "1.33s" }}
             />
             <div
-              className={`absolute inset-16 rounded-full border ${isListening ? "border-brand/40" : "border-brand/20"} animate-ripple`}
+              className={`absolute inset-12 rounded-full border ${isListening ? "border-blue-500/20" : "border-white/5"} animate-ripple`}
               style={{ animationDelay: "2.66s" }}
             />
 
             <div
-              className={`logo-disc relative z-20 flex size-28 items-center justify-center rounded-full transition-transform duration-75 ease-out bg-canvas shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-line/40 ${isListening ? "shadow-[0_0_30px_rgba(59,130,246,0.2)]" : ""}`}
+              className={`logo-disc relative z-20 flex size-28 items-center justify-center rounded-full border border-white/10 bg-[#121216] shadow-[0_0.75rem_2.5rem_rgba(0,0,0,0.35)] transition-transform duration-75 ease-out ${isListening ? "shadow-[0_0_2.5rem_rgba(59,130,246,0.4)]" : ""}`}
               style={isListening ? { transform: `scale(${1 + waveformLevel * 0.15})` } : undefined}
             >
-              <img
-                src="/hashtune-logo-blue.svg"
-                alt=""
-                aria-hidden="true"
-                className="logo-mark logo-mark-blue size-14"
-              />
               <img
                 src="/hashtune-logo-white.svg"
                 alt=""
                 aria-hidden="true"
-                className="logo-mark logo-mark-white size-14"
+                className="size-12 opacity-90"
               />
             </div>
           </div>

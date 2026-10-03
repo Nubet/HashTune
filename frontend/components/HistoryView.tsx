@@ -17,7 +17,7 @@ export function HistoryView({
 }) {
   return (
     <section>
-      <div className="mx-auto max-w-[1200px] px-4 py-10 lg:px-8">
+      <div className="mx-4 my-6 max-w-[75rem] rounded-[1.75rem] border border-white/10 bg-[#17171b] px-4 py-8 shadow-[0_1.125rem_3.125rem_rgba(0,0,0,0.25)] sm:mx-auto lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <SectionLabel>Your activity</SectionLabel>
@@ -54,7 +54,7 @@ export function HistoryView({
               {history.map((item) => (
                 <div
                   key={item.id}
-                  className="grid gap-3 border-b border-line/50 py-4 md:grid-cols-[48px_1fr_120px_120px_100px] md:items-center md:gap-4 hover:bg-subtle transition-colors rounded-lg px-2 -mx-2"
+                  className="-mx-2 grid gap-3 rounded-lg border-b border-line/50 px-2 py-4 transition-colors hover:bg-subtle md:grid-cols-[3rem_1fr_7.5rem_7.5rem_6.25rem] md:items-center md:gap-4"
                 >
                   <TrackArtwork
                     src={item.coverArtUrl}
@@ -63,20 +63,22 @@ export function HistoryView({
                     className="size-12 rounded-md shadow-sm"
                   />
                   <div className="min-w-0">
-                    <b className="block truncate text-[15px] text-ink font-bold">{item.title}</b>
-                    <div className="mt-0.5 truncate text-[13px] text-muted font-medium">
+                    <b className="block truncate text-[0.9375rem] font-bold text-ink">
+                      {item.title}
+                    </b>
+                    <div className="mt-0.5 truncate text-[0.8125rem] font-medium text-muted">
                       {item.artist}
                     </div>
                   </div>
-                  <span className="text-[12px] font-semibold text-ink">
+                  <span className="text-xs font-semibold text-ink">
                     <Badge variant={item.score.includes("match") ? "success" : "default"}>
                       {item.score}
                     </Badge>
                   </span>
-                  <span className="text-[12px] font-medium text-muted">
+                  <span className="text-xs font-medium text-muted">
                     {item.source === "MICROPHONE" ? "Microphone" : "Audio file"}
                   </span>
-                  <span className="text-left md:text-right text-[12px] font-medium text-muted">
+                  <span className="text-left text-xs font-medium text-muted md:text-right">
                     {item.time}
                   </span>
 
@@ -89,7 +91,7 @@ export function HistoryView({
                       {item.downloadUrl && (
                         <a
                           href={item.downloadUrl}
-                          className="mt-3 inline-block text-[12px] font-bold text-brand hover:text-brand-hover transition-colors"
+                          className="mt-3 inline-block text-xs font-bold text-brand transition-colors hover:text-brand-hover"
                           download
                         >
                           Download recording ↓
@@ -105,10 +107,8 @@ export function HistoryView({
               <div className="mx-auto size-16 rounded-full bg-canvas shadow-sm flex items-center justify-center mb-4">
                 <InfoIcon className="size-8 text-muted" />
               </div>
-              <p className="text-[16px] font-bold text-ink">No history yet</p>
-              <p className="text-[14px] text-muted mt-1">
-                Your identified tracks will appear here.
-              </p>
+              <p className="text-base font-bold text-ink">No history yet</p>
+              <p className="mt-1 text-sm text-muted">Your identified tracks will appear here.</p>
             </div>
           )}
         </div>

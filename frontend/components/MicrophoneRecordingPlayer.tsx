@@ -87,12 +87,12 @@ export function MicrophoneRecordingPlayer({
           className="grid size-10 shrink-0 place-items-center rounded-full bg-brand text-white transition-[background-color,transform] hover:bg-brand-hover hover:scale-105 active:scale-95"
           aria-label={isPlaying ? "Pause microphone recording" : "Play microphone recording"}
         >
-          <span className="text-[14px] leading-none">{isPlaying ? "Ⅱ" : "▶"}</span>
+          <span className="text-sm leading-none">{isPlaying ? "Ⅱ" : "▶"}</span>
         </button>
         <div className="min-w-0 flex-1 flex flex-col justify-center">
           <div className="flex items-center justify-between mb-1">
-            <div className="text-[12px] font-bold text-ink truncate mr-2">Microphone recording</div>
-            <span className="text-[11px] font-medium tabular-nums text-muted shrink-0">
+            <div className="mr-2 truncate text-xs font-bold text-ink">Microphone recording</div>
+            <span className="shrink-0 text-[0.6875rem] font-medium tabular-nums text-muted">
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
           </div>

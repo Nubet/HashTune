@@ -397,11 +397,11 @@ export default function Home() {
   }
 
   return (
-    <div className="app-shell flex min-h-screen flex-col bg-[#0a0a0c] text-ink">
+    <div className="app-shell flex min-h-screen flex-col bg-canvas text-ink transition-colors duration-300">
       <Header page={page} onPageChange={changePage} />
       <main className="flex-1 pb-20">
         {error && (
-          <div className="mx-4 mt-6 rounded-2xl border border-red-400/25 bg-red-950/30 px-5 py-4 text-[0.8125rem] font-semibold text-red-200 shadow-sm sm:mx-auto sm:max-w-[75rem] lg:px-6">
+          <div className="mx-4 mt-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-[0.8125rem] font-semibold text-red-700 shadow-sm sm:mx-auto sm:max-w-[75rem] lg:px-6 dark:border-red-400/25 dark:bg-red-950/30 dark:text-red-200">
             {error}
           </div>
         )}

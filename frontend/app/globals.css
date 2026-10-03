@@ -29,6 +29,16 @@
 }
 
 .app-shell {
+  --bg-canvas: #f7f8fb;
+  --bg-subtle: #eef1f6;
+  --text-ink: #111827;
+  --text-muted: #64748b;
+  --border-line: #dbe2ec;
+  --background: #f7f8fb;
+  --foreground: #111827;
+}
+
+.dark .app-shell {
   --bg-canvas: #111114;
   --bg-subtle: #1a1a1f;
   --text-ink: #f7f7f8;
@@ -137,16 +147,25 @@ body {
 }
 
 .logo-disc {
-  background: var(--brand-white);
-  box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 6%);
   transition:
     background-color 0.3s ease,
     box-shadow 0.3s ease;
 }
 
-.dark .logo-disc {
-  background: #131b2c;
-  box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 40%);
+.app-logo-light {
+  display: block;
+}
+
+.app-logo-dark {
+  display: none;
+}
+
+.dark .app-logo-light {
+  display: none;
+}
+
+.dark .app-logo-dark {
+  display: block;
 }
 
 button {

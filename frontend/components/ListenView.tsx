@@ -4,6 +4,7 @@ import { MicIcon, UploadIcon } from "./icons";
 import { MicrophoneRecordingPlayer } from "./MicrophoneRecordingPlayer";
 import { RecognitionResult } from "./RecognitionResult";
 import FluidFieldBackground from "./FluidFieldBackground";
+import { useTheme } from "@/lib/theme";
 
 const RECOGNITION_STAGES_MS = [5_000, 8_000, 12_000] as const;
 
@@ -214,6 +215,7 @@ export function ListenView({ recognition, onRecognize }: ListenViewProps) {
     recognizeFile,
     recordMicrophone,
   } = useListenController(onRecognize);
+  const theme = useTheme();
   const heading = isListening
     ? "Listening…"
     : recognition?.status === "MATCHED"
@@ -231,33 +233,33 @@ export function ListenView({ recognition, onRecognize }: ListenViewProps) {
 
   return (
     <>
-      <section className="relative overflow-hidden bg-[#0a0a0c] text-white">
+      <section className="relative overflow-hidden bg-canvas text-ink dark:bg-[#0a0a0c] dark:text-white">
         {/* Fluid WebGL background */}
-        <div className="absolute inset-0 z-0 opacity-80 mix-blend-screen">
-          <FluidFieldBackground />
+        <div className="absolute inset-0 z-0 opacity-70 mix-blend-normal dark:opacity-80 dark:mix-blend-screen">
+          <FluidFieldBackground mode={theme} />
         </div>
 
         <div className="mx-auto flex min-h-[calc(100vh-4.5rem)] max-w-[62.5rem] flex-col items-center justify-center px-6 py-16 text-center lg:px-8">
           <div className="z-10 flex w-full flex-col items-center">
-            <h1 className="mt-3 text-[clamp(2.75rem,6vw,4.5rem)] font-semibold leading-[1.05] tracking-tight text-white drop-shadow-sm">
+            <h1 className="mt-3 text-[clamp(2.75rem,6vw,4.5rem)] font-semibold leading-[1.05] tracking-tight text-ink drop-shadow-sm dark:text-white">
               {heading}
             </h1>
-            <p className="mt-4 max-w-lg text-[0.9375rem] font-medium leading-relaxed text-white/60 sm:text-base">
+            <p className="mt-4 max-w-lg text-[0.9375rem] font-medium leading-relaxed text-muted sm:text-base">
               {description}
             </p>
 
             {/* Suno-like input bar */}
-            <div className="mt-12 flex w-full max-w-[40rem] items-center justify-between rounded-full border border-white/10 bg-white/5 p-2 pr-2.5 shadow-[0_0.75rem_2.5rem_rgba(0,0,0,0.4)] backdrop-blur-md transition-[background-color,border-color,box-shadow] focus-within:border-white/20 focus-within:bg-white/10 hover:border-white/20 hover:bg-white/[0.07]">
+            <div className="mt-12 flex w-full max-w-[40rem] items-center justify-between rounded-full border border-line bg-subtle p-2 pr-2.5 shadow-[0_0.75rem_2.5rem_rgba(15,23,42,0.08)] backdrop-blur-md transition-[background-color,border-color,box-shadow] focus-within:border-brand focus-within:bg-canvas hover:border-brand/50 dark:border-white/10 dark:bg-white/5 dark:shadow-[0_0.75rem_2.5rem_rgba(0,0,0,0.4)] dark:focus-within:border-white/20 dark:focus-within:bg-white/10 dark:hover:border-white/20 dark:hover:bg-white/[0.07]">
               <button
                 onClick={() => document.getElementById("sample-input")?.click()}
                 disabled={isListening}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/5 text-white/70 transition-colors hover:bg-white/15 hover:text-white"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-canvas text-muted transition-colors hover:bg-line hover:text-ink dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/15 dark:hover:text-white"
                 title="Upload audio file"
               >
                 <UploadIcon className="size-[1.125rem]" />
               </button>
 
-              <div className="flex-1 px-4 text-left text-sm font-medium text-white/50 sm:text-[0.9375rem]">
+              <div className="flex-1 px-4 text-left text-sm font-medium text-muted sm:text-[0.9375rem]">
                 {isListening
                   ? "Listening to your microphone..."
                   : "Upload a file or use your microphone..."}
@@ -289,7 +291,7 @@ export function ListenView({ recognition, onRecognize }: ListenViewProps) {
             </div>
 
             {fileName && (
-              <div className="mt-6 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs font-bold text-white/60 shadow-sm backdrop-blur-md">
+              <div className="mt-6 rounded-full border border-line bg-subtle px-4 py-1.5 text-xs font-bold text-muted shadow-sm backdrop-blur-md">
                 {fileName}
               </div>
             )}
@@ -306,26 +308,32 @@ export function ListenView({ recognition, onRecognize }: ListenViewProps) {
 
           <div className="relative mx-auto mt-16 flex size-64 items-center justify-center">
             <div
-              className={`absolute inset-12 rounded-full border ${isListening ? "border-blue-500/50" : "border-white/10"} animate-ripple`}
+              className={`absolute inset-12 rounded-full border ${isListening ? "border-brand/50 dark:border-blue-500/50" : "border-brand/20 dark:border-white/10"} animate-ripple`}
             />
             <div
-              className={`absolute inset-12 rounded-full border ${isListening ? "border-blue-500/40" : "border-white/5"} animate-ripple`}
+              className={`absolute inset-12 rounded-full border ${isListening ? "border-brand/40 dark:border-blue-500/40" : "border-brand/15 dark:border-white/5"} animate-ripple`}
               style={{ animationDelay: "1.33s" }}
             />
             <div
-              className={`absolute inset-12 rounded-full border ${isListening ? "border-blue-500/20" : "border-white/5"} animate-ripple`}
+              className={`absolute inset-12 rounded-full border ${isListening ? "border-brand/25 dark:border-blue-500/20" : "border-brand/10 dark:border-white/5"} animate-ripple`}
               style={{ animationDelay: "2.66s" }}
             />
 
             <div
-              className={`logo-disc relative z-20 flex size-28 items-center justify-center rounded-full border border-white/10 bg-[#121216] shadow-[0_0.75rem_2.5rem_rgba(0,0,0,0.35)] transition-transform duration-75 ease-out ${isListening ? "shadow-[0_0_2.5rem_rgba(59,130,246,0.4)]" : ""}`}
+              className={`logo-disc relative z-20 flex size-28 items-center justify-center rounded-full border border-line bg-canvas shadow-[0_0.75rem_2.5rem_rgba(15,23,42,0.12)] transition-transform duration-75 ease-out dark:border-white/10 dark:bg-[#121216] dark:shadow-[0_0.75rem_2.5rem_rgba(0,0,0,0.35)] ${isListening ? "shadow-[0_0_2.5rem_rgba(59,130,246,0.4)]" : ""}`}
               style={isListening ? { transform: `scale(${1 + waveformLevel * 0.15})` } : undefined}
             >
+              <img
+                src="/hashtune-logo-blue.svg"
+                alt=""
+                aria-hidden="true"
+                className="logo-mark logo-mark-blue size-12"
+              />
               <img
                 src="/hashtune-logo-white.svg"
                 alt=""
                 aria-hidden="true"
-                className="size-12 opacity-90"
+                className="logo-mark logo-mark-white size-12 opacity-90"
               />
             </div>
           </div>

@@ -1,9 +1,10 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import type { Theme } from "@/lib/theme";
 
 export type FluidFieldBackgroundProps = {
-  mode?: "dark" | "light";
+  mode?: Theme;
   hue?: number;
   saturation?: number;
   brightness?: number;
@@ -16,6 +17,28 @@ const DEFAULTS = {
   saturation: 1,
   brightness: 1,
 } as const;
+
+type FluidPalette = {
+  background: string;
+  base: readonly [number, number, number];
+  glowStart: readonly [number, number, number];
+  glowEnd: readonly [number, number, number];
+};
+
+const PALETTES: Record<Theme, FluidPalette> = {
+  dark: {
+    background: "#0a0a0c",
+    base: [0.012, 0.015, 0.025],
+    glowStart: [0.05, 0.3, 0.8],
+    glowEnd: [0, 0.6, 0.9],
+  },
+  light: {
+    background: "#f7faff",
+    base: [0.91, 0.94, 1],
+    glowStart: [0.18, 0.42, 0.92],
+    glowEnd: [0.08, 0.7, 0.9],
+  },
+};
 
 const TARGET_SELECTOR = "#bg-canvas";
 
@@ -113,13 +136,13 @@ const FLUID_SOURCE = `<!doctype html>
                 vec2 uv = gl_FragCoord.xy / u_resolution.xy;
                 uv.x *= u_resolution.x / u_resolution.y;
 
-                vec3 baseColor = vec3(0.012, 0.015, 0.025);
+                 vec3 baseColor = vec3(__BASE_COLOR__);
                 vec2 st = uv * 0.7;
                 st += vec2(snoise(st + u_time * 0.05), snoise(st - u_time * 0.05)) * 0.3;
 
                 float beam = smoothstep(0.1, 0.8, snoise(vec2(st.x + st.y * 1.5 - u_time * 0.15, u_time * 0.02)));
                 // HashTune custom blue/cyan palette instead of purple/pink
-                vec3 glow = mix(vec3(0.05, 0.3, 0.8), vec3(0.0, 0.6, 0.9), snoise(uv * 1.5 + u_time * 0.1) * 0.5 + 0.5);
+                 vec3 glow = mix(vec3(__GLOW_START__), vec3(__GLOW_END__), snoise(uv * 1.5 + u_time * 0.1) * 0.5 + 0.5);
 
                 gl_FragColor = vec4(baseColor + (glow * beam * 0.7), 1.0);
             }
@@ -155,7 +178,11 @@ const FLUID_SOURCE = `<!doctype html>
 
 </body></html>`;
 
-function buildFocusedDocument() {
+function rgb(values: readonly [number, number, number]) {
+  return values.join(", ");
+}
+
+function buildFocusedDocument(palette: FluidPalette) {
   const targetJson = JSON.stringify([{ selector: TARGET_SELECTOR, role: "background" }]).replace(
     /</g,
     "\\u003c",
@@ -199,22 +226,32 @@ body[data-threeui-ready] > [data-threeui-role] { visibility: visible !important;
   window.addEventListener('load', isolate, { once: true });
 })();
 </script>`;
-  return FLUID_SOURCE.replace(/<\/head>/i, `${focusStyle}</head>`).replace(
-    /<\/body>/i,
-    `${focusScript}</body>`,
-  );
+  return FLUID_SOURCE.replace("bg-[#0a0a0c]", "bg-transparent")
+    .replace("__BASE_COLOR__", rgb(palette.base))
+    .replace("__GLOW_START__", rgb(palette.glowStart))
+    .replace("__GLOW_END__", rgb(palette.glowEnd))
+    .replace(
+      "font-family: 'Inter', sans-serif;",
+      `font-family: 'Inter', sans-serif; background: ${palette.background};`,
+    )
+    .replace(/<\/head>/i, `${focusStyle}</head>`)
+    .replace(/<\/body>/i, `${focusScript}</body>`);
 }
 
-const FOCUSED_DOCUMENT = buildFocusedDocument();
+const FOCUSED_DOCUMENTS = {
+  dark: buildFocusedDocument(PALETTES.dark),
+  light: buildFocusedDocument(PALETTES.light),
+} satisfies Record<Theme, string>;
 
 export default function FluidFieldBackground({
-  mode = "dark",
+  mode,
   hue = DEFAULTS.hue,
   saturation = DEFAULTS.saturation,
   brightness = DEFAULTS.brightness,
   className,
   style,
 }: FluidFieldBackgroundProps) {
+  const activePalette = mode ?? "dark";
   const safeHue = clamp(hue, -180, 180);
   const safeSaturation = clamp(saturation, 0, 2);
   const safeBrightness = clamp(brightness, 0.35, 1.65);
@@ -226,9 +263,9 @@ export default function FluidFieldBackground({
   return (
     <iframe
       className={className}
-      data-mode={mode}
+      data-mode={activePalette}
       title="Aura UI fluid background"
-      srcDoc={FOCUSED_DOCUMENT}
+      srcDoc={FOCUSED_DOCUMENTS[activePalette]}
       sandbox="allow-scripts"
       loading="eager"
       style={{

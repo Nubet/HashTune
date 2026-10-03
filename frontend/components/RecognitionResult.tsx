@@ -8,8 +8,8 @@ export function RecognitionResult({ recognition }: { recognition: Recognition })
   const isInvalidAudio = recognition.status === "INVALID_AUDIO";
 
   return (
-    <div className="bg-[#0d0d10] px-4 py-8">
-      <div className="animate-enter mx-auto max-w-[75rem] rounded-[1.75rem] border border-white/10 bg-[#17171b] px-6 py-8 shadow-[0_1.125rem_3.125rem_rgba(0,0,0,0.25)] lg:px-8">
+    <div className="bg-canvas px-4 py-8">
+      <div className="animate-enter mx-auto max-w-300 rounded-[1.75rem] border border-line px-6 py-8 shadow-[0_1.125rem_3.125rem_rgba(15,23,42,0.08)] lg:px-8 dark:bg-[#17171b]">
         <div className="flex items-center gap-5">
           <TrackArtwork
             src={recognition.coverArtUrl}
@@ -19,7 +19,7 @@ export function RecognitionResult({ recognition }: { recognition: Recognition })
           />
           <div>
             <div
-              className={`text-[0.6875rem] font-bold uppercase tracking-[.1em] ${isMatch ? "text-success" : "text-muted"}`}
+              className={`text-[0.6875rem] font-bold uppercase tracking-widest ${isMatch ? "text-success" : "text-muted"}`}
             >
               {isMatch
                 ? `Match found · ${recognition.score}`

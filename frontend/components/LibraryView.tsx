@@ -491,7 +491,7 @@ export function LibraryView({
 
   return (
     <section>
-      <div className="mx-4 my-6 max-w-[75rem] rounded-[1.75rem] border border-white/10 bg-[#17171b] px-4 py-8 shadow-[0_1.125rem_3.125rem_rgba(0,0,0,0.25)] sm:mx-auto lg:px-8">
+      <div className="mx-4 my-6 max-w-[75rem] rounded-[1.75rem] border border-line bg-subtle px-4 py-8 shadow-[0_1.125rem_3.125rem_rgba(15,23,42,0.08)] sm:mx-auto lg:px-8 dark:border-white/10 dark:bg-[#17171b] dark:shadow-[0_1.125rem_3.125rem_rgba(0,0,0,0.25)]">
         <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
           <div>
             <SectionLabel>Your collection</SectionLabel>

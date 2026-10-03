@@ -8,7 +8,7 @@ export function RecognitionResult({ recognition }: { recognition: Recognition })
   const isInvalidAudio = recognition.status === "INVALID_AUDIO";
 
   return (
-    <div className="bg-canvas px-4 py-8">
+    <div id="recognition-result" className="scroll-mt-6 bg-canvas px-4 py-8">
       <div className="animate-enter mx-auto max-w-300 rounded-[1.75rem] border border-line px-6 py-8 shadow-[0_1.125rem_3.125rem_rgba(15,23,42,0.08)] lg:px-8 dark:bg-[#17171b]">
         <div className="flex items-center gap-5">
           <TrackArtwork

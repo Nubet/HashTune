@@ -64,6 +64,15 @@ function formatDuration(durationMs?: number | null) {
   return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
+function scrollToRecognitionResult() {
+  window.requestAnimationFrame(() => {
+    document.getElementById("recognition-result")?.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      block: "start",
+    });
+  });
+}
+
 function matchLabel(status: string) {
   return status === "MATCHED" ? "match" : "--";
 }
@@ -198,7 +207,10 @@ export default function Home() {
       if (!probe || matched) {
         const result = toRecognition(response, source);
         setRecognition(result);
-        if (matched) setHistory((current) => [result, ...current]);
+        if (matched) {
+          setHistory((current) => [result, ...current]);
+          scrollToRecognitionResult();
+        }
       }
       return matched;
     } catch (reason) {

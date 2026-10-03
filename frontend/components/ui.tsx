@@ -28,9 +28,9 @@ export function Button({
   };
 
   const sizes = {
-    sm: "h-9 rounded-full px-4 text-[12px]",
-    md: "h-11 rounded-full px-6 text-[13px]",
-    lg: "h-14 rounded-full px-8 text-[15px]",
+    sm: "h-9 rounded-full px-4 text-xs",
+    md: "h-11 rounded-full px-6 text-[0.8125rem]",
+    lg: "h-14 rounded-full px-8 text-[0.9375rem]",
     icon: "h-10 w-10 rounded-full",
   };
 
@@ -46,9 +46,15 @@ export function Button({
   );
 }
 
-export function SectionLabel({ children }: { children: ReactNode }) {
+export function SectionLabel({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <div className="text-[12px] font-bold uppercase tracking-[0.15em] text-muted mb-2">
+    <div className={`mb-2 text-xs font-bold uppercase tracking-[0.15em] text-muted ${className}`}>
       {children}
     </div>
   );
@@ -74,7 +80,7 @@ export function Badge({
 
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${variants[variant]}`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[0.625rem] font-bold tracking-wide uppercase ${variants[variant]}`}
     >
       {children}
     </span>

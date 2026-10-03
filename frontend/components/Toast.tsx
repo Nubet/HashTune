@@ -35,7 +35,7 @@ export function Toast({ message, onClose }: { message: string; onClose: () => vo
       role="status"
     >
       <InfoIcon className="size-4 text-brand-pale-blue" />
-      <span className="text-[13px] font-semibold text-white tracking-wide">{message}</span>
+      <span className="text-[0.8125rem] font-semibold tracking-wide text-white">{message}</span>
     </div>
   );
 }

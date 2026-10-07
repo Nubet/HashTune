@@ -20,7 +20,7 @@ export async function request<T>(
 ): Promise<T> {
   let response: Response;
   try {
-    response = await fetch(`${baseUrl}${path}`, options);
+    response = await fetch(`${baseUrl}${path}`, { ...options, credentials: "include" });
   } catch {
     throw new ApiError("Backend is unavailable", 0, "NETWORK_ERROR");
   }
@@ -38,7 +38,7 @@ export async function request<T>(
 }
 
 export async function requestVoid(path: string, options: RequestInit = {}) {
-  const response = await fetch(`${baseUrl}${path}`, options);
+  const response = await fetch(`${baseUrl}${path}`, { ...options, credentials: "include" });
   if (!response.ok) {
     const body = problemSchema.safeParse(await response.json().catch(() => null));
     throw new ApiError(

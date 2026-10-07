@@ -3,14 +3,14 @@ package com.norbertfila.hashtune.application.service;
 import com.norbertfila.hashtune.application.port.out.ArtistImageCacheEntry;
 import com.norbertfila.hashtune.application.port.out.ArtistImageCacheRepository;
 import com.norbertfila.hashtune.application.port.out.ArtistImageProvider;
+import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
-import java.net.URI;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +22,7 @@ public class ArtistImageService {
     private final ArtistImageCacheRepository cache;
     private final ArtistImageProvider provider;
     private final Executor refreshExecutor;
-    private final ConcurrentHashMap<String, CompletableFuture<Optional<String>>> refreshes =
-            new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, CompletableFuture<Optional<String>>> refreshes = new ConcurrentHashMap<>();
 
     public ArtistImageService(
             ArtistImageCacheRepository cache,
@@ -95,7 +94,9 @@ public class ArtistImageService {
 
     private Optional<String> resolve(ArtistName name) {
         Instant now = Instant.now();
-        String imageUrl = provider.findArtistImage(name.displayName()).filter(this::isTrustedImageUrl).orElse(null);
+        String imageUrl = provider.findArtistImage(name.displayName())
+                .filter(this::isTrustedImageUrl)
+                .orElse(null);
         cache.save(new ArtistImageCacheEntry(name.key(), name.displayName(), imageUrl, now));
         return Optional.ofNullable(imageUrl);
     }
@@ -107,8 +108,7 @@ public class ArtistImageService {
     private boolean isTrustedImageUrl(String imageUrl) {
         try {
             URI uri = URI.create(imageUrl);
-            return "https".equalsIgnoreCase(uri.getScheme())
-                    && DEEZER_IMAGE_HOST.equalsIgnoreCase(uri.getHost());
+            return "https".equalsIgnoreCase(uri.getScheme()) && DEEZER_IMAGE_HOST.equalsIgnoreCase(uri.getHost());
         } catch (IllegalArgumentException exception) {
             return false;
         }

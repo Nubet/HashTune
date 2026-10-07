@@ -37,17 +37,25 @@ function TrackRow({
   onMenuChange,
   onReindex,
   onRemove,
+  canManage,
 }: {
   track: Track;
   activeMenu: string | null;
   onMenuChange: (id: string | null) => void;
   onReindex: (id: string) => Promise<void>;
   onRemove: (id: string) => Promise<void>;
+  canManage: boolean;
 }) {
   const menuOpen = activeMenu === track.id;
 
   return (
-    <div className="group grid grid-cols-[2.75rem_1fr_auto_2.25rem] items-center gap-3 border-b border-line py-3 transition-colors hover:bg-subtle sm:grid-cols-[2.75rem_1fr_4.75rem_5.625rem_2.25rem] sm:gap-4">
+    <div
+      className={`group grid items-center gap-3 border-b border-line py-3 transition-colors hover:bg-subtle sm:gap-4 ${
+        canManage
+          ? "grid-cols-[2.75rem_1fr_auto_2.25rem] sm:grid-cols-[2.75rem_1fr_4.75rem_5.625rem_2.25rem]"
+          : "grid-cols-[2.75rem_1fr_auto] sm:grid-cols-[2.75rem_1fr_4.75rem_5.625rem]"
+      }`}
+    >
       <TrackArtwork
         src={track.coverArtUrl}
         alt={`${track.title} cover art`}
@@ -69,7 +77,7 @@ function TrackRow({
           <Badge variant={statusVariant(track.status)}>{statusLabel(track.status)}</Badge>
         )}
       </span>
-      <div className="relative">
+      {canManage && <div className="relative">
         <button
           type="button"
           className="grid size-8 place-items-center text-muted hover:bg-line rounded-full transition-colors"
@@ -116,7 +124,7 @@ function TrackRow({
             </div>
           </>
         )}
-      </div>
+      </div>}
     </div>
   );
 }
@@ -327,12 +335,14 @@ function TrackList({
   onMenuChange,
   onReindex,
   onRemove,
+  canManage,
 }: {
   tracks: Track[];
   activeMenu: string | null;
   onMenuChange: (id: string | null) => void;
   onReindex: (id: string) => Promise<void>;
   onRemove: (id: string) => Promise<void>;
+  canManage: boolean;
 }) {
   if (tracks.length === 0)
     return <EmptyState title="No tracks match your search" message="Try adding more music." />;
@@ -347,6 +357,7 @@ function TrackList({
           onMenuChange={onMenuChange}
           onReindex={onReindex}
           onRemove={onRemove}
+          canManage={canManage}
         />
       ))}
     </div>
@@ -367,6 +378,7 @@ function LibraryResults({
   onMenuChange,
   onReindex,
   onRemove,
+  canManage,
 }: {
   view: LibraryViewMode;
   selectedArtist: string | null;
@@ -381,6 +393,7 @@ function LibraryResults({
   onMenuChange: (id: string | null) => void;
   onReindex: (id: string) => Promise<void>;
   onRemove: (id: string) => Promise<void>;
+  canManage: boolean;
 }) {
   if (isLoading) return <Skeletons view={view} />;
   if (!selectedArtist && !selectedAlbum && view === "albums")
@@ -395,6 +408,7 @@ function LibraryResults({
         onMenuChange={onMenuChange}
         onReindex={onReindex}
         onRemove={onRemove}
+        canManage={canManage}
       />
     );
   }
@@ -408,6 +422,7 @@ export function LibraryView({
   pagination,
   indexingProgress,
   isLoading = false,
+  canManage = false,
   onAddFiles,
   onReindex,
   onRemove,
@@ -421,6 +436,7 @@ export function LibraryView({
   pagination: LibraryPagination;
   indexingProgress: number | null;
   isLoading?: boolean;
+  canManage?: boolean;
   onAddFiles: (files: FileList) => Promise<void>;
   onReindex: (id: string) => Promise<void>;
   onRemove: (id: string) => Promise<void>;
@@ -535,39 +551,43 @@ export function LibraryView({
               ))}
             </div>
 
-            <Button
-              variant="secondary"
-              onClick={() => document.getElementById("library-files")?.click()}
-            >
-              <UploadIcon className="size-4" />
-              Files
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => document.getElementById("library-folder")?.click()}
-            >
-              <UploadIcon className="size-4" />
-              Folder
-            </Button>
-            <input
-              id="library-files"
-              type="file"
-              accept="audio/*,.mp3,.wav,.flac,.m4a,.ogg"
-              multiple
-              hidden
-              onChange={(event) => event.target.files && void onAddFiles(event.target.files)}
-            />
-            <input
-              id="library-folder"
-              type="file"
-              accept="audio/*"
-              multiple
-              hidden
-              /* @ts-expect-error directory upload */
-              webkitdirectory=""
-              directory=""
-              onChange={(event) => event.target.files && void onAddFiles(event.target.files)}
-            />
+            {canManage && (
+              <>
+                <Button
+                  variant="secondary"
+                  onClick={() => document.getElementById("library-files")?.click()}
+                >
+                  <UploadIcon className="size-4" />
+                  Files
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => document.getElementById("library-folder")?.click()}
+                >
+                  <UploadIcon className="size-4" />
+                  Folder
+                </Button>
+                <input
+                  id="library-files"
+                  type="file"
+                  accept="audio/*,.mp3,.wav,.flac,.m4a,.ogg"
+                  multiple
+                  hidden
+                  onChange={(event) => event.target.files && void onAddFiles(event.target.files)}
+                />
+                <input
+                  id="library-folder"
+                  type="file"
+                  accept="audio/*"
+                  multiple
+                  hidden
+                  /* @ts-expect-error directory upload */
+                  webkitdirectory=""
+                  directory=""
+                  onChange={(event) => event.target.files && void onAddFiles(event.target.files)}
+                />
+              </>
+            )}
           </div>
         </div>
 
@@ -670,6 +690,7 @@ export function LibraryView({
             onMenuChange={setActiveMenu}
             onReindex={onReindex}
             onRemove={onRemove}
+            canManage={canManage}
           />
 
           <LibraryPagination

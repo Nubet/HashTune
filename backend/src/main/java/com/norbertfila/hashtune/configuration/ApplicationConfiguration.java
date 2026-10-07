@@ -29,7 +29,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
     AudioProperties.class,
     IndexingProperties.class,
     MtgJamendoSeedProperties.class,
-    RateLimitProperties.class
+    RateLimitProperties.class,
+    IdentityProviderProperties.class
 })
 public class ApplicationConfiguration implements WebMvcConfigurer {
     private final RequestRateLimiter requestRateLimiter;

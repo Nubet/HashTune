@@ -18,6 +18,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.oauth2.jwt.JwtClaimValidator;
@@ -69,7 +70,9 @@ public class SecurityConfiguration {
             throw new IllegalStateException("Identity provider issuer URI must be configured");
         }
 
-        NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(identityProvider.getJwkSetUri()).build();
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(identityProvider.getJwkSetUri())
+                .jwsAlgorithm(SignatureAlgorithm.ES256)
+                .build();
         OAuth2TokenValidator<Jwt> issuerValidator = JwtValidators.createDefaultWithIssuer(identityProvider.getIssuerUri());
         OAuth2TokenValidator<Jwt> validator = issuerValidator;
         if (identityProvider.getAudience() != null && !identityProvider.getAudience().isBlank()) {

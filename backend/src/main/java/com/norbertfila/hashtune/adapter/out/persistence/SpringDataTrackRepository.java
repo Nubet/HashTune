@@ -1,6 +1,5 @@
 package com.norbertfila.hashtune.adapter.out.persistence;
 
-import com.norbertfila.hashtune.domain.track.TrackOrigin;
 import com.norbertfila.hashtune.domain.track.TrackStatus;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,18 +14,43 @@ interface SpringDataTrackRepository extends JpaRepository<TrackEntity, UUID> {
 
     Optional<TrackEntity> findFirstByStatusOrderByCreatedAtAsc(TrackStatus status);
 
-    @Query("""
-            SELECT track FROM TrackEntity track
-            WHERE (:query = '' OR LOWER(track.title) LIKE LOWER(CONCAT('%', :query, '%'))
-               OR LOWER(track.artist) LIKE LOWER(CONCAT('%', :query, '%'))
-               OR LOWER(track.album) LIKE LOWER(CONCAT('%', :query, '%')))
-              AND (:origin IS NULL OR track.origin = :origin)
-              AND (:artist = '' OR track.artist = :artist)
+    @Query(value = """
+            SELECT track.*
+            FROM tracks track
+            WHERE (:query = '' OR LOWER(track.title) LIKE CONCAT('%', LOWER(:query), '%')
+               OR LOWER(track.artist) LIKE CONCAT('%', LOWER(:query), '%')
+               OR LOWER(track.album) LIKE CONCAT('%', LOWER(:query), '%'))
+              AND (CAST(:origin AS VARCHAR) IS NULL OR track.origin = CAST(:origin AS VARCHAR))
+              AND (
+                    :artist = ''
+                    OR EXISTS (
+                        SELECT 1
+                        FROM regexp_split_to_table(track.artist, '\\s*(?:&|,)\\s*') participant
+                        WHERE LOWER(TRIM(participant)) = LOWER(:artist)
+                    )
+              )
               AND (:album = '' OR track.album = :album)
-            """)
+            ORDER BY track.title, track.artist, track.id
+            """, countQuery = """
+            SELECT COUNT(*)
+            FROM tracks track
+            WHERE (:query = '' OR LOWER(track.title) LIKE CONCAT('%', LOWER(:query), '%')
+               OR LOWER(track.artist) LIKE CONCAT('%', LOWER(:query), '%')
+               OR LOWER(track.album) LIKE CONCAT('%', LOWER(:query), '%'))
+              AND (CAST(:origin AS VARCHAR) IS NULL OR track.origin = CAST(:origin AS VARCHAR))
+              AND (
+                    :artist = ''
+                    OR EXISTS (
+                        SELECT 1
+                        FROM regexp_split_to_table(track.artist, '\\s*(?:&|,)\\s*') participant
+                        WHERE LOWER(TRIM(participant)) = LOWER(:artist)
+                    )
+              )
+              AND (:album = '' OR track.album = :album)
+            """, nativeQuery = true)
     Page<TrackEntity> searchTracks(
             @Param("query") String query,
-            @Param("origin") TrackOrigin origin,
+            @Param("origin") String origin,
             @Param("artist") String artist,
             @Param("album") String album,
             Pageable pageable);
@@ -61,15 +85,29 @@ interface SpringDataTrackRepository extends JpaRepository<TrackEntity, UUID> {
     Page<AlbumSummaryProjection> searchAlbums(
             @Param("query") String query, @Param("origin") String origin, Pageable pageable);
 
-    @Query("""
-            SELECT track.artist AS name,
-                   COUNT(track.id) AS trackCount,
-                   COUNT(DISTINCT track.album) AS albumCount
-            FROM TrackEntity track
-            WHERE (:query = '' OR LOWER(track.artist) LIKE LOWER(CONCAT('%', :query, '%')))
-              AND (:origin IS NULL OR track.origin = :origin)
-            GROUP BY track.artist
-            """)
+    @Query(value = """
+            SELECT TRIM(participant) AS name,
+                   COUNT(DISTINCT track.id) AS track_count,
+                   COUNT(DISTINCT track.album) AS album_count
+            FROM tracks track
+            CROSS JOIN LATERAL regexp_split_to_table(track.artist, '\\s*(?:&|,)\\s*') participant
+            WHERE NULLIF(TRIM(participant), '') IS NOT NULL
+              AND (:query = '' OR LOWER(TRIM(participant)) LIKE CONCAT('%', LOWER(:query), '%'))
+              AND (CAST(:origin AS VARCHAR) IS NULL OR track.origin = CAST(:origin AS VARCHAR))
+            GROUP BY TRIM(participant)
+            ORDER BY name
+            """, countQuery = """
+            SELECT COUNT(*)
+            FROM (
+                SELECT TRIM(participant)
+                FROM tracks track
+                CROSS JOIN LATERAL regexp_split_to_table(track.artist, '\\s*(?:&|,)\\s*') participant
+                WHERE NULLIF(TRIM(participant), '') IS NOT NULL
+                  AND (:query = '' OR LOWER(TRIM(participant)) LIKE CONCAT('%', LOWER(:query), '%'))
+                  AND (CAST(:origin AS VARCHAR) IS NULL OR track.origin = CAST(:origin AS VARCHAR))
+                GROUP BY TRIM(participant)
+            ) artists
+            """, nativeQuery = true)
     Page<ArtistSummaryProjection> searchArtists(
-            @Param("query") String query, @Param("origin") TrackOrigin origin, Pageable pageable);
+            @Param("query") String query, @Param("origin") String origin, Pageable pageable);
 }

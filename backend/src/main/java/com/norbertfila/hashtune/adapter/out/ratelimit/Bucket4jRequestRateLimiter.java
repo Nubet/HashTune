@@ -8,6 +8,7 @@ import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -22,7 +23,7 @@ public class Bucket4jRequestRateLimiter implements RequestRateLimiter {
     }
 
     @Override
-    public RateLimitDecision check(ExternalIdentity identity, String clientIp, boolean expensiveRequest) {
+    public RateLimitDecision check(Optional<ExternalIdentity> identity, String clientIp, boolean expensiveRequest) {
         int identityCapacity = expensiveRequest
                 ? properties.getExpensiveIdentityCapacity()
                 : properties.getIdentityCapacity();
@@ -32,12 +33,15 @@ public class Bucket4jRequestRateLimiter implements RequestRateLimiter {
         int ipCapacity = expensiveRequest ? properties.getExpensiveIpCapacity() : properties.getIpCapacity();
         Duration ipRefill = expensiveRequest ? properties.getExpensiveIpRefill() : properties.getIpRefill();
         String scope = expensiveRequest ? "expensive:" : "read:";
-        RateLimitDecision identityDecision = consume(
-                "identity:" + scope + identity.issuer() + ":" + identity.subject(),
-                identityCapacity,
-                identityRefill);
-        if (!identityDecision.allowed()) {
-            return identityDecision;
+        if (identity.isPresent()) {
+            ExternalIdentity owner = identity.get();
+            RateLimitDecision identityDecision = consume(
+                    "identity:" + scope + owner.issuer() + ":" + owner.subject(),
+                    identityCapacity,
+                    identityRefill);
+            if (!identityDecision.allowed()) {
+                return identityDecision;
+            }
         }
         return consume("ip:" + scope + clientIp, ipCapacity, ipRefill);
     }

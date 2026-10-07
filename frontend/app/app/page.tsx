@@ -159,7 +159,7 @@ export default function Home() {
   const { isAdmin } = useAuth();
   const [page, setPage] = useState<Page>("listen");
   const [libraryOrigin, setLibraryOrigin] = useState<"PERSONAL" | "MTG_JAMENDO" | "ALL">(
-    "PERSONAL",
+    "ALL",
   );
   const [tracks, setTracks] = useState<Track[]>([]);
   const [albums, setAlbums] = useState<AlbumSummary[]>([]);

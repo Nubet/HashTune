@@ -345,7 +345,7 @@ function TrackList({
   canManage: boolean;
 }) {
   if (tracks.length === 0)
-    return <EmptyState title="No tracks match your search" message="Try adding more music." />;
+    return <EmptyState title="No tracks match your search" message="Try adjusting your search or source." />;
 
   return (
     <div className="flex flex-col">
@@ -513,14 +513,14 @@ export function LibraryView({
 
   return (
     <section>
-      <div className="mx-4 my-6 max-w-[75rem] rounded-[1.75rem] border border-line bg-subtle px-4 py-8 shadow-[0_1.125rem_3.125rem_rgba(15,23,42,0.08)] sm:mx-auto lg:px-8 dark:border-white/10 dark:bg-[#17171b] dark:shadow-[0_1.125rem_3.125rem_rgba(0,0,0,0.25)]">
+      <div className="mx-4 my-6 max-w-300 rounded-[1.75rem] border border-line bg-subtle px-4 py-8 shadow-[0_1.125rem_3.125rem_rgba(15,23,42,0.08)] sm:mx-auto lg:px-8 dark:border-white/10 dark:bg-[#17171b] dark:shadow-[0_1.125rem_3.125rem_rgba(0,0,0,0.25)]">
         <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
           <div>
-            <SectionLabel>Your collection</SectionLabel>
+            <SectionLabel>Global catalog</SectionLabel>
             <h1 className="mt-2 text-4xl font-extrabold tracking-tight">Library</h1>
             <p className="mt-2 text-sm text-muted">
               {pagination.totalElements === 0 && !isLoading
-                ? "Add music to start identifying tracks."
+                ? "The global catalog is empty for this view."
                 : `${pagination.totalElements} ${pagination.totalElements === 1 ? "item" : "items"}`}
             </p>
           </div>

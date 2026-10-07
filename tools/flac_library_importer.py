@@ -8,6 +8,7 @@ import csv
 import hashlib
 import json
 import mimetypes
+import os
 import sys
 import time
 from pathlib import Path
@@ -98,7 +99,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--backend", default="http://localhost:8080")
-    parser.add_argument("--origin", choices=("PERSONAL", "MTG_JAMENDO"), default="PERSONAL")
+    parser.add_argument("--origin", choices=("HASH_TUNE", "MTG_JAMENDO"), default="HASH_TUNE")
     parser.add_argument("--report", type=Path, default=Path("reports/aac256-import.jsonl"))
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--max-size", type=int, default=MAX_FILE_BYTES)
@@ -178,6 +179,7 @@ def import_file(
                     url,
                     files={"file": (path.name, source, mimetypes.guess_type(path.name)[0] or "application/octet-stream")},
                     data={"origin": origin, "relativePath": relative_path},
+                    headers=auth_headers(),
                     timeout=(30, 900),
                 )
             if response.status_code >= 500 and attempt + 1 < RETRY_COUNT:
@@ -210,7 +212,7 @@ def wait_for_indexing(
     deadline = time.monotonic() + timeout
     while True:
         try:
-            response = requests.get(url, timeout=(30, 60))
+            response = requests.get(url, headers=auth_headers(), timeout=(30, 60))
             response.raise_for_status()
             job = response.json()
             status = job.get("status")
@@ -236,6 +238,11 @@ def wait_for_indexing(
                 result.update(status="INDEXING_PENDING", fingerprinted=False, errors=[str(error)])
                 return result
             time.sleep(poll_interval)
+
+
+def auth_headers() -> dict[str, str]:
+    token = os.environ.get("HASHTUNE_ACCESS_TOKEN")
+    return {"Authorization": f"Bearer {token}"} if token else {}
 
 
 def sha256(path: Path) -> str:

@@ -102,7 +102,7 @@ public class TrackPersistenceAdapter implements TrackRepository, TrackQueryRepos
         return new PageResult<>(
                 result.getContent().stream()
                         .map(artist ->
-                                new ArtistSummary(artist.getName(), artist.getTrackCount(), artist.getAlbumCount()))
+                                new ArtistSummary(artist.getName(), artist.getTrackCount(), artist.getAlbumCount(), null))
                         .toList(),
                 result.getNumber(),
                 result.getSize(),

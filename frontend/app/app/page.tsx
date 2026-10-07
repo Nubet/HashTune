@@ -262,7 +262,9 @@ export default function Home() {
           hasNext: page.hasNext,
           hasPrevious: page.hasPrevious,
         });
-        setArtists(page.content);
+        setArtists(
+          page.content.map((artist) => ({ ...artist, imageUrl: artist.imageUrl ?? undefined })),
+        );
       }
     } catch (reason: unknown) {
       if (requestId !== libraryRequestId.current) return;

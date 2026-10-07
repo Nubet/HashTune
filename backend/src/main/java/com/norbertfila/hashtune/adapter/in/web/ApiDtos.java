@@ -83,9 +83,9 @@ public final class ApiDtos {
         }
     }
 
-    public record ArtistResponse(String name, long trackCount, long albumCount) {
+    public record ArtistResponse(String name, long trackCount, long albumCount, String imageUrl) {
         static ArtistResponse from(ArtistSummary artist) {
-            return new ArtistResponse(artist.name(), artist.trackCount(), artist.albumCount());
+            return new ArtistResponse(artist.name(), artist.trackCount(), artist.albumCount(), artist.imageUrl());
         }
     }
 

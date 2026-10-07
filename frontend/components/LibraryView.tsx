@@ -299,6 +299,10 @@ function ArtistGrid({
         >
           <div className="mx-auto mb-4 aspect-square w-full max-w-[10rem] overflow-hidden rounded-full border border-line bg-subtle shadow-sm transition-transform duration-500 group-hover:scale-105 group-hover:shadow-md">
             <TrackArtwork
+              src={
+                artist.imageUrl ??
+                `/api/v1/library/tracks/artists/${encodeURIComponent(artist.name)}/image`
+              }
               alt={`${artist.name} artwork`}
               seed={`artist:${artist.name}`}
               className="h-full w-full"

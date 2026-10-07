@@ -2,12 +2,15 @@ package com.norbertfila.hashtune.adapter.in.web;
 
 import com.norbertfila.hashtune.application.port.out.TrackSearchQuery;
 import com.norbertfila.hashtune.application.service.TrackApplicationService;
+import com.norbertfila.hashtune.application.service.ArtistImageService;
 import com.norbertfila.hashtune.application.service.TrackQueryService;
 import com.norbertfila.hashtune.domain.track.TrackOrigin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -30,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class TrackController {
     private final TrackApplicationService service;
     private final TrackQueryService queryService;
+    private final ArtistImageService artistImages;
 
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<ApiDtos.UploadResponse> upload(@RequestPart("file") MultipartFile file) {
@@ -77,6 +81,17 @@ public class TrackController {
             @RequestParam(defaultValue = "25") @Min(1) @Max(100) int size) {
         return ApiDtos.PageResponse.from(
                 queryService.searchArtists(query, origin, page, size), ApiDtos.ArtistResponse::from);
+    }
+
+    @GetMapping("/artists/{artistName}/image")
+    public ResponseEntity<Void> artistImage(@PathVariable String artistName) {
+        var imageUrl = artistImages.findImageForDelivery(artistName);
+        if (imageUrl.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(imageUrl.get()))
+                .build();
     }
 
     @DeleteMapping("/{id}")

@@ -11,6 +11,12 @@ services:
         condition: service_healthy
       minio:
         condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://localhost:8080/actuator/health/liveness || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
     restart: on-failure
     environment:
       DATABASE_URL: jdbc:postgresql://postgres:5432/hashtune

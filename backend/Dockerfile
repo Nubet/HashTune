@@ -16,4 +16,6 @@ COPY --from=build /workspace/backend/build/libs/*.jar app.jar
 COPY data/dev/mtg_jamendo_mini /app/data/dev/mtg_jamendo_mini
 
 EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl --fail --silent http://localhost:8080/actuator/health/liveness || exit 1
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

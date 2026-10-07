@@ -12,13 +12,16 @@ import static org.mockito.Mockito.when;
 
 import com.norbertfila.hashtune.application.port.out.AudioRecognitionEngine;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
+import com.norbertfila.hashtune.application.port.out.RecognitionConcurrencyLimiter;
 import com.norbertfila.hashtune.application.port.out.RecognitionRepository;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
 import com.norbertfila.hashtune.configuration.AudioProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
+import com.norbertfila.hashtune.domain.session.ClientSessionId;
 import com.norbertfila.hashtune.domain.track.Track;
 import com.norbertfila.hashtune.domain.track.TrackStatus;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,12 +30,14 @@ import org.springframework.mock.web.MockMultipartFile;
 
 class RecognitionApplicationServiceTest {
     private final RecognitionRepository recognitions = mock(RecognitionRepository.class);
+    private final RecognitionConcurrencyLimiter concurrencyLimiter = mock(RecognitionConcurrencyLimiter.class);
     private final TrackRepository tracks = mock(TrackRepository.class);
     private final ObjectStoragePort storage = mock(ObjectStoragePort.class);
     private final AudioRecognitionEngine engine = mock(AudioRecognitionEngine.class);
     private final StorageProperties storageProperties = new StorageProperties();
     private final AudioProperties audioProperties = new AudioProperties();
     private RecognitionApplicationService service;
+    private final ClientSessionId sessionId = new ClientSessionId("test-session");
 
     @BeforeEach
     void setUp() {
@@ -40,7 +45,8 @@ class RecognitionApplicationServiceTest {
         storageProperties.setAudioBucket("audio");
         audioProperties.setMaxFileSizeBytes(10_000);
         service = new RecognitionApplicationService(
-                recognitions, tracks, storage, engine, storageProperties, audioProperties);
+                recognitions, concurrencyLimiter, tracks, storage, engine, storageProperties, audioProperties);
+        when(concurrencyLimiter.tryAcquire(sessionId)).thenReturn(true);
     }
 
     @Test
@@ -48,8 +54,8 @@ class RecognitionApplicationServiceTest {
         MockMultipartFile file = new MockMultipartFile("file", "sample.mp3", "audio/mpeg", new byte[] {1, 2, 3});
         when(engine.recognize(any())).thenThrow(new IllegalStateException("decoder failed"));
 
-        assertThatThrownBy(() ->
-                        service.probe(file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.AUDIO_FILE))
+        assertThatThrownBy(() -> service.probe(
+                        sessionId, file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.AUDIO_FILE))
                 .isInstanceOf(IllegalStateException.class);
 
         verify(storage).delete(eq("temp"), startsWith("samples/"));
@@ -75,7 +81,7 @@ class RecognitionApplicationServiceTest {
                 .thenReturn(new AudioRecognitionEngine.RecognitionResult(true, trackId, 1.0, 27_000, 5_000, 1, 1));
         when(tracks.findById(trackId)).thenReturn(Optional.of(track));
 
-        service.probe(file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.MICROPHONE);
+        service.probe(sessionId, file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.MICROPHONE);
 
         verify(recognitions).save(any());
     }
@@ -86,8 +92,25 @@ class RecognitionApplicationServiceTest {
         when(engine.recognize(any()))
                 .thenReturn(new AudioRecognitionEngine.RecognitionResult(false, null, 0.0, 0L, 5_000, 1, 1));
 
-        service.recognize(file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.AUDIO_FILE);
+        service.recognize(sessionId, file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.AUDIO_FILE);
 
         verify(storage, never()).put(eq("audio"), any(), any(), anyLong(), any());
+    }
+
+    @Test
+    void scopesHistoryToTheCurrentSession() {
+        service.history(sessionId, 25, 0);
+
+        verify(recognitions).findLatest(sessionId, 25, 0);
+    }
+
+    @Test
+    void clearsOnlyTheCurrentSessionHistory() {
+        when(recognitions.findAll(sessionId)).thenReturn(List.of());
+
+        service.clearHistory(sessionId);
+
+        verify(recognitions).findAll(sessionId);
+        verify(recognitions).deleteAll(sessionId);
     }
 }

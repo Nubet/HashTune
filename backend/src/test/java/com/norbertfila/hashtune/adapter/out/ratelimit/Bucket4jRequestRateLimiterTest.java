@@ -3,7 +3,7 @@ package com.norbertfila.hashtune.adapter.out.ratelimit;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.norbertfila.hashtune.configuration.RateLimitProperties;
-import com.norbertfila.hashtune.domain.session.ClientSessionId;
+import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
 import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,46 +14,46 @@ class Bucket4jRequestRateLimiterTest {
 
     @BeforeEach
     void setUp() {
-        properties.setSessionCapacity(2);
+        properties.setIdentityCapacity(2);
         properties.setIpCapacity(2);
-        properties.setExpensiveSessionCapacity(2);
+        properties.setExpensiveIdentityCapacity(2);
         properties.setExpensiveIpCapacity(2);
-        properties.setSessionRefill(Duration.ofHours(1));
+        properties.setIdentityRefill(Duration.ofHours(1));
         properties.setIpRefill(Duration.ofHours(1));
         limiter = new Bucket4jRequestRateLimiter(properties);
     }
 
     @Test
-    void limitsRequestsPerSession() {
-        ClientSessionId session = new ClientSessionId("session-a");
+    void limitsRequestsPerIdentity() {
+        ExternalIdentity identity = new ExternalIdentity("test-issuer", "subject-a");
 
-        assertThat(limiter.check(session, "127.0.0.1", false).allowed()).isTrue();
-        assertThat(limiter.check(session, "127.0.0.1", false).allowed()).isTrue();
-        assertThat(limiter.check(session, "127.0.0.1", false).allowed()).isFalse();
+        assertThat(limiter.check(identity, "127.0.0.1", false).allowed()).isTrue();
+        assertThat(limiter.check(identity, "127.0.0.1", false).allowed()).isTrue();
+        assertThat(limiter.check(identity, "127.0.0.1", false).allowed()).isFalse();
     }
 
     @Test
-    void limitsRequestsPerIpAcrossSessions() {
-        assertThat(limiter.check(new ClientSessionId("session-a"), "127.0.0.1", false).allowed())
+    void limitsRequestsPerIpAcrossIdentities() {
+        assertThat(limiter.check(new ExternalIdentity("test-issuer", "subject-a"), "127.0.0.1", false).allowed())
                 .isTrue();
-        assertThat(limiter.check(new ClientSessionId("session-b"), "127.0.0.1", false).allowed())
+        assertThat(limiter.check(new ExternalIdentity("test-issuer", "subject-b"), "127.0.0.1", false).allowed())
                 .isTrue();
-        assertThat(limiter.check(new ClientSessionId("session-c"), "127.0.0.1", false).allowed())
+        assertThat(limiter.check(new ExternalIdentity("test-issuer", "subject-c"), "127.0.0.1", false).allowed())
                 .isFalse();
     }
 
     @Test
     void keepsReadAndExpensiveRequestBucketsSeparate() {
-        properties.setSessionCapacity(1);
+        properties.setIdentityCapacity(1);
         properties.setIpCapacity(1);
-        properties.setExpensiveSessionCapacity(1);
+        properties.setExpensiveIdentityCapacity(1);
         properties.setExpensiveIpCapacity(1);
         limiter = new Bucket4jRequestRateLimiter(properties);
-        ClientSessionId session = new ClientSessionId("session-a");
+        ExternalIdentity identity = new ExternalIdentity("test-issuer", "subject-a");
 
-        assertThat(limiter.check(session, "127.0.0.1", false).allowed()).isTrue();
-        assertThat(limiter.check(session, "127.0.0.1", true).allowed()).isTrue();
-        assertThat(limiter.check(session, "127.0.0.1", false).allowed()).isFalse();
-        assertThat(limiter.check(session, "127.0.0.1", true).allowed()).isFalse();
+        assertThat(limiter.check(identity, "127.0.0.1", false).allowed()).isTrue();
+        assertThat(limiter.check(identity, "127.0.0.1", true).allowed()).isTrue();
+        assertThat(limiter.check(identity, "127.0.0.1", false).allowed()).isFalse();
+        assertThat(limiter.check(identity, "127.0.0.1", true).allowed()).isFalse();
     }
 }

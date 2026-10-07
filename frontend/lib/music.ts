@@ -15,7 +15,6 @@ export type Track = {
   comment?: string;
   coverArtUrl?: string;
   duration: string;
-  color: string;
   status: string;
 };
 
@@ -69,7 +68,6 @@ export type Recognition = {
   score: string;
   time: string;
   source: string;
-  color: string;
   matchedAtMs?: number;
   sampleDurationMs?: number;
   recognitionTimeMs?: number;

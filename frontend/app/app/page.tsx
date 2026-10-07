@@ -18,7 +18,6 @@ import type {
   Track,
 } from "@/lib/music";
 
-const colors = ["#0A58CA", "#3B82F6", "#BFDBFE", "#1E293B", "#0F172A", "#F8FAFC"];
 const pendingRemovalsStorageKey = "hashtune.pending-removals";
 let pendingRemovalIds = readPendingRemovalIds();
 const emptyPagination: LibraryPagination = {
@@ -51,11 +50,6 @@ function persistPendingRemovalIds(ids: Set<string>) {
   if (typeof window !== "undefined") {
     window.sessionStorage.setItem(pendingRemovalsStorageKey, JSON.stringify([...ids]));
   }
-}
-
-function colorFor(id: string) {
-  const value = [...id].reduce((sum, character) => sum + character.charCodeAt(0), 0);
-  return colors[value % colors.length];
 }
 
 function formatDuration(durationMs?: number | null) {
@@ -95,7 +89,6 @@ function toTrack(track: ApiTrack): Track {
     comment: track.comment ?? undefined,
     coverArtUrl: track.coverArtUrl ?? undefined,
     duration: formatDuration(track.durationMs),
-    color: colorFor(track.id),
     status: track.status,
   };
 }
@@ -126,7 +119,6 @@ function toRecognition(response: RecognitionResponse, source: string): Recogniti
     score: matchLabel(response.status),
     time: "Just now",
     source,
-    color: colorFor(track?.id ?? "no-match"),
     matchedAtMs: response.matchedAtMs ?? undefined,
     sampleDurationMs: response.sampleDurationMs ?? undefined,
     recognitionTimeMs: response.recognitionTimeMs ?? undefined,
@@ -155,7 +147,6 @@ function toHistoryItem(item: ApiHistoryItem): Recognition {
     score: matchLabel(item.status),
     time: new Date(item.createdAt).toLocaleString("pl-PL"),
     source: item.source,
-    color: colorFor(track?.id ?? "no-match"),
     status: item.status,
     recordingUrl: item.source === "MICROPHONE" ? (item.recordingUrl ?? undefined) : undefined,
     downloadUrl: item.source === "MICROPHONE" ? (item.downloadUrl ?? undefined) : undefined,

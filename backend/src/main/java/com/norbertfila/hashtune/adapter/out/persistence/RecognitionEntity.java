@@ -24,6 +24,7 @@ public class RecognitionEntity {
     @Id
     private UUID id;
 
+    private String sessionId;
     private UUID trackId;
 
     @Enumerated(EnumType.STRING)

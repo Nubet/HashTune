@@ -2,6 +2,7 @@ package com.norbertfila.hashtune.adapter.in.web;
 
 import com.norbertfila.hashtune.adapter.out.storage.StorageException;
 import com.norbertfila.hashtune.application.service.ApplicationException;
+import com.norbertfila.hashtune.application.service.TooManyRequestsException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,18 @@ public class ApiExceptionHandler {
     ResponseEntity<ApiDtos.ProblemResponse> handle(ApplicationException exception, HttpServletRequest request) {
         return problem(
                 exception.status(), exception.code(), exception.code(), exception.getMessage(), request, Map.of());
+    }
+
+    @ExceptionHandler(TooManyRequestsException.class)
+    ResponseEntity<ApiDtos.ProblemResponse> handleRateLimit(
+            TooManyRequestsException exception, HttpServletRequest request) {
+        ResponseEntity<ApiDtos.ProblemResponse> response = problem(
+                exception.status(), exception.code(), exception.code(), exception.getMessage(), request, Map.of());
+        response.getHeaders()
+                .add(
+                        "Retry-After",
+                        Long.toString(Math.max(1, exception.retryAfter().toSeconds())));
+        return response;
     }
 
     @ExceptionHandler(StorageException.class)

@@ -59,7 +59,7 @@ type ApiArtistPage = z.infer<typeof artistPageSchema>;
 export const musicApi = {
   listTracks({
     query = "",
-    origin = "PERSONAL",
+    origin = "ALL",
     artist,
     album,
     page = 0,
@@ -83,7 +83,7 @@ export const musicApi = {
 
   listAlbums({
     query = "",
-    origin = "PERSONAL",
+    origin = "ALL",
     page = 0,
     size = 50,
   }: {
@@ -101,7 +101,7 @@ export const musicApi = {
 
   listArtists({
     query = "",
-    origin = "PERSONAL",
+    origin = "ALL",
     page = 0,
     size = 50,
   }: {

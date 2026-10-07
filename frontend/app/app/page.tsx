@@ -17,6 +17,7 @@ import type {
   Recognition,
   Track,
 } from "@/lib/music";
+import { useAuth } from "@/lib/auth/store";
 
 const pendingRemovalsStorageKey = "hashtune.pending-removals";
 let pendingRemovalIds = readPendingRemovalIds();
@@ -155,6 +156,7 @@ function toHistoryItem(item: ApiHistoryItem): Recognition {
 }
 
 export default function Home() {
+  const { isAdmin } = useAuth();
   const [page, setPage] = useState<Page>("listen");
   const [libraryOrigin, setLibraryOrigin] = useState<"PERSONAL" | "MTG_JAMENDO" | "ALL">(
     "PERSONAL",
@@ -419,6 +421,7 @@ export default function Home() {
             pagination={libraryPagination}
             indexingProgress={indexProgress}
             isLoading={isLoadingLibrary}
+            canManage={isAdmin}
             onAddFiles={addFiles}
             onReindex={reindexTrack}
             onRemove={removeTrack}

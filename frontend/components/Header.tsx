@@ -1,4 +1,5 @@
 import { ThemeToggle } from "./ThemeToggle";
+import { AuthControl } from "./AuthControl";
 
 export type Page = "listen" | "library" | "history";
 
@@ -46,7 +47,10 @@ export function Header({ page, onPageChange }: { page: Page; onPageChange: (page
           </nav>
         </div>
 
-        <ThemeToggle />
+        <div className="ml-auto flex items-center gap-2">
+          <AuthControl />
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

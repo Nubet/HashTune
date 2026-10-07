@@ -1,6 +1,6 @@
 package com.norbertfila.hashtune.domain.track;
 
 public enum TrackOrigin {
-    PERSONAL,
+    HASH_TUNE,
     MTG_JAMENDO
 }

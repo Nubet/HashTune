@@ -3,7 +3,7 @@ export type Track = {
   title: string;
   artist: string;
   album?: string;
-  origin: "PERSONAL" | "MTG_JAMENDO";
+  origin: "HASH_TUNE" | "MTG_JAMENDO";
   albumArtist?: string;
   composer?: string;
   genre?: string;

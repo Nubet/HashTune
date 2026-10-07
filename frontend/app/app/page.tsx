@@ -158,9 +158,7 @@ function toHistoryItem(item: ApiHistoryItem): Recognition {
 export default function Home() {
   const { isAdmin } = useAuth();
   const [page, setPage] = useState<Page>("listen");
-  const [libraryOrigin, setLibraryOrigin] = useState<"PERSONAL" | "MTG_JAMENDO" | "ALL">(
-    "ALL",
-  );
+  const [libraryOrigin, setLibraryOrigin] = useState<"HASH_TUNE" | "MTG_JAMENDO" | "ALL">("HASH_TUNE");
   const [tracks, setTracks] = useState<Track[]>([]);
   const [albums, setAlbums] = useState<AlbumSummary[]>([]);
   const [artists, setArtists] = useState<ArtistSummary[]>([]);

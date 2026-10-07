@@ -59,14 +59,14 @@ type ApiArtistPage = z.infer<typeof artistPageSchema>;
 export const musicApi = {
   listTracks({
     query = "",
-    origin = "ALL",
+    origin = "HASH_TUNE",
     artist,
     album,
     page = 0,
     size = 50,
   }: {
     query?: string;
-    origin?: "PERSONAL" | "MTG_JAMENDO" | "ALL";
+     origin?: "HASH_TUNE" | "MTG_JAMENDO" | "ALL";
     artist?: string;
     album?: string;
     page?: number;
@@ -83,12 +83,12 @@ export const musicApi = {
 
   listAlbums({
     query = "",
-    origin = "ALL",
+    origin = "HASH_TUNE",
     page = 0,
     size = 50,
   }: {
     query?: string;
-    origin?: "PERSONAL" | "MTG_JAMENDO" | "ALL";
+     origin?: "HASH_TUNE" | "MTG_JAMENDO" | "ALL";
     page?: number;
     size?: number;
   } = {}) {
@@ -101,12 +101,12 @@ export const musicApi = {
 
   listArtists({
     query = "",
-    origin = "ALL",
+    origin = "HASH_TUNE",
     page = 0,
     size = 50,
   }: {
     query?: string;
-    origin?: "PERSONAL" | "MTG_JAMENDO" | "ALL";
+     origin?: "HASH_TUNE" | "MTG_JAMENDO" | "ALL";
     page?: number;
     size?: number;
   } = {}) {

@@ -5,7 +5,7 @@ import { TrackArtwork } from "./TrackArtwork";
 import { Button, SectionLabel, Skeleton, Badge } from "./ui";
 
 type LibraryViewMode = "tracks" | "albums" | "artists";
-type LibraryOrigin = "PERSONAL" | "MTG_JAMENDO" | "ALL";
+type LibraryOrigin = "HASH_TUNE" | "MTG_JAMENDO" | "ALL";
 type SelectedAlbum = { title: string; artist: string };
 
 export type LibraryQuery = {
@@ -465,20 +465,20 @@ export function LibraryView({
     });
   }
 
-  function changeOrigin(nextOrigin: LibraryOrigin) {
-    setQuery("");
-    setSelectedArtist(null);
-    setSelectedAlbum(null);
-    setView("tracks");
-    onOriginChange(nextOrigin);
-  }
-
   function selectView(nextView: LibraryViewMode) {
     setView(nextView);
     setSelectedArtist(null);
     setSelectedAlbum(null);
     setQuery("");
     onQueryChange({ resource: nextView, query: "", page: 0, size: pageSize });
+  }
+
+  function changeOrigin(nextOrigin: LibraryOrigin) {
+    setQuery("");
+    setSelectedArtist(null);
+    setSelectedAlbum(null);
+    setView("tracks");
+    onOriginChange(nextOrigin);
   }
 
   function selectAlbum(album: AlbumSummary) {
@@ -526,12 +526,12 @@ export function LibraryView({
           </div>
           <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
             <div
-              className="flex h-11 items-center rounded-full bg-subtle p-1 mr-2"
+              className="mr-2 flex h-11 items-center rounded-full bg-subtle p-1"
               role="group"
-              aria-label="Library source"
+              aria-label="Catalog source"
             >
               {[
-                ["PERSONAL", "Personal"],
+                ["HASH_TUNE", "HashTune"],
                 ["MTG_JAMENDO", "MTG-Jamendo"],
                 ["ALL", "All"],
               ].map(([value, label]) => (
@@ -550,7 +550,6 @@ export function LibraryView({
                 </button>
               ))}
             </div>
-
             {canManage && (
               <>
                 <Button

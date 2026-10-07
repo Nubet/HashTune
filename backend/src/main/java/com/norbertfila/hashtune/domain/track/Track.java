@@ -83,7 +83,7 @@ public record Track(
                 title,
                 artist,
                 album,
-                TrackOrigin.PERSONAL,
+                TrackOrigin.HASH_TUNE,
                 null,
                 null,
                 null,
@@ -131,6 +131,33 @@ public record Track(
                 audioObjectKey,
                 checksum,
                 nextStatus,
+                createdAt,
+                Instant.now());
+    }
+
+    public Track withoutAudioObjectKey() {
+        return new Track(
+                id,
+                title,
+                artist,
+                album,
+                origin,
+                albumArtist,
+                composer,
+                genre,
+                releaseYear,
+                trackNumber,
+                discNumber,
+                isrc,
+                barcode,
+                comment,
+                coverArtUrl,
+                coverArtObjectKey,
+                coverArtMimeType,
+                durationMs,
+                null,
+                checksum,
+                status,
                 createdAt,
                 Instant.now());
     }

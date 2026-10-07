@@ -51,6 +51,17 @@ public class ApplicationConfiguration {
     }
 
     @Bean
+    Executor artistImageExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(2);
+        executor.setQueueCapacity(50);
+        executor.setThreadNamePrefix("artist-images-");
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean
     CorsFilter corsFilter(@Value("${app.web.allowed-origin:http://localhost:3000}") String allowedOrigin) {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(

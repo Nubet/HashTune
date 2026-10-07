@@ -13,4 +13,5 @@ public class StorageProperties {
     private String secretKey;
     private String audioBucket;
     private String tempBucket;
+    private boolean retainLibraryAudio;
 }

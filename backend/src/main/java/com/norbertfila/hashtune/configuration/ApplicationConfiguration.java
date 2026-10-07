@@ -1,5 +1,7 @@
 package com.norbertfila.hashtune.configuration;
 
+import com.norbertfila.hashtune.adapter.in.web.RateLimitInterceptor;
+import com.norbertfila.hashtune.application.port.out.RequestRateLimiter;
 import io.minio.MinioClient;
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +17,8 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableScheduling
@@ -22,9 +26,16 @@ import org.springframework.web.filter.CorsFilter;
     StorageProperties.class,
     AudioProperties.class,
     IndexingProperties.class,
-    MtgJamendoSeedProperties.class
+    MtgJamendoSeedProperties.class,
+    RateLimitProperties.class
 })
-public class ApplicationConfiguration {
+public class ApplicationConfiguration implements WebMvcConfigurer {
+    private final RequestRateLimiter requestRateLimiter;
+
+    public ApplicationConfiguration(RequestRateLimiter requestRateLimiter) {
+        this.requestRateLimiter = requestRateLimiter;
+    }
+
     @Bean
     MinioClient minioClient(StorageProperties properties) {
         return MinioClient.builder()
@@ -68,9 +79,15 @@ public class ApplicationConfiguration {
                 Arrays.stream(allowedOrigin.split(",")).map(String::trim).toList());
         configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
         return new CorsFilter(source);
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new RateLimitInterceptor(requestRateLimiter)).addPathPatterns("/api/**");
     }
 }

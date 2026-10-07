@@ -16,6 +16,8 @@ class Bucket4jRequestRateLimiterTest {
     void setUp() {
         properties.setSessionCapacity(2);
         properties.setIpCapacity(2);
+        properties.setExpensiveSessionCapacity(2);
+        properties.setExpensiveIpCapacity(2);
         properties.setSessionRefill(Duration.ofHours(1));
         properties.setIpRefill(Duration.ofHours(1));
         limiter = new Bucket4jRequestRateLimiter(properties);
@@ -25,18 +27,33 @@ class Bucket4jRequestRateLimiterTest {
     void limitsRequestsPerSession() {
         ClientSessionId session = new ClientSessionId("session-a");
 
-        assertThat(limiter.check(session, "127.0.0.1").allowed()).isTrue();
-        assertThat(limiter.check(session, "127.0.0.1").allowed()).isTrue();
-        assertThat(limiter.check(session, "127.0.0.1").allowed()).isFalse();
+        assertThat(limiter.check(session, "127.0.0.1", false).allowed()).isTrue();
+        assertThat(limiter.check(session, "127.0.0.1", false).allowed()).isTrue();
+        assertThat(limiter.check(session, "127.0.0.1", false).allowed()).isFalse();
     }
 
     @Test
     void limitsRequestsPerIpAcrossSessions() {
-        assertThat(limiter.check(new ClientSessionId("session-a"), "127.0.0.1").allowed())
+        assertThat(limiter.check(new ClientSessionId("session-a"), "127.0.0.1", false).allowed())
                 .isTrue();
-        assertThat(limiter.check(new ClientSessionId("session-b"), "127.0.0.1").allowed())
+        assertThat(limiter.check(new ClientSessionId("session-b"), "127.0.0.1", false).allowed())
                 .isTrue();
-        assertThat(limiter.check(new ClientSessionId("session-c"), "127.0.0.1").allowed())
+        assertThat(limiter.check(new ClientSessionId("session-c"), "127.0.0.1", false).allowed())
                 .isFalse();
+    }
+
+    @Test
+    void keepsReadAndExpensiveRequestBucketsSeparate() {
+        properties.setSessionCapacity(1);
+        properties.setIpCapacity(1);
+        properties.setExpensiveSessionCapacity(1);
+        properties.setExpensiveIpCapacity(1);
+        limiter = new Bucket4jRequestRateLimiter(properties);
+        ClientSessionId session = new ClientSessionId("session-a");
+
+        assertThat(limiter.check(session, "127.0.0.1", false).allowed()).isTrue();
+        assertThat(limiter.check(session, "127.0.0.1", true).allowed()).isTrue();
+        assertThat(limiter.check(session, "127.0.0.1", false).allowed()).isFalse();
+        assertThat(limiter.check(session, "127.0.0.1", true).allowed()).isFalse();
     }
 }

@@ -13,6 +13,10 @@ public class RateLimitProperties {
     private Duration sessionRefill = Duration.ofMinutes(1);
     private int ipCapacity = 30;
     private Duration ipRefill = Duration.ofMinutes(1);
+    private int expensiveSessionCapacity = 10;
+    private Duration expensiveSessionRefill = Duration.ofMinutes(1);
+    private int expensiveIpCapacity = 30;
+    private Duration expensiveIpRefill = Duration.ofMinutes(1);
     private Duration bucketRetention = Duration.ofHours(1);
     private int maxConcurrentRecognitionsPerSession = 1;
 }

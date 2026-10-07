@@ -22,13 +22,22 @@ public class Bucket4jRequestRateLimiter implements RequestRateLimiter {
     }
 
     @Override
-    public RateLimitDecision check(ClientSessionId sessionId, String clientIp) {
+    public RateLimitDecision check(ClientSessionId sessionId, String clientIp, boolean expensiveRequest) {
+        int sessionCapacity = expensiveRequest
+                ? properties.getExpensiveSessionCapacity()
+                : properties.getSessionCapacity();
+        Duration sessionRefill = expensiveRequest
+                ? properties.getExpensiveSessionRefill()
+                : properties.getSessionRefill();
+        int ipCapacity = expensiveRequest ? properties.getExpensiveIpCapacity() : properties.getIpCapacity();
+        Duration ipRefill = expensiveRequest ? properties.getExpensiveIpRefill() : properties.getIpRefill();
+        String scope = expensiveRequest ? "expensive:" : "read:";
         RateLimitDecision sessionDecision =
-                consume("session:" + sessionId.value(), properties.getSessionCapacity(), properties.getSessionRefill());
+                consume("session:" + scope + sessionId.value(), sessionCapacity, sessionRefill);
         if (!sessionDecision.allowed()) {
             return sessionDecision;
         }
-        return consume("ip:" + clientIp, properties.getIpCapacity(), properties.getIpRefill());
+        return consume("ip:" + scope + clientIp, ipCapacity, ipRefill);
     }
 
     @Scheduled(fixedDelayString = "${app.rate-limit.bucket-cleanup-delay:10m}")

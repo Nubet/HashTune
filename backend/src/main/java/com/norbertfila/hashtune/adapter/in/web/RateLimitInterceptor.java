@@ -21,10 +21,16 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         }
 
         HttpSession session = request.getSession(true);
-        RateLimitDecision decision = rateLimiter.check(new ClientSessionId(session.getId()), request.getRemoteAddr());
+        RateLimitDecision decision = rateLimiter.check(
+                new ClientSessionId(session.getId()), request.getRemoteAddr(), isExpensiveRequest(request));
         if (!decision.allowed()) {
             throw new TooManyRequestsException(decision.retryAfter());
         }
         return true;
+    }
+
+    private boolean isExpensiveRequest(HttpServletRequest request) {
+        return "POST".equalsIgnoreCase(request.getMethod())
+                && request.getRequestURI().equals("/api/v1/recognitions");
     }
 }

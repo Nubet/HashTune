@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.norbertfila.hashtune.configuration.RateLimitProperties;
 import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
 import java.time.Duration;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,18 +28,18 @@ class Bucket4jRequestRateLimiterTest {
     void limitsRequestsPerIdentity() {
         ExternalIdentity identity = new ExternalIdentity("test-issuer", "subject-a");
 
-        assertThat(limiter.check(identity, "127.0.0.1", false).allowed()).isTrue();
-        assertThat(limiter.check(identity, "127.0.0.1", false).allowed()).isTrue();
-        assertThat(limiter.check(identity, "127.0.0.1", false).allowed()).isFalse();
+        assertThat(limiter.check(Optional.of(identity), "127.0.0.1", false).allowed()).isTrue();
+        assertThat(limiter.check(Optional.of(identity), "127.0.0.1", false).allowed()).isTrue();
+        assertThat(limiter.check(Optional.of(identity), "127.0.0.1", false).allowed()).isFalse();
     }
 
     @Test
     void limitsRequestsPerIpAcrossIdentities() {
-        assertThat(limiter.check(new ExternalIdentity("test-issuer", "subject-a"), "127.0.0.1", false).allowed())
+        assertThat(limiter.check(Optional.of(new ExternalIdentity("test-issuer", "subject-a")), "127.0.0.1", false).allowed())
                 .isTrue();
-        assertThat(limiter.check(new ExternalIdentity("test-issuer", "subject-b"), "127.0.0.1", false).allowed())
+        assertThat(limiter.check(Optional.of(new ExternalIdentity("test-issuer", "subject-b")), "127.0.0.1", false).allowed())
                 .isTrue();
-        assertThat(limiter.check(new ExternalIdentity("test-issuer", "subject-c"), "127.0.0.1", false).allowed())
+        assertThat(limiter.check(Optional.of(new ExternalIdentity("test-issuer", "subject-c")), "127.0.0.1", false).allowed())
                 .isFalse();
     }
 
@@ -51,9 +52,9 @@ class Bucket4jRequestRateLimiterTest {
         limiter = new Bucket4jRequestRateLimiter(properties);
         ExternalIdentity identity = new ExternalIdentity("test-issuer", "subject-a");
 
-        assertThat(limiter.check(identity, "127.0.0.1", false).allowed()).isTrue();
-        assertThat(limiter.check(identity, "127.0.0.1", true).allowed()).isTrue();
-        assertThat(limiter.check(identity, "127.0.0.1", false).allowed()).isFalse();
-        assertThat(limiter.check(identity, "127.0.0.1", true).allowed()).isFalse();
+        assertThat(limiter.check(Optional.of(identity), "127.0.0.1", false).allowed()).isTrue();
+        assertThat(limiter.check(Optional.of(identity), "127.0.0.1", true).allowed()).isTrue();
+        assertThat(limiter.check(Optional.of(identity), "127.0.0.1", false).allowed()).isFalse();
+        assertThat(limiter.check(Optional.of(identity), "127.0.0.1", true).allowed()).isFalse();
     }
 }

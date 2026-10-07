@@ -21,7 +21,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        var identity = identityResolver.resolve(SecurityContextHolder.getContext().getAuthentication());
+        var identity = identityResolver.resolveOptional(SecurityContextHolder.getContext().getAuthentication());
         RateLimitDecision decision = rateLimiter.check(identity, request.getRemoteAddr(), isExpensiveRequest(request));
         if (!decision.allowed()) {
             throw new TooManyRequestsException(decision.retryAfter());

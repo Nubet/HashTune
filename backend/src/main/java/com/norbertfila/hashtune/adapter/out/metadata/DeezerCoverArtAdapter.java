@@ -2,6 +2,7 @@ package com.norbertfila.hashtune.adapter.out.metadata;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.norbertfila.hashtune.application.port.out.CoverArtProvider;
+import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -25,10 +26,11 @@ public class DeezerCoverArtAdapter implements CoverArtProvider {
         }
 
         String query = "%s %s".formatted(artist, title);
-        String uri = UriComponentsBuilder.fromPath("/search")
+        URI uri = UriComponentsBuilder.fromPath("/search")
                 .queryParam("q", query)
                 .queryParam("limit", 10)
-                .toUriString();
+                .build()
+                .toUri();
 
         try {
             DeezerSearchResponse response =

@@ -53,7 +53,7 @@ public class TrackPersistenceAdapter implements TrackRepository, TrackQueryRepos
     public PageResult<Track> searchTracks(TrackSearchQuery query) {
         Page<TrackEntity> result = repository.searchTracks(
                 query.query(),
-                query.origin(),
+                query.origin() == null ? null : query.origin().name(),
                 query.artist(),
                 query.album(),
                 pageRequest(
@@ -95,8 +95,10 @@ public class TrackPersistenceAdapter implements TrackRepository, TrackQueryRepos
     @Override
     public PageResult<ArtistSummary> searchArtists(
             String query, com.norbertfila.hashtune.domain.track.TrackOrigin origin, int page, int size) {
-        Page<ArtistSummaryProjection> result =
-                repository.searchArtists(query, origin, pageRequest(page, size, Sort.by(Sort.Direction.ASC, "name")));
+        Page<ArtistSummaryProjection> result = repository.searchArtists(
+                query,
+                origin == null ? null : origin.name(),
+                pageRequest(page, size, Sort.by(Sort.Direction.ASC, "name")));
         return new PageResult<>(
                 result.getContent().stream()
                         .map(artist ->

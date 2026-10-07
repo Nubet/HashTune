@@ -66,7 +66,7 @@ class TrackApplicationServiceTest {
         when(metadataReader.read(file)).thenReturn(emptyMetadata());
         when(tracks.save(any())).thenThrow(new IllegalStateException("database unavailable"));
 
-        assertThatThrownBy(() -> service.importTrack(file, TrackOrigin.PERSONAL, null))
+        assertThatThrownBy(() -> service.importTrack(file, TrackOrigin.HASH_TUNE, null))
                 .isInstanceOf(IllegalStateException.class);
 
         verify(storage).delete(eq("audio"), startsWith("audio/"));
@@ -117,7 +117,7 @@ class TrackApplicationServiceTest {
                 "Track",
                 "Artist",
                 null,
-                TrackOrigin.PERSONAL,
+                TrackOrigin.HASH_TUNE,
                 null,
                 null,
                 "audio/" + id,

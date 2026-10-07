@@ -48,7 +48,7 @@ public class TrackApplicationService {
         validate(file);
         String checksum = checksum(file);
         ensureNew(checksum);
-        return saveUpload(file, checksum, TrackOrigin.PERSONAL, null, IndexingJobStatus.AWAITING_CONFIRMATION);
+        return saveUpload(file, checksum, TrackOrigin.HASH_TUNE, null, IndexingJobStatus.AWAITING_CONFIRMATION);
     }
 
     @Transactional
@@ -138,7 +138,9 @@ public class TrackApplicationService {
     public void delete(UUID id) {
         Track track = get(id);
         fingerprints.deleteByTrackId(track.id());
-        storage.delete(storageProperties.getAudioBucket(), track.audioObjectKey());
+        if (track.audioObjectKey() != null) {
+            storage.delete(storageProperties.getAudioBucket(), track.audioObjectKey());
+        }
         if (track.coverArtObjectKey() != null) {
             storage.delete(storageProperties.getAudioBucket(), track.coverArtObjectKey());
         }

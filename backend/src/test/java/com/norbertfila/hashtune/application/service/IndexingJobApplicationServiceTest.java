@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.norbertfila.hashtune.application.port.out.AudioRecognitionEngine;
 import com.norbertfila.hashtune.application.port.out.IndexingJobRepository;
+import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
 import com.norbertfila.hashtune.configuration.IndexingProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
@@ -27,6 +28,7 @@ class IndexingJobApplicationServiceTest {
     private final TrackRepository tracks = mock(TrackRepository.class);
     private final IndexingJobRepository jobs = mock(IndexingJobRepository.class);
     private final AudioRecognitionEngine engine = mock(AudioRecognitionEngine.class);
+    private final ObjectStoragePort storage = mock(ObjectStoragePort.class);
     private final StorageProperties storageProperties = new StorageProperties();
     private final IndexingProperties indexingProperties = new IndexingProperties();
     private IndexingJobApplicationService service;
@@ -38,7 +40,7 @@ class IndexingJobApplicationServiceTest {
         indexingProperties.setMaxRetryBackoffMs(1_000);
         indexingProperties.setProcessingTimeoutMs(60_000);
         service = new IndexingJobApplicationService(
-                tracks, jobs, engine, storageProperties, indexingProperties, Runnable::run);
+                tracks, jobs, engine, storageProperties, storage, indexingProperties, Runnable::run);
         when(jobs.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
@@ -82,7 +84,7 @@ class IndexingJobApplicationServiceTest {
                 "Track",
                 "Artist",
                 "Album",
-                TrackOrigin.PERSONAL,
+                TrackOrigin.HASH_TUNE,
                 null,
                 null,
                 null,

@@ -2,6 +2,7 @@ package com.norbertfila.hashtune.application.service;
 
 import com.norbertfila.hashtune.application.port.out.AudioRecognitionEngine;
 import com.norbertfila.hashtune.application.port.out.IndexingJobRepository;
+import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
 import com.norbertfila.hashtune.configuration.IndexingProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
@@ -14,17 +15,20 @@ import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class IndexingJobApplicationService {
     private final TrackRepository tracks;
     private final IndexingJobRepository jobs;
     private final AudioRecognitionEngine engine;
     private final StorageProperties storageProperties;
+    private final ObjectStoragePort storage;
     private final IndexingProperties indexingProperties;
     private final Executor indexingExecutor;
 
@@ -80,6 +84,10 @@ public class IndexingJobApplicationService {
                             track.audioObjectKey(),
                             track.title(),
                             track.checksum()));
+            Track indexedTrack = track.withDurationAndStatus(result.durationMs(), TrackStatus.INDEXED);
+            if (!storageProperties.isRetainLibraryAudio()) {
+                indexedTrack = indexedTrack.withoutAudioObjectKey();
+            }
             jobs.save(new IndexingJob(
                     job.id(),
                     job.trackId(),
@@ -92,7 +100,14 @@ public class IndexingJobApplicationService {
                     job.startedAt(),
                     Instant.now(),
                     null));
-            tracks.save(track.withDurationAndStatus(result.durationMs(), TrackStatus.INDEXED));
+            tracks.save(indexedTrack);
+            if (!storageProperties.isRetainLibraryAudio() && track.audioObjectKey() != null) {
+                try {
+                    storage.delete(storageProperties.getAudioBucket(), track.audioObjectKey());
+                } catch (RuntimeException exception) {
+                    log.warn("Could not delete retained library audio for track {}", track.id(), exception);
+                }
+            }
         } catch (Exception exception) {
             handleFailure(job, track, exception);
         }

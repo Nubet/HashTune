@@ -59,7 +59,7 @@ export function MetadataReview({
             <TrackArtwork
               src={draft.coverArtUrl}
               alt={`${draft.title} cover art`}
-              color="#17212b"
+              seed={`metadata:${draft.trackId}`}
               className="size-16 shrink-0"
             />
             <span className="text-xs text-muted">Embedded cover found in the file</span>

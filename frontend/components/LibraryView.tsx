@@ -51,7 +51,7 @@ function TrackRow({
       <TrackArtwork
         src={track.coverArtUrl}
         alt={`${track.title} cover art`}
-        color={track.color}
+        seed={`track:${track.id}`}
         className="size-11 rounded-md shadow-sm"
       />
       <div className="min-w-0">
@@ -259,8 +259,8 @@ function AlbumGrid({
           <div className="relative mb-3 aspect-square w-full overflow-hidden rounded-xl border border-line bg-subtle shadow-sm transition-[box-shadow] group-hover:shadow-md">
             <TrackArtwork
               src={album.coverArtUrl}
-              color="#64748b"
               alt={`${album.title} cover art`}
+              seed={`album:${album.artist}:${album.title}`}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           </div>
@@ -297,10 +297,12 @@ function ArtistGrid({
           onClick={() => onSelect(artist)}
           className="group block min-w-0 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
         >
-          <div className="mx-auto mb-4 flex aspect-square w-full max-w-[10rem] items-center justify-center overflow-hidden rounded-full border border-line bg-subtle shadow-sm transition-transform duration-500 group-hover:scale-105 group-hover:shadow-md">
-            <span className="text-5xl font-light text-muted">
-              {artist.name.charAt(0).toUpperCase()}
-            </span>
+          <div className="mx-auto mb-4 aspect-square w-full max-w-[10rem] overflow-hidden rounded-full border border-line bg-subtle shadow-sm transition-transform duration-500 group-hover:scale-105 group-hover:shadow-md">
+            <TrackArtwork
+              alt={`${artist.name} artwork`}
+              seed={`artist:${artist.name}`}
+              className="h-full w-full"
+            />
           </div>
           <div
             className="truncate text-[0.9375rem] font-bold text-ink transition-colors group-hover:text-brand"

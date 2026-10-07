@@ -59,7 +59,7 @@ export function HistoryView({
                   <TrackArtwork
                     src={item.coverArtUrl}
                     alt={`${item.title} cover art`}
-                    color={item.color}
+                    seed={`history:${item.id}`}
                     className="size-12 rounded-md shadow-sm"
                   />
                   <div className="min-w-0">

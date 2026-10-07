@@ -14,7 +14,7 @@ export function RecognitionResult({ recognition }: { recognition: Recognition })
           <TrackArtwork
             src={recognition.coverArtUrl}
             alt={`${recognition.title} cover art`}
-            color={recognition.color}
+            seed={`recognition:${recognition.id}`}
             className="grid size-24 shrink-0 place-items-center text-[0.625rem] font-bold tracking-[.15em] text-navy"
           />
           <div>

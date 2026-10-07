@@ -1,8 +1,8 @@
 package com.norbertfila.hashtune.adapter.out.persistence;
 
 import com.norbertfila.hashtune.application.port.out.RecognitionRepository;
+import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
 import com.norbertfila.hashtune.domain.recognition.Recognition;
-import com.norbertfila.hashtune.domain.session.ClientSessionId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,10 +22,11 @@ public class RecognitionPersistenceAdapter implements RecognitionRepository {
     }
 
     @Override
-    public List<Recognition> findLatest(ClientSessionId sessionId, int limit, int offset) {
+    public List<Recognition> findLatest(ExternalIdentity owner, int limit, int offset) {
         return repository
-                .findBySessionId(
-                        sessionId.value(),
+                .findByOwnerIssuerAndOwnerSubject(
+                        owner.issuer(),
+                        owner.subject(),
                         PageRequest.of(
                                 offset / limit,
                                 limit,
@@ -37,26 +38,31 @@ public class RecognitionPersistenceAdapter implements RecognitionRepository {
     }
 
     @Override
-    public List<Recognition> findAll(ClientSessionId sessionId) {
-        return repository.findAllBySessionIdOrderByCreatedAtDesc(sessionId.value()).stream()
+    public List<Recognition> findAll(ExternalIdentity owner) {
+        return repository
+                .findAllByOwnerIssuerAndOwnerSubjectOrderByCreatedAtDesc(owner.issuer(), owner.subject())
+                .stream()
                 .map(RecognitionPersistenceAdapter::toDomain)
                 .toList();
     }
 
     @Override
-    public Optional<Recognition> findById(ClientSessionId sessionId, UUID id) {
-        return repository.findByIdAndSessionId(id, sessionId.value()).map(RecognitionPersistenceAdapter::toDomain);
+    public Optional<Recognition> findById(ExternalIdentity owner, UUID id) {
+        return repository
+                .findByIdAndOwnerIssuerAndOwnerSubject(id, owner.issuer(), owner.subject())
+                .map(RecognitionPersistenceAdapter::toDomain);
     }
 
     @Override
-    public void deleteAll(ClientSessionId sessionId) {
-        repository.deleteAllBySessionId(sessionId.value());
+    public void deleteAll(ExternalIdentity owner) {
+        repository.deleteAllByOwnerIssuerAndOwnerSubject(owner.issuer(), owner.subject());
     }
 
     private static RecognitionEntity toEntity(Recognition recognition) {
         return RecognitionEntity.builder()
                 .id(recognition.id())
-                .sessionId(recognition.sessionId().value())
+                .ownerIssuer(recognition.owner().issuer())
+                .ownerSubject(recognition.owner().subject())
                 .trackId(recognition.trackId())
                 .status(recognition.status())
                 .confidence(recognition.confidence())
@@ -74,7 +80,7 @@ public class RecognitionPersistenceAdapter implements RecognitionRepository {
     private static Recognition toDomain(RecognitionEntity recognition) {
         return new Recognition(
                 recognition.getId(),
-                new ClientSessionId(recognition.getSessionId()),
+                new ExternalIdentity(recognition.getOwnerIssuer(), recognition.getOwnerSubject()),
                 recognition.getTrackId(),
                 recognition.getStatus(),
                 recognition.getConfidence(),

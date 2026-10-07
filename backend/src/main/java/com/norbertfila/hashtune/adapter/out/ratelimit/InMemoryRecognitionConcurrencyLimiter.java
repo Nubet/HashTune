@@ -2,7 +2,7 @@ package com.norbertfila.hashtune.adapter.out.ratelimit;
 
 import com.norbertfila.hashtune.application.port.out.RecognitionConcurrencyLimiter;
 import com.norbertfila.hashtune.configuration.RateLimitProperties;
-import com.norbertfila.hashtune.domain.session.ClientSessionId;
+import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class InMemoryRecognitionConcurrencyLimiter implements RecognitionConcurrencyLimiter {
-    private final Map<String, Semaphore> permits = new ConcurrentHashMap<>();
+    private final Map<ExternalIdentity, Semaphore> permits = new ConcurrentHashMap<>();
     private final int permitsPerSession;
 
     public InMemoryRecognitionConcurrencyLimiter(RateLimitProperties properties) {
@@ -19,14 +19,14 @@ public class InMemoryRecognitionConcurrencyLimiter implements RecognitionConcurr
     }
 
     @Override
-    public boolean tryAcquire(ClientSessionId sessionId) {
-        return permits.computeIfAbsent(sessionId.value(), ignored -> new Semaphore(permitsPerSession))
+    public boolean tryAcquire(ExternalIdentity owner) {
+        return permits.computeIfAbsent(owner, ignored -> new Semaphore(permitsPerSession))
                 .tryAcquire();
     }
 
     @Override
-    public void release(ClientSessionId sessionId) {
-        Semaphore semaphore = permits.get(sessionId.value());
+    public void release(ExternalIdentity owner) {
+        Semaphore semaphore = permits.get(owner);
         if (semaphore != null) {
             semaphore.release();
         }

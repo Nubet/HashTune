@@ -8,11 +8,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 interface SpringDataRecognitionRepository extends JpaRepository<RecognitionEntity, UUID> {
-    Page<RecognitionEntity> findBySessionId(String sessionId, Pageable pageable);
+    Page<RecognitionEntity> findByOwnerIssuerAndOwnerSubject(String issuer, String subject, Pageable pageable);
 
-    List<RecognitionEntity> findAllBySessionIdOrderByCreatedAtDesc(String sessionId);
+    List<RecognitionEntity> findAllByOwnerIssuerAndOwnerSubjectOrderByCreatedAtDesc(String issuer, String subject);
 
-    Optional<RecognitionEntity> findByIdAndSessionId(UUID id, String sessionId);
+    Optional<RecognitionEntity> findByIdAndOwnerIssuerAndOwnerSubject(UUID id, String issuer, String subject);
 
-    void deleteAllBySessionId(String sessionId);
+    void deleteAllByOwnerIssuerAndOwnerSubject(String issuer, String subject);
 }

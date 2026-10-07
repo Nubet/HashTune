@@ -1,7 +1,7 @@
 package com.norbertfila.hashtune.application.port.out;
 
 import com.norbertfila.hashtune.domain.recognition.Recognition;
-import com.norbertfila.hashtune.domain.session.ClientSessionId;
+import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -9,11 +9,11 @@ import java.util.UUID;
 public interface RecognitionRepository {
     Recognition save(Recognition recognition);
 
-    List<Recognition> findLatest(ClientSessionId sessionId, int limit, int offset);
+    List<Recognition> findLatest(ExternalIdentity owner, int limit, int offset);
 
-    List<Recognition> findAll(ClientSessionId sessionId);
+    List<Recognition> findAll(ExternalIdentity owner);
 
-    Optional<Recognition> findById(ClientSessionId sessionId, UUID id);
+    Optional<Recognition> findById(ExternalIdentity owner, UUID id);
 
-    void deleteAll(ClientSessionId sessionId);
+    void deleteAll(ExternalIdentity owner);
 }

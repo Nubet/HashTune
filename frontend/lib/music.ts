@@ -38,6 +38,7 @@ export type ArtistSummary = {
   name: string;
   trackCount: number;
   albumCount: number;
+  imageUrl?: string;
 };
 
 export type MetadataDraft = {

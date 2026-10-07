@@ -34,6 +34,7 @@ const artistSchema = z.object({
   name: z.string(),
   trackCount: z.number(),
   albumCount: z.number(),
+  imageUrl: z.string().url().nullable().optional(),
 });
 const pageSchema = <T extends z.ZodTypeAny>(item: T) =>
   z.object({

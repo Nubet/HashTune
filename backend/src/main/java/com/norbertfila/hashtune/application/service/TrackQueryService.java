@@ -17,6 +17,7 @@ public class TrackQueryService {
     private static final int MAX_PAGE_SIZE = 100;
 
     private final TrackQueryRepository tracks;
+    private final ArtistImageService artistImages;
 
     public PageResult<Track> searchTracks(TrackSearchQuery query) {
         return tracks.searchTracks(normalize(query));
@@ -27,7 +28,19 @@ public class TrackQueryService {
     }
 
     public PageResult<ArtistSummary> searchArtists(String query, TrackOrigin origin, int page, int size) {
-        return tracks.searchArtists(normalizeQuery(query), origin, normalizePage(page), normalizeSize(size));
+        PageResult<ArtistSummary> result =
+                tracks.searchArtists(normalizeQuery(query), origin, normalizePage(page), normalizeSize(size));
+        return new PageResult<>(
+                result.content().stream()
+                        .map(artist -> new ArtistSummary(
+                                artist.name(),
+                                artist.trackCount(),
+                                artist.albumCount(),
+                                artistImages.findCachedImage(artist.name()).orElse(null)))
+                        .toList(),
+                result.page(),
+                result.size(),
+                result.totalElements());
     }
 
     private TrackSearchQuery normalize(TrackSearchQuery query) {

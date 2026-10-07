@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test;
 
 class InMemoryRecognitionConcurrencyLimiterTest {
     @Test
-    void allowsOnlyOneActiveRecognitionPerSession() {
+    void allowsOnlyOneActiveRecognitionPerIdentity() {
         RateLimitProperties properties = new RateLimitProperties();
-        properties.setMaxConcurrentRecognitionsPerSession(1);
+        properties.setMaxConcurrentRecognitionsPerIdentity(1);
         InMemoryRecognitionConcurrencyLimiter limiter = new InMemoryRecognitionConcurrencyLimiter(properties);
         ExternalIdentity owner = new ExternalIdentity("test-issuer", "subject-a");
 

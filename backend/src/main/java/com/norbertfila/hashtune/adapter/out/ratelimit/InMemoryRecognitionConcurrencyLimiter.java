@@ -12,15 +12,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class InMemoryRecognitionConcurrencyLimiter implements RecognitionConcurrencyLimiter {
     private final Map<ExternalIdentity, Semaphore> permits = new ConcurrentHashMap<>();
-    private final int permitsPerSession;
+    private final int permitsPerIdentity;
 
     public InMemoryRecognitionConcurrencyLimiter(RateLimitProperties properties) {
-        permitsPerSession = properties.getMaxConcurrentRecognitionsPerSession();
+        permitsPerIdentity = properties.getMaxConcurrentRecognitionsPerIdentity();
     }
 
     @Override
     public boolean tryAcquire(ExternalIdentity owner) {
-        return permits.computeIfAbsent(owner, ignored -> new Semaphore(permitsPerSession))
+        return permits.computeIfAbsent(owner, ignored -> new Semaphore(permitsPerIdentity))
                 .tryAcquire();
     }
 
@@ -34,6 +34,6 @@ public class InMemoryRecognitionConcurrencyLimiter implements RecognitionConcurr
 
     @Scheduled(fixedDelayString = "${app.rate-limit.bucket-cleanup-delay:10m}")
     void removeIdlePermits() {
-        permits.entrySet().removeIf(entry -> entry.getValue().availablePermits() == permitsPerSession);
+        permits.entrySet().removeIf(entry -> entry.getValue().availablePermits() == permitsPerIdentity);
     }
 }

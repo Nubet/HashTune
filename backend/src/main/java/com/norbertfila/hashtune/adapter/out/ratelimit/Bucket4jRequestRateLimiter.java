@@ -3,7 +3,7 @@ package com.norbertfila.hashtune.adapter.out.ratelimit;
 import com.norbertfila.hashtune.application.port.out.RateLimitDecision;
 import com.norbertfila.hashtune.application.port.out.RequestRateLimiter;
 import com.norbertfila.hashtune.configuration.RateLimitProperties;
-import com.norbertfila.hashtune.domain.session.ClientSessionId;
+import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import java.time.Duration;
@@ -22,20 +22,22 @@ public class Bucket4jRequestRateLimiter implements RequestRateLimiter {
     }
 
     @Override
-    public RateLimitDecision check(ClientSessionId sessionId, String clientIp, boolean expensiveRequest) {
-        int sessionCapacity = expensiveRequest
-                ? properties.getExpensiveSessionCapacity()
-                : properties.getSessionCapacity();
-        Duration sessionRefill = expensiveRequest
-                ? properties.getExpensiveSessionRefill()
-                : properties.getSessionRefill();
+    public RateLimitDecision check(ExternalIdentity identity, String clientIp, boolean expensiveRequest) {
+        int identityCapacity = expensiveRequest
+                ? properties.getExpensiveIdentityCapacity()
+                : properties.getIdentityCapacity();
+        Duration identityRefill = expensiveRequest
+                ? properties.getExpensiveIdentityRefill()
+                : properties.getIdentityRefill();
         int ipCapacity = expensiveRequest ? properties.getExpensiveIpCapacity() : properties.getIpCapacity();
         Duration ipRefill = expensiveRequest ? properties.getExpensiveIpRefill() : properties.getIpRefill();
         String scope = expensiveRequest ? "expensive:" : "read:";
-        RateLimitDecision sessionDecision =
-                consume("session:" + scope + sessionId.value(), sessionCapacity, sessionRefill);
-        if (!sessionDecision.allowed()) {
-            return sessionDecision;
+        RateLimitDecision identityDecision = consume(
+                "identity:" + scope + identity.issuer() + ":" + identity.subject(),
+                identityCapacity,
+                identityRefill);
+        if (!identityDecision.allowed()) {
+            return identityDecision;
         }
         return consume("ip:" + scope + clientIp, ipCapacity, ipRefill);
     }

@@ -1,0 +1,6 @@
+UPDATE tracks
+SET origin = 'HASH_TUNE'
+WHERE origin = 'PERSONAL';
+
+ALTER TABLE tracks
+    ALTER COLUMN origin SET DEFAULT 'HASH_TUNE';

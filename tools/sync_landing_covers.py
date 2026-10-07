@@ -36,7 +36,7 @@ def fetch_tracks() -> list[dict]:
     page = 0
 
     while True:
-        query = f"{API_URL}/api/v1/library/tracks?origin=PERSONAL&page={page}&size={PAGE_SIZE}"
+        query = f"{API_URL}/api/v1/library/tracks?origin=HASH_TUNE&page={page}&size={PAGE_SIZE}"
         with urllib.request.urlopen(query, timeout=20) as response:
             payload = json.load(response)
 

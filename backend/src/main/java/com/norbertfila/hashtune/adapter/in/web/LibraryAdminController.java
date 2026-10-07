@@ -33,7 +33,7 @@ public class LibraryAdminController {
     @PostMapping(value = "/imports", consumes = "multipart/form-data")
     public ApiDtos.ImportResponse importTrack(
             @RequestPart("file") MultipartFile file,
-            @RequestParam(defaultValue = "PERSONAL") TrackOrigin origin,
+            @RequestParam(defaultValue = "HASH_TUNE") TrackOrigin origin,
             @RequestParam(required = false) String relativePath) {
         TrackApplicationService.ImportResult result = service.importTrack(file, origin, relativePath);
         return ApiDtos.ImportResponse.from(result.track(), result);

@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 
 export type AuthState = {
-  status: "signed-out" | "authenticated";
+  status: "loading" | "signed-out" | "authenticated";
   accessToken: string | null;
   roles: string[];
 };
@@ -12,7 +12,13 @@ const signedOutState: AuthState = {
   roles: [],
 };
 
-let state = signedOutState;
+const loadingState: AuthState = {
+  status: "loading",
+  accessToken: null,
+  roles: [],
+};
+
+let state = loadingState;
 const listeners = new Set<() => void>();
 
 export const authStore = {
@@ -34,10 +40,15 @@ export const authStore = {
     state = signedOutState;
     listeners.forEach((listener) => listener());
   },
+
+  setLoading() {
+    state = loadingState;
+    listeners.forEach((listener) => listener());
+  },
 };
 
 export function useAuth() {
-  const auth = useSyncExternalStore(authStore.subscribe, authStore.getSnapshot, () => signedOutState);
+  const auth = useSyncExternalStore(authStore.subscribe, authStore.getSnapshot, () => loadingState);
   return {
     ...auth,
     isAdmin: auth.roles.includes("admin"),

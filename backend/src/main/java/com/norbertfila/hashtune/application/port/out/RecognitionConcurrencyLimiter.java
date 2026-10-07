@@ -1,9 +1,9 @@
 package com.norbertfila.hashtune.application.port.out;
 
-import com.norbertfila.hashtune.domain.session.ClientSessionId;
+import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
 
 public interface RecognitionConcurrencyLimiter {
-    boolean tryAcquire(ClientSessionId sessionId);
+    boolean tryAcquire(ExternalIdentity owner);
 
-    void release(ClientSessionId sessionId);
+    void release(ExternalIdentity owner);
 }

@@ -10,7 +10,7 @@ import com.norbertfila.hashtune.configuration.StorageProperties;
 import com.norbertfila.hashtune.domain.recognition.Recognition;
 import com.norbertfila.hashtune.domain.recognition.RecognitionSource;
 import com.norbertfila.hashtune.domain.recognition.RecognitionStatus;
-import com.norbertfila.hashtune.domain.session.ClientSessionId;
+import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
 import com.norbertfila.hashtune.domain.track.Track;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,29 +36,29 @@ public class RecognitionApplicationService {
     private final AudioProperties audioProperties;
 
     @Transactional
-    public Recognition recognize(ClientSessionId sessionId, MultipartFile file, RecognitionSource source) {
-        return process(sessionId, file, source, true);
+    public Recognition recognize(ExternalIdentity owner, MultipartFile file, RecognitionSource source) {
+        return process(owner, file, source, true);
     }
 
     @Transactional
-    public Recognition probe(ClientSessionId sessionId, MultipartFile file, RecognitionSource source) {
-        return process(sessionId, file, source, false);
+    public Recognition probe(ExternalIdentity owner, MultipartFile file, RecognitionSource source) {
+        return process(owner, file, source, false);
     }
 
     private Recognition process(
-            ClientSessionId sessionId, MultipartFile file, RecognitionSource source, boolean persist) {
-        if (!concurrencyLimiter.tryAcquire(sessionId)) {
+            ExternalIdentity owner, MultipartFile file, RecognitionSource source, boolean persist) {
+        if (!concurrencyLimiter.tryAcquire(owner)) {
             throw new TooManyRequestsException(java.time.Duration.ofSeconds(1));
         }
         try {
-            return processAudio(sessionId, file, source, persist);
+            return processAudio(owner, file, source, persist);
         } finally {
-            concurrencyLimiter.release(sessionId);
+            concurrencyLimiter.release(owner);
         }
     }
 
     private Recognition processAudio(
-            ClientSessionId sessionId, MultipartFile file, RecognitionSource source, boolean persist) {
+            ExternalIdentity owner, MultipartFile file, RecognitionSource source, boolean persist) {
         if (file == null || file.isEmpty() || file.getSize() > audioProperties.getMaxFileSizeBytes()) {
             throw new ApplicationException(
                     org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
@@ -80,7 +80,7 @@ public class RecognitionApplicationService {
                     : null;
             Recognition entity = new Recognition(
                     recognitionId,
-                    sessionId,
+                    owner,
                     track == null ? null : track.id(),
                     result.matched() && track != null ? RecognitionStatus.MATCHED : RecognitionStatus.NO_MATCH,
                     result.matched() && track != null ? result.confidence() : null,
@@ -117,17 +117,17 @@ public class RecognitionApplicationService {
         }
     }
 
-    public List<Recognition> history(ClientSessionId sessionId, int limit, int offset) {
-        return recognitions.findLatest(sessionId, Math.min(limit, 100), Math.max(offset, 0));
+    public List<Recognition> history(ExternalIdentity owner, int limit, int offset) {
+        return recognitions.findLatest(owner, Math.min(limit, 100), Math.max(offset, 0));
     }
 
     public Track track(UUID id) {
         return tracks.findById(id).orElse(null);
     }
 
-    public Recording recording(ClientSessionId sessionId, UUID id) {
+    public Recording recording(ExternalIdentity owner, UUID id) {
         Recognition recognition = recognitions
-                .findById(sessionId, id)
+                .findById(owner, id)
                 .orElseThrow(() -> new ApplicationException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "RECORDING_NOT_FOUND", "Recording not found"));
         if (recognition.recordingObjectKey() == null) {
@@ -143,12 +143,12 @@ public class RecognitionApplicationService {
     }
 
     @Transactional
-    public void clearHistory(ClientSessionId sessionId) {
-        recognitions.findAll(sessionId).stream()
+    public void clearHistory(ExternalIdentity owner) {
+        recognitions.findAll(owner).stream()
                 .map(Recognition::recordingObjectKey)
                 .filter(java.util.Objects::nonNull)
                 .forEach(this::deleteRecording);
-        recognitions.deleteAll(sessionId);
+        recognitions.deleteAll(owner);
     }
 
     private String safeName(String name) {

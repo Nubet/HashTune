@@ -17,7 +17,7 @@ import com.norbertfila.hashtune.application.port.out.RecognitionRepository;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
 import com.norbertfila.hashtune.configuration.AudioProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
-import com.norbertfila.hashtune.domain.session.ClientSessionId;
+import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
 import com.norbertfila.hashtune.domain.track.Track;
 import com.norbertfila.hashtune.domain.track.TrackStatus;
 import java.time.Instant;
@@ -37,7 +37,7 @@ class RecognitionApplicationServiceTest {
     private final StorageProperties storageProperties = new StorageProperties();
     private final AudioProperties audioProperties = new AudioProperties();
     private RecognitionApplicationService service;
-    private final ClientSessionId sessionId = new ClientSessionId("test-session");
+    private final ExternalIdentity owner = new ExternalIdentity("test-issuer", "test-subject");
 
     @BeforeEach
     void setUp() {
@@ -46,7 +46,7 @@ class RecognitionApplicationServiceTest {
         audioProperties.setMaxFileSizeBytes(10_000);
         service = new RecognitionApplicationService(
                 recognitions, concurrencyLimiter, tracks, storage, engine, storageProperties, audioProperties);
-        when(concurrencyLimiter.tryAcquire(sessionId)).thenReturn(true);
+        when(concurrencyLimiter.tryAcquire(owner)).thenReturn(true);
     }
 
     @Test
@@ -55,7 +55,7 @@ class RecognitionApplicationServiceTest {
         when(engine.recognize(any())).thenThrow(new IllegalStateException("decoder failed"));
 
         assertThatThrownBy(() -> service.probe(
-                        sessionId, file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.AUDIO_FILE))
+                         owner, file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.AUDIO_FILE))
                 .isInstanceOf(IllegalStateException.class);
 
         verify(storage).delete(eq("temp"), startsWith("samples/"));
@@ -81,7 +81,7 @@ class RecognitionApplicationServiceTest {
                 .thenReturn(new AudioRecognitionEngine.RecognitionResult(true, trackId, 1.0, 27_000, 5_000, 1, 1));
         when(tracks.findById(trackId)).thenReturn(Optional.of(track));
 
-        service.probe(sessionId, file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.MICROPHONE);
+        service.probe(owner, file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.MICROPHONE);
 
         verify(recognitions).save(any());
     }
@@ -92,25 +92,25 @@ class RecognitionApplicationServiceTest {
         when(engine.recognize(any()))
                 .thenReturn(new AudioRecognitionEngine.RecognitionResult(false, null, 0.0, 0L, 5_000, 1, 1));
 
-        service.recognize(sessionId, file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.AUDIO_FILE);
+        service.recognize(owner, file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.AUDIO_FILE);
 
         verify(storage, never()).put(eq("audio"), any(), any(), anyLong(), any());
     }
 
     @Test
     void scopesHistoryToTheCurrentSession() {
-        service.history(sessionId, 25, 0);
+        service.history(owner, 25, 0);
 
-        verify(recognitions).findLatest(sessionId, 25, 0);
+        verify(recognitions).findLatest(owner, 25, 0);
     }
 
     @Test
     void clearsOnlyTheCurrentSessionHistory() {
-        when(recognitions.findAll(sessionId)).thenReturn(List.of());
+        when(recognitions.findAll(owner)).thenReturn(List.of());
 
-        service.clearHistory(sessionId);
+        service.clearHistory(owner);
 
-        verify(recognitions).findAll(sessionId);
-        verify(recognitions).deleteAll(sessionId);
+        verify(recognitions).findAll(owner);
+        verify(recognitions).deleteAll(owner);
     }
 }

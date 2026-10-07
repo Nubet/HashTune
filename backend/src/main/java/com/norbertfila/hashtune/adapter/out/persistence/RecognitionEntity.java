@@ -3,6 +3,7 @@ package com.norbertfila.hashtune.adapter.out.persistence;
 import com.norbertfila.hashtune.domain.recognition.RecognitionSource;
 import com.norbertfila.hashtune.domain.recognition.RecognitionStatus;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
@@ -24,7 +25,11 @@ public class RecognitionEntity {
     @Id
     private UUID id;
 
-    private String sessionId;
+    @Column(name = "owner_issuer", nullable = false)
+    private String ownerIssuer;
+
+    @Column(name = "owner_subject", nullable = false)
+    private String ownerSubject;
     private UUID trackId;
 
     @Enumerated(EnumType.STRING)

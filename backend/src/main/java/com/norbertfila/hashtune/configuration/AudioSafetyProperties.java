@@ -13,6 +13,8 @@ public class AudioSafetyProperties {
     private long maxFileSizeBytes = 200L * 1024 * 1024;
     private long maxDurationMs = 1_800_000;
     private long probeTimeoutMs = 10_000;
+    private long ffmpegTimeoutMs = 1_800_000;
+    private long maxDecodedPcmBytes = 64L * 1024 * 1024;
     private String ffprobeBinary = "ffprobe";
     private Set<String> allowedContentTypes = new LinkedHashSet<>(Set.of(
             "audio/flac",

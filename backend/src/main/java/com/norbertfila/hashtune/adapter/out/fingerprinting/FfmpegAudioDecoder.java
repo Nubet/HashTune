@@ -2,12 +2,16 @@ package com.norbertfila.hashtune.adapter.out.fingerprinting;
 
 import com.norbertfila.hashtune.application.port.out.AudioInputRejectedException;
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 final class FfmpegAudioDecoder {
     private final String ffmpegBinary;
@@ -30,17 +34,14 @@ final class FfmpegAudioDecoder {
             Process process = new ProcessBuilder(command(inputFile))
                     .redirectError(ProcessBuilder.Redirect.DISCARD)
                     .start();
-            byte[] pcmBytes = readAll(process.getInputStream());
-            int exitCode = process.waitFor();
+            byte[] pcmBytes = readProcessOutput(process);
+            int exitCode = process.exitValue();
             if (exitCode != 0) {
                 throw new IllegalStateException("FFmpeg could not decode audio");
             }
             return Pcm16AudioDecoder.decode(pcmBytes, CanonicalAudioFormat.SAMPLE_RATE);
         } catch (IOException exception) {
             throw new IllegalStateException("Could not decode audio with FFmpeg", exception);
-        } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("FFmpeg decoding was interrupted", exception);
         } finally {
             deleteInputFile(inputFile);
         }
@@ -56,6 +57,51 @@ final class FfmpegAudioDecoder {
         if (result.durationMs() > safetyProperties.getMaxDurationMs()) {
             throw new AudioInputRejectedException(
                     "AUDIO_DURATION_TOO_LONG", "Audio exceeds the maximum allowed duration");
+        }
+    }
+
+    private byte[] readProcessOutput(Process process) {
+        try (ExecutorService outputReader = Executors.newVirtualThreadPerTaskExecutor()) {
+            Future<byte[]> output = outputReader.submit(() -> {
+                try {
+                    return BoundedProcessOutput.read(process.getInputStream(), safetyProperties.getMaxDecodedPcmBytes());
+                } catch (RuntimeException | IOException exception) {
+                    terminate(process);
+                    throw exception;
+                }
+            });
+            try {
+                if (!process.waitFor(safetyProperties.getFfmpegTimeoutMs(), TimeUnit.MILLISECONDS)) {
+                    terminate(process);
+                    throw new AudioInputRejectedException("AUDIO_DECODE_TIMEOUT", "Audio decoding timed out");
+                }
+            } catch (InterruptedException exception) {
+                terminate(process);
+                Thread.currentThread().interrupt();
+                throw new AudioInputRejectedException("AUDIO_DECODE_TIMEOUT", "Audio decoding was interrupted");
+            }
+            try {
+                return output.get();
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+                terminate(process);
+                throw new AudioInputRejectedException("AUDIO_DECODE_TIMEOUT", "Audio decoding was interrupted");
+            } catch (ExecutionException exception) {
+                Throwable cause = exception.getCause();
+                if (cause instanceof RuntimeException runtimeException) {
+                    throw runtimeException;
+                }
+                throw new IllegalStateException("Could not read FFmpeg output", cause);
+            }
+        }
+    }
+
+    private void terminate(Process process) {
+        if (process.isAlive()) {
+            process.destroy();
+            if (process.isAlive()) {
+                process.destroyForcibly();
+            }
         }
     }
 
@@ -76,14 +122,6 @@ final class FfmpegAudioDecoder {
                 "-ar",
                 String.valueOf(CanonicalAudioFormat.SAMPLE_RATE),
                 CanonicalAudioFormat.FFMPEG_OUTPUT_PIPE);
-    }
-
-    private byte[] readAll(InputStream input) throws IOException {
-        try (input;
-                ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            input.transferTo(output);
-            return output.toByteArray();
-        }
     }
 
     private void deleteInputFile(Path inputFile) {

@@ -38,7 +38,14 @@ public class SecurityConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> {
                     authorize.requestMatchers("/actuator/health/**").permitAll();
-                    authorize.requestMatchers(HttpMethod.GET, "/api/v1/library/**").permitAll();
+                    authorize.requestMatchers(
+                                    HttpMethod.GET,
+                                    "/api/v1/library/tracks",
+                                    "/api/v1/library/tracks/albums",
+                                    "/api/v1/library/tracks/artists",
+                                    "/api/v1/library/tracks/artists/*/image",
+                                    "/api/v1/library/tracks/*/cover")
+                            .permitAll();
                     if (identityProvider.isEnabled()) {
                         authorize.anyRequest().authenticated();
                     } else {

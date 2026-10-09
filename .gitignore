@@ -34,6 +34,8 @@ Desktop.ini
 **/out/
 !backend/src/main/java/**/out/
 !backend/src/main/java/**/out/**
+!backend/src/test/java/**/out/
+!backend/src/test/java/**/out/**
 **/coverage/
 **/dist/
 **/build/
@@ -71,7 +73,9 @@ pnpm-debug.log*
 **/.cache/
 **/__pycache__/
 *.pyc
+devenv/data/
 data/dev/mtg_jamendo_mini/
+data/dev/mtg_jamendo_samples/
 external/mtg-jamendo-dataset/
 
 # Vercel

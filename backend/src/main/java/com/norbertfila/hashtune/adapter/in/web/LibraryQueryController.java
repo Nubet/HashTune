@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -74,10 +75,12 @@ public class LibraryQueryController {
     }
 
     @GetMapping("/{id}/cover")
-    public ResponseEntity<byte[]> cover(@PathVariable UUID id) {
+    public ResponseEntity<InputStreamResource> cover(@PathVariable UUID id) {
         TrackApplicationService.CoverArt cover = service.getCoverArt(id);
-        MediaType mediaType = MediaType.parseMediaType(
-                cover.mimeType() == null ? MediaType.APPLICATION_OCTET_STREAM_VALUE : cover.mimeType());
-        return ResponseEntity.ok().contentType(mediaType).body(cover.data());
+        MediaType mediaType = MediaType.parseMediaType(cover.mimeType());
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .header("X-Content-Type-Options", "nosniff")
+                .body(new InputStreamResource(cover.content()));
     }
 }

@@ -1,13 +1,18 @@
 package com.norbertfila.hashtune.adapter.out.metadata;
 
+import com.norbertfila.hashtune.application.port.out.AudioInputRejectedException;
+import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
 import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.FileTypeDetector;
 import com.drew.imaging.mp3.Mp3MetadataReader;
 import com.drew.metadata.Metadata;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
+import lombok.RequiredArgsConstructor;
 import java.util.stream.StreamSupport;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
@@ -18,7 +23,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 @Component
+@RequiredArgsConstructor
 public class AudioMetadataReader {
+    private final AudioSafetyProperties safetyProperties;
+
     public AudioMetadata read(MultipartFile file) {
         if (isFlac(file)) {
             return readFlac(file);
@@ -30,6 +38,8 @@ public class AudioMetadataReader {
             Metadata metadata =
                     isMp3(file) ? Mp3MetadataReader.readMetadata(input) : ImageMetadataReader.readMetadata(input);
             return AudioMetadata.basic(value(metadata, "title"), value(metadata, "artist"), value(metadata, "album"));
+        } catch (AudioInputRejectedException exception) {
+            throw exception;
         } catch (Exception ignored) {
             return AudioMetadata.empty();
         }
@@ -58,6 +68,7 @@ public class AudioMetadataReader {
                 return AudioMetadata.empty();
             }
             Artwork artwork = tag.getFirstArtwork();
+            EmbeddedArtwork embeddedArtwork = artwork == null ? null : readArtwork(artwork);
             return new AudioMetadata(
                     first(tag, FieldKey.TITLE),
                     first(tag, FieldKey.ARTIST),
@@ -71,7 +82,9 @@ public class AudioMetadataReader {
                     first(tag, FieldKey.ISRC),
                     first(tag, "BARCODE"),
                     first(tag, FieldKey.COMMENT),
-                    artwork == null ? null : new EmbeddedArtwork(artwork.getBinaryData(), artwork.getMimeType()));
+                    embeddedArtwork);
+        } catch (AudioInputRejectedException exception) {
+            throw exception;
         } catch (Exception ignored) {
             return AudioMetadata.empty();
         } finally {
@@ -83,6 +96,33 @@ public class AudioMetadataReader {
                 }
             }
         }
+    }
+
+    private EmbeddedArtwork readArtwork(Artwork artwork) {
+        String mimeType = artwork.getMimeType() == null
+                ? ""
+                : artwork.getMimeType().split(";", 2)[0].trim().toLowerCase(Locale.ROOT);
+        if (!safetyProperties.getAllowedCoverArtContentTypes().contains(mimeType)) {
+            throw new AudioInputRejectedException(
+                    "AUDIO_COVER_ART_FORMAT_NOT_SUPPORTED", "Embedded cover art format is not supported");
+        }
+        byte[] data = artwork.getBinaryData();
+        if (data.length > safetyProperties.getMaxCoverArtBytes()) {
+            throw new AudioInputRejectedException(
+                    "AUDIO_COVER_ART_TOO_LARGE", "Embedded cover art exceeds the maximum allowed size");
+        }
+        String detectedMime;
+        try (InputStream input = new ByteArrayInputStream(data)) {
+            detectedMime = FileTypeDetector.detectFileType(input).getMimeType();
+        } catch (IOException exception) {
+            throw new AudioInputRejectedException(
+                    "AUDIO_COVER_ART_FORMAT_NOT_SUPPORTED", "Embedded cover art could not be inspected");
+        }
+        if (!mimeType.equalsIgnoreCase(detectedMime)) {
+            throw new AudioInputRejectedException(
+                    "AUDIO_COVER_ART_FORMAT_NOT_SUPPORTED", "Embedded cover art signature is invalid");
+        }
+        return new EmbeddedArtwork(data, mimeType);
     }
 
     private boolean isMp3(MultipartFile file) {

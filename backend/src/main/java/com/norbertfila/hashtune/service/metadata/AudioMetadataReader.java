@@ -2,6 +2,7 @@ package com.norbertfila.hashtune.service.metadata;
 
 import com.drew.imaging.FileTypeDetector;
 import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
 import com.drew.imaging.mp3.Mp3MetadataReader;
 import com.drew.metadata.Metadata;
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
@@ -19,8 +20,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
+import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
+import org.jaudiotagger.tag.TagException;
 import org.jaudiotagger.tag.datatype.Artwork;
 import org.springframework.stereotype.Component;
 
@@ -41,9 +46,7 @@ public class AudioMetadataReader {
             Metadata metadata =
                     isMp3(file) ? Mp3MetadataReader.readMetadata(input) : ImageMetadataReader.readMetadata(input);
             return AudioMetadata.basic(value(metadata, "title"), value(metadata, "artist"), value(metadata, "album"));
-        } catch (AudioInputRejectedException exception) {
-            throw exception;
-        } catch (Exception exception) {
+        } catch (IOException | ImageProcessingException exception) {
             log.debug("Could not read optional audio metadata from {}", file.originalFilename(), exception);
             return AudioMetadata.empty();
         }
@@ -89,9 +92,11 @@ public class AudioMetadataReader {
                     first(tag, "BARCODE"),
                     first(tag, FieldKey.COMMENT),
                     embeddedArtwork);
-        } catch (AudioInputRejectedException exception) {
-            throw exception;
-        } catch (Exception exception) {
+        } catch (IOException
+                | CannotReadException
+                | InvalidAudioFrameException
+                | ReadOnlyFileException
+                | TagException exception) {
             log.debug("Could not read optional audio metadata from {}", file.originalFilename(), exception);
             return AudioMetadata.empty();
         } finally {

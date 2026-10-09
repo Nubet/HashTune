@@ -15,6 +15,7 @@ import com.norbertfila.hashtune.entity.track.Track;
 import com.norbertfila.hashtune.entity.track.TrackOrigin;
 import com.norbertfila.hashtune.entity.track.TrackStatus;
 import com.norbertfila.hashtune.exceptions.ErrorCode;
+import com.norbertfila.hashtune.exceptions.application.ResourceNotFoundException;
 import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
 import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
 import com.norbertfila.hashtune.repository.track.TrackRepository;
@@ -87,6 +88,22 @@ class IndexingJobServiceTest {
         when(tracks.findById(track.id())).thenReturn(Optional.of(track));
         when(engine.index(eq(track.id()), any()))
                 .thenThrow(new AudioInputRejectedException(ErrorCode.AUDIO_DURATION_TOO_LONG, "too long"));
+
+        service.processNextJob();
+
+        var savedJob = org.mockito.ArgumentCaptor.forClass(IndexingJob.class);
+        verify(jobs).save(savedJob.capture());
+        assertThat(savedJob.getValue().status()).isEqualTo(IndexingJobStatus.FAILED);
+        assertThat(savedJob.getValue().nextAttemptAt()).isNull();
+    }
+
+    @Test
+    void doesNotRetryWhenTrackIsMissing() {
+        Track track = track(TrackStatus.UPLOADED);
+        IndexingJob job = job(track.id(), IndexingJobStatus.PENDING, 1);
+        when(jobs.claimNextPending(any())).thenReturn(Optional.of(job));
+        when(tracks.findById(track.id()))
+                .thenThrow(new ResourceNotFoundException(ErrorCode.TRACK_NOT_FOUND, "Track not found"));
 
         service.processNextJob();
 

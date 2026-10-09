@@ -7,6 +7,7 @@ import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.entity.track.Track;
 import com.norbertfila.hashtune.entity.track.TrackStatus;
 import com.norbertfila.hashtune.exceptions.ErrorCode;
+import com.norbertfila.hashtune.exceptions.application.ApplicationException;
 import com.norbertfila.hashtune.exceptions.application.ResourceConflictException;
 import com.norbertfila.hashtune.exceptions.application.ResourceNotFoundException;
 import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
@@ -144,7 +145,7 @@ public class IndexingJobService {
     private boolean isRetryable(Exception exception) {
         Throwable current = exception;
         while (current != null) {
-            if (current instanceof AudioInputRejectedException) {
+            if (current instanceof AudioInputRejectedException || current instanceof ApplicationException) {
                 return false;
             }
             current = current.getCause();

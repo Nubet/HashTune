@@ -79,10 +79,17 @@ public class LibraryQueryController {
     @GetMapping("/{id}/cover")
     public ResponseEntity<InputStreamResource> cover(@PathVariable UUID id) {
         TrackService.CoverArt cover = service.getCoverArt(id);
-        MediaType mediaType = MediaType.parseMediaType(cover.mimeType());
         return ResponseEntity.ok()
-                .contentType(mediaType)
+                .contentType(contentType(cover.mimeType()))
                 .header("X-Content-Type-Options", "nosniff")
                 .body(new InputStreamResource(cover.content()));
+    }
+
+    private MediaType contentType(String value) {
+        try {
+            return MediaType.parseMediaType(value);
+        } catch (IllegalArgumentException ignored) {
+            return MediaType.APPLICATION_OCTET_STREAM;
+        }
     }
 }

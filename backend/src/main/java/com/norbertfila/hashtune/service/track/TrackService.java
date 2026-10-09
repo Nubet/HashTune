@@ -8,7 +8,9 @@ import com.norbertfila.hashtune.entity.track.Track;
 import com.norbertfila.hashtune.entity.track.TrackOrigin;
 import com.norbertfila.hashtune.entity.track.TrackStatus;
 import com.norbertfila.hashtune.exceptions.ErrorCode;
-import com.norbertfila.hashtune.exceptions.application.ApplicationException;
+import com.norbertfila.hashtune.exceptions.application.InvalidAudioException;
+import com.norbertfila.hashtune.exceptions.application.ResourceConflictException;
+import com.norbertfila.hashtune.exceptions.application.ResourceNotFoundException;
 import com.norbertfila.hashtune.exceptions.storage.StorageException;
 import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
 import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
@@ -131,7 +133,7 @@ public class TrackService {
             return new UploadResult(track, job);
         } catch (IOException exception) {
             cleanupUploadedObjects(uploadedKeys);
-            throw new ApplicationException(ErrorCode.INVALID_AUDIO, "Could not read uploaded file");
+            throw new InvalidAudioException(ErrorCode.INVALID_AUDIO, "Could not read uploaded file");
         } catch (RuntimeException exception) {
             cleanupUploadedObjects(uploadedKeys);
             throw exception;
@@ -340,12 +342,12 @@ public class TrackService {
 
     private void ensureNew(String checksum) {
         tracks.findByChecksum(checksum).ifPresent(existing -> {
-            throw new ApplicationException(ErrorCode.TRACK_ALREADY_EXISTS, "Track already exists");
+            throw new ResourceConflictException(ErrorCode.TRACK_ALREADY_EXISTS, "Track already exists");
         });
     }
 
-    private ApplicationException notFound(ErrorCode code, String message) {
-        return new ApplicationException(code, message);
+    private ResourceNotFoundException notFound(ErrorCode code, String message) {
+        return new ResourceNotFoundException(code, message);
     }
 
     public record UploadResult(Track track, IndexingJob job) {}

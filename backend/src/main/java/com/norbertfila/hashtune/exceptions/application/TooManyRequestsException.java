@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.exceptions;
+package com.norbertfila.hashtune.exceptions.application;
 
 import java.time.Duration;
 import org.springframework.http.HttpStatus;

@@ -2,7 +2,7 @@ package com.norbertfila.hashtune.service.indexing;
 
 import com.norbertfila.hashtune.service.fingerprint.AudioRecognitionEngine;
 import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
-import com.norbertfila.hashtune.exceptions.ApplicationException;
+import com.norbertfila.hashtune.exceptions.application.ApplicationException;
 import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
 import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
 import com.norbertfila.hashtune.repository.track.TrackRepository;

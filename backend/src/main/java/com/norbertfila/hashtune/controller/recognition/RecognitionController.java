@@ -1,6 +1,8 @@
 package com.norbertfila.hashtune.controller.recognition;
 
-import com.norbertfila.hashtune.adapter.in.web.ApiDtos;
+import com.norbertfila.hashtune.dto.response.HistoryResponse;
+import com.norbertfila.hashtune.dto.response.RecognitionResponse;
+import com.norbertfila.hashtune.mapper.RecognitionMapper;
 import com.norbertfila.hashtune.service.recognition.RecognitionService;
 import com.norbertfila.hashtune.security.AuthenticatedIdentityResolver;
 import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
@@ -30,7 +32,7 @@ public class RecognitionController {
     private final AuthenticatedIdentityResolver identityResolver;
 
     @PostMapping(value = "/recognitions", consumes = "multipart/form-data")
-    public ApiDtos.RecognitionResponse recognize(
+    public RecognitionResponse recognize(
             Authentication authentication,
             @RequestPart("file") MultipartFile file,
             @RequestParam(defaultValue = "AUDIO_FILE") RecognitionSource source,
@@ -38,16 +40,16 @@ public class RecognitionController {
         var owner = owner(authentication);
         var result = probe ? service.probe(owner, file, source) : service.recognize(owner, file, source);
         var track = result.trackId() == null ? null : service.track(result.trackId());
-        return ApiDtos.RecognitionResponse.from(result, track);
+        return RecognitionMapper.toResponse(result, track);
     }
 
     @GetMapping("/recognition-history")
-    public List<ApiDtos.HistoryResponse> history(
+    public List<HistoryResponse> history(
             Authentication authentication,
             @RequestParam(defaultValue = "25") int limit,
             @RequestParam(defaultValue = "0") int offset) {
         return service.history(owner(authentication), limit, offset).stream()
-                .map(item -> ApiDtos.HistoryResponse.from(
+                .map(item -> RecognitionMapper.toHistoryResponse(
                         item, item.trackId() == null ? null : service.track(item.trackId())))
                 .toList();
     }

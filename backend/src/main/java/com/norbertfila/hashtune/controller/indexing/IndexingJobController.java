@@ -1,6 +1,7 @@
 package com.norbertfila.hashtune.controller.indexing;
 
-import com.norbertfila.hashtune.adapter.in.web.ApiDtos;
+import com.norbertfila.hashtune.dto.response.IndexingJobResponse;
+import com.norbertfila.hashtune.mapper.IndexingJobMapper;
 import com.norbertfila.hashtune.service.indexing.IndexingJobService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +20,12 @@ public class IndexingJobController {
     private final IndexingJobService service;
 
     @GetMapping("/{id}")
-    public ApiDtos.IndexingJobResponse get(@PathVariable UUID id) {
-        return ApiDtos.IndexingJobResponse.from(service.get(id));
+    public IndexingJobResponse get(@PathVariable UUID id) {
+        return IndexingJobMapper.toResponse(service.get(id));
     }
 
     @PostMapping("/{id}/retry")
-    public ApiDtos.IndexingJobResponse retry(@PathVariable UUID id) {
-        return ApiDtos.IndexingJobResponse.from(service.retry(id));
+    public IndexingJobResponse retry(@PathVariable UUID id) {
+        return IndexingJobMapper.toResponse(service.retry(id));
     }
 }

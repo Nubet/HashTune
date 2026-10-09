@@ -1,6 +1,14 @@
 package com.norbertfila.hashtune.controller.library;
 
-import com.norbertfila.hashtune.adapter.in.web.ApiDtos;
+import com.norbertfila.hashtune.dto.request.UpdateTrackMetadataRequest;
+import com.norbertfila.hashtune.dto.response.ImportResponse;
+import com.norbertfila.hashtune.dto.response.IndexingJobResponse;
+import com.norbertfila.hashtune.dto.response.ReindexAllResponse;
+import com.norbertfila.hashtune.dto.response.TrackResponse;
+import com.norbertfila.hashtune.dto.response.UploadResponse;
+import com.norbertfila.hashtune.mapper.IndexingJobMapper;
+import com.norbertfila.hashtune.mapper.LibraryMapper;
+import com.norbertfila.hashtune.mapper.TrackMapper;
 import com.norbertfila.hashtune.service.track.TrackService;
 import com.norbertfila.hashtune.entity.track.TrackOrigin;
 import java.util.UUID;
@@ -26,18 +34,18 @@ public class LibraryAdminController {
     private final TrackService service;
 
     @PostMapping(consumes = "multipart/form-data")
-    public ResponseEntity<ApiDtos.UploadResponse> upload(@RequestPart("file") MultipartFile file) {
+    public ResponseEntity<UploadResponse> upload(@RequestPart("file") MultipartFile file) {
         TrackService.UploadResult result = service.upload(file);
-        return ResponseEntity.accepted().body(ApiDtos.UploadResponse.from(result.track(), result.job()));
+        return ResponseEntity.accepted().body(TrackMapper.toUploadResponse(result.track(), result.job()));
     }
 
     @PostMapping(value = "/imports", consumes = "multipart/form-data")
-    public ApiDtos.ImportResponse importTrack(
+    public ImportResponse importTrack(
             @RequestPart("file") MultipartFile file,
             @RequestParam(defaultValue = "HASH_TUNE") TrackOrigin origin,
             @RequestParam(required = false) String relativePath) {
         TrackService.ImportResult result = service.importTrack(file, origin, relativePath);
-        return ApiDtos.ImportResponse.from(result.track(), result);
+        return TrackMapper.toImportResponse(result.track(), result);
     }
 
     @DeleteMapping("/{id}")
@@ -47,22 +55,20 @@ public class LibraryAdminController {
     }
 
     @PatchMapping("/{id}/metadata")
-    public ApiDtos.TrackResponse updateMetadata(
-            @PathVariable UUID id, @RequestBody ApiDtos.UpdateTrackMetadataRequest request) {
-        return ApiDtos.TrackResponse.from(
-                service.updateMetadata(id, request.title(), request.artist(), request.album()));
+    public TrackResponse updateMetadata(
+            @PathVariable UUID id, @RequestBody UpdateTrackMetadataRequest request) {
+        return TrackMapper.toResponse(service.updateMetadata(id, request.title(), request.artist(), request.album()));
     }
 
     @PostMapping("/{id}/reindex")
-    public ResponseEntity<ApiDtos.IndexingJobResponse> reindex(@PathVariable UUID id) {
-        return ResponseEntity.accepted().body(ApiDtos.IndexingJobResponse.from(service.reindex(id)));
+    public ResponseEntity<IndexingJobResponse> reindex(@PathVariable UUID id) {
+        return ResponseEntity.accepted().body(IndexingJobMapper.toResponse(service.reindex(id)));
     }
 
     @PostMapping("/reindex")
-    public ResponseEntity<ApiDtos.ReindexAllResponse> reindexAll() {
+    public ResponseEntity<ReindexAllResponse> reindexAll() {
         TrackService.ReindexAllResult result = service.reindexAll();
         return ResponseEntity.accepted()
-                .body(new ApiDtos.ReindexAllResponse(
-                        result.scheduled(), result.alreadyProcessing(), result.awaitingConfirmation()));
+                .body(LibraryMapper.reindexAll(result));
     }
 }

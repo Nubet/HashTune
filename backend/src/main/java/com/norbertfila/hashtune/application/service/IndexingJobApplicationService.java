@@ -1,6 +1,7 @@
 package com.norbertfila.hashtune.application.service;
 
 import com.norbertfila.hashtune.application.port.out.AudioRecognitionEngine;
+import com.norbertfila.hashtune.application.port.out.AudioInputRejectedException;
 import com.norbertfila.hashtune.application.port.out.IndexingJobRepository;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
@@ -69,7 +70,7 @@ public class IndexingJobApplicationService {
     public void processNextJob() {
         if (!indexingProperties.isWorkerEnabled()) return;
         Instant now = Instant.now();
-        jobs.recoverStaleProcessing(now.minusMillis(indexingProperties.getProcessingTimeoutMs()), now);
+        jobs.recoverStaleProcessing(now.minusMillis(indexingProperties.getStaleProcessingTimeoutMs()), now);
         jobs.claimNextPending(now).ifPresent(job -> indexingExecutor.execute(() -> process(job)));
     }
 
@@ -114,7 +115,8 @@ public class IndexingJobApplicationService {
     }
 
     private void handleFailure(IndexingJob job, Track track, Exception exception) {
-        boolean retry = job.attempts() < Math.max(1, indexingProperties.getMaxAttempts());
+        boolean retry = isRetryable(exception)
+                && job.attempts() < Math.max(1, indexingProperties.getMaxAttempts());
         Instant now = Instant.now();
         jobs.save(new IndexingJob(
                 job.id(),
@@ -139,6 +141,17 @@ public class IndexingJobApplicationService {
         long baseDelay = Math.max(0, indexingProperties.getRetryBackoffMs());
         long delay = baseDelay > maxDelay / multiplier ? maxDelay : Math.min(maxDelay, baseDelay * multiplier);
         return Duration.ofMillis(delay);
+    }
+
+    private boolean isRetryable(Exception exception) {
+        Throwable current = exception;
+        while (current != null) {
+            if (current instanceof AudioInputRejectedException) {
+                return false;
+            }
+            current = current.getCause();
+        }
+        return true;
     }
 
     private String errorMessage(Exception exception) {

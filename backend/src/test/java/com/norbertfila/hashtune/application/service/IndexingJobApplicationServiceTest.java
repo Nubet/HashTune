@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.norbertfila.hashtune.application.port.out.AudioRecognitionEngine;
+import com.norbertfila.hashtune.application.port.out.AudioInputRejectedException;
 import com.norbertfila.hashtune.application.port.out.IndexingJobRepository;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
@@ -38,7 +39,7 @@ class IndexingJobApplicationServiceTest {
         storageProperties.setAudioBucket("audio");
         indexingProperties.setRetryBackoffMs(100);
         indexingProperties.setMaxRetryBackoffMs(1_000);
-        indexingProperties.setProcessingTimeoutMs(60_000);
+        indexingProperties.setStaleProcessingTimeoutMs(60_000);
         service = new IndexingJobApplicationService(
                 tracks, jobs, engine, storageProperties, storage, indexingProperties, Runnable::run);
         when(jobs.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
@@ -75,6 +76,23 @@ class IndexingJobApplicationServiceTest {
         assertThat(retried.status()).isEqualTo(IndexingJobStatus.PENDING);
         assertThat(retried.attempts()).isZero();
         assertThat(retried.nextAttemptAt()).isNotNull();
+    }
+
+    @Test
+    void doesNotRetryRejectedAudio() {
+        Track track = track(TrackStatus.UPLOADED);
+        IndexingJob job = job(track.id(), IndexingJobStatus.PENDING, 1);
+        when(jobs.claimNextPending(any())).thenReturn(Optional.of(job));
+        when(tracks.findById(track.id())).thenReturn(Optional.of(track));
+        when(engine.index(eq(track.id()), any()))
+                .thenThrow(new AudioInputRejectedException("AUDIO_DURATION_TOO_LONG", "too long"));
+
+        service.processNextJob();
+
+        var savedJob = org.mockito.ArgumentCaptor.forClass(IndexingJob.class);
+        verify(jobs).save(savedJob.capture());
+        assertThat(savedJob.getValue().status()).isEqualTo(IndexingJobStatus.FAILED);
+        assertThat(savedJob.getValue().nextAttemptAt()).isNull();
     }
 
     private Track track(TrackStatus status) {

@@ -1,10 +1,10 @@
 package com.norbertfila.hashtune.exceptions;
 
 import com.norbertfila.hashtune.dto.error.ProblemResponse;
-import com.norbertfila.hashtune.exceptions.storage.StorageException;
-import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
 import com.norbertfila.hashtune.exceptions.application.ApplicationException;
 import com.norbertfila.hashtune.exceptions.application.TooManyRequestsException;
+import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
+import com.norbertfila.hashtune.exceptions.storage.StorageException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +30,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(TooManyRequestsException.class)
-    ResponseEntity<ProblemResponse> handleRateLimit(
-            TooManyRequestsException exception, HttpServletRequest request) {
+    ResponseEntity<ProblemResponse> handleRateLimit(TooManyRequestsException exception, HttpServletRequest request) {
         ResponseEntity<ProblemResponse> response = problem(
                 exception.status(), exception.code(), exception.code(), exception.getMessage(), request, Map.of());
         response.getHeaders()
@@ -42,8 +41,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    ResponseEntity<ProblemResponse> handleAccessDenied(
-            AccessDeniedException exception, HttpServletRequest request) {
+    ResponseEntity<ProblemResponse> handleAccessDenied(AccessDeniedException exception, HttpServletRequest request) {
         return problem(
                 HttpStatus.FORBIDDEN,
                 "Forbidden",

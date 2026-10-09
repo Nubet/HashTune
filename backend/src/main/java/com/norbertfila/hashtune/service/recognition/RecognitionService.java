@@ -1,18 +1,18 @@
 package com.norbertfila.hashtune.service.recognition;
 
-import com.norbertfila.hashtune.service.fingerprint.AudioRecognitionEngine;
-import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
-import com.norbertfila.hashtune.security.RecognitionConcurrencyLimiter;
+import com.norbertfila.hashtune.configuration.StorageProperties;
+import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
+import com.norbertfila.hashtune.entity.recognition.Recognition;
+import com.norbertfila.hashtune.entity.recognition.RecognitionSource;
+import com.norbertfila.hashtune.entity.recognition.RecognitionStatus;
+import com.norbertfila.hashtune.entity.track.Track;
 import com.norbertfila.hashtune.exceptions.application.ApplicationException;
 import com.norbertfila.hashtune.exceptions.application.TooManyRequestsException;
 import com.norbertfila.hashtune.repository.recognition.RecognitionRepository;
 import com.norbertfila.hashtune.repository.track.TrackRepository;
-import com.norbertfila.hashtune.configuration.StorageProperties;
-import com.norbertfila.hashtune.entity.recognition.Recognition;
-import com.norbertfila.hashtune.entity.recognition.RecognitionSource;
-import com.norbertfila.hashtune.entity.recognition.RecognitionStatus;
-import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
-import com.norbertfila.hashtune.entity.track.Track;
+import com.norbertfila.hashtune.security.RecognitionConcurrencyLimiter;
+import com.norbertfila.hashtune.service.fingerprint.AudioRecognitionEngine;
+import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
 import com.norbertfila.hashtune.service.validation.AudioUploadValidator;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,8 +47,7 @@ public class RecognitionService {
         return process(owner, file, source, false);
     }
 
-    private Recognition process(
-            ExternalIdentity owner, MultipartFile file, RecognitionSource source, boolean persist) {
+    private Recognition process(ExternalIdentity owner, MultipartFile file, RecognitionSource source, boolean persist) {
         if (!concurrencyLimiter.tryAcquire(owner)) {
             throw new TooManyRequestsException(java.time.Duration.ofSeconds(1));
         }

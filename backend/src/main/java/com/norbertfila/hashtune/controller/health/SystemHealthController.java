@@ -1,7 +1,7 @@
 package com.norbertfila.hashtune.controller.health;
 
-import com.norbertfila.hashtune.service.health.GetSystemHealthUseCase;
 import com.norbertfila.hashtune.entity.health.SystemHealth;
+import com.norbertfila.hashtune.service.health.GetSystemHealthUseCase;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

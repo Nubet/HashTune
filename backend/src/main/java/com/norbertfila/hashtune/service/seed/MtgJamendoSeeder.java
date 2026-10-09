@@ -1,10 +1,5 @@
 package com.norbertfila.hashtune.service.seed;
 
-import com.norbertfila.hashtune.service.metadata.CoverArtProvider;
-import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
-import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
-import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
-import com.norbertfila.hashtune.repository.track.TrackRepository;
 import com.norbertfila.hashtune.configuration.MtgJamendoSeedProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
 import com.norbertfila.hashtune.entity.indexing.IndexingJob;
@@ -12,6 +7,11 @@ import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.entity.track.Track;
 import com.norbertfila.hashtune.entity.track.TrackOrigin;
 import com.norbertfila.hashtune.entity.track.TrackStatus;
+import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
+import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
+import com.norbertfila.hashtune.repository.track.TrackRepository;
+import com.norbertfila.hashtune.service.metadata.CoverArtProvider;
+import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;

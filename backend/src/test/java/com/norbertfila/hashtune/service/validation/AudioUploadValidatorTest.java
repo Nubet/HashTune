@@ -1,9 +1,9 @@
 package com.norbertfila.hashtune.service.validation;
 
-import com.norbertfila.hashtune.exceptions.application.ApplicationException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
+import com.norbertfila.hashtune.exceptions.application.ApplicationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 

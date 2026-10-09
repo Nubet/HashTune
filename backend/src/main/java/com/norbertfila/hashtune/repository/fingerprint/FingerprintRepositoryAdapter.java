@@ -1,7 +1,5 @@
 package com.norbertfila.hashtune.repository.fingerprint;
 
-import com.norbertfila.hashtune.entity.fingerprint.FingerprintEntity;
-import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
 import com.norbertfila.hashtune.entity.fingerprint.FingerprintOccurrence;
 import java.util.ArrayList;
 import java.util.Collection;

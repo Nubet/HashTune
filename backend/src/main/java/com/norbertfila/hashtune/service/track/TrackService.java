@@ -1,22 +1,22 @@
 package com.norbertfila.hashtune.service.track;
 
-import com.norbertfila.hashtune.service.metadata.AudioMetadataReader;
-import com.norbertfila.hashtune.exceptions.storage.StorageException;
-import com.norbertfila.hashtune.service.metadata.CoverArtProvider;
-import com.norbertfila.hashtune.exceptions.application.ApplicationException;
-import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
-import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
-import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
-import com.norbertfila.hashtune.repository.track.TrackRepository;
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
-import com.norbertfila.hashtune.service.validation.AudioUploadValidator;
-import com.norbertfila.hashtune.service.validation.BoundedInputStream;
 import com.norbertfila.hashtune.entity.indexing.IndexingJob;
 import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.entity.track.Track;
 import com.norbertfila.hashtune.entity.track.TrackOrigin;
 import com.norbertfila.hashtune.entity.track.TrackStatus;
+import com.norbertfila.hashtune.exceptions.application.ApplicationException;
+import com.norbertfila.hashtune.exceptions.storage.StorageException;
+import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
+import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
+import com.norbertfila.hashtune.repository.track.TrackRepository;
+import com.norbertfila.hashtune.service.metadata.AudioMetadataReader;
+import com.norbertfila.hashtune.service.metadata.CoverArtProvider;
+import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
+import com.norbertfila.hashtune.service.validation.AudioUploadValidator;
+import com.norbertfila.hashtune.service.validation.BoundedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -272,7 +272,9 @@ public class TrackService {
         }
         try {
             InputStream input = storage.get(storageProperties.getAudioBucket(), track.coverArtObjectKey());
-            return new CoverArt(new BoundedInputStream(input, audioSafetyProperties.getMaxCoverArtBytes()), track.coverArtMimeType());
+            return new CoverArt(
+                    new BoundedInputStream(input, audioSafetyProperties.getMaxCoverArtBytes()),
+                    track.coverArtMimeType());
         } catch (StorageException exception) {
             throw notFound("COVER_ART_NOT_FOUND", "Embedded cover art not found");
         }

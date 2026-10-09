@@ -2,11 +2,11 @@ package com.norbertfila.hashtune.controller.recognition;
 
 import com.norbertfila.hashtune.dto.response.HistoryResponse;
 import com.norbertfila.hashtune.dto.response.RecognitionResponse;
-import com.norbertfila.hashtune.mapper.RecognitionMapper;
-import com.norbertfila.hashtune.service.recognition.RecognitionService;
-import com.norbertfila.hashtune.security.AuthenticatedIdentityResolver;
 import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
 import com.norbertfila.hashtune.entity.recognition.RecognitionSource;
+import com.norbertfila.hashtune.mapper.RecognitionMapper;
+import com.norbertfila.hashtune.security.AuthenticatedIdentityResolver;
+import com.norbertfila.hashtune.service.recognition.RecognitionService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;

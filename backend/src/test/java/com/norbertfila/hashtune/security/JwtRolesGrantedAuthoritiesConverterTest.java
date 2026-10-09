@@ -15,7 +15,8 @@ class JwtRolesGrantedAuthoritiesConverterTest {
     void mapsRolesToUppercaseRoleAuthorities() {
         Jwt jwt = jwtWithRoles(List.of("admin", "operator"));
 
-        assertThat(converter.convert(jwt)).extracting(GrantedAuthority::getAuthority)
+        assertThat(converter.convert(jwt))
+                .extracting(GrantedAuthority::getAuthority)
                 .containsExactly("ROLE_ADMIN", "ROLE_OPERATOR");
     }
 

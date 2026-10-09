@@ -1,9 +1,7 @@
 package com.norbertfila.hashtune.entity.recognition;
 
-import com.norbertfila.hashtune.entity.recognition.RecognitionSource;
-import com.norbertfila.hashtune.entity.recognition.RecognitionStatus;
-import jakarta.persistence.Entity;
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
@@ -30,6 +28,7 @@ public class RecognitionEntity {
 
     @Column(name = "owner_subject", nullable = false)
     private String ownerSubject;
+
     private UUID trackId;
 
     @Enumerated(EnumType.STRING)

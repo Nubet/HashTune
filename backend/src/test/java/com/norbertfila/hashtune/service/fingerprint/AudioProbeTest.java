@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 class AudioProbeTest {
     @Test
     void parsesAudioContainerAndDuration() {
-        AudioProbe.Result result = AudioProbe.parseOutput(
-                "codec_type=audio\nformat_name=matroska,webm\nduration=12.5\n");
+        AudioProbe.Result result =
+                AudioProbe.parseOutput("codec_type=audio\nformat_name=matroska,webm\nduration=12.5\n");
 
         assertThat(result.containerNames()).containsExactlyInAnyOrder("matroska", "webm");
         assertThat(result.durationMs()).isEqualTo(12_500);

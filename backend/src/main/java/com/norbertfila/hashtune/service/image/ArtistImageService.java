@@ -1,9 +1,9 @@
 package com.norbertfila.hashtune.service.image;
 
-import com.norbertfila.hashtune.service.validation.ArtistNameNormalizer;
 import com.norbertfila.hashtune.repository.artist.ArtistImageCacheEntry;
 import com.norbertfila.hashtune.repository.artist.ArtistImageCacheRepository;
 import com.norbertfila.hashtune.service.metadata.ArtistImageProvider;
+import com.norbertfila.hashtune.service.validation.ArtistNameNormalizer;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;

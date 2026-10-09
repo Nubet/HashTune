@@ -6,11 +6,11 @@ import com.norbertfila.hashtune.dto.response.IndexingJobResponse;
 import com.norbertfila.hashtune.dto.response.ReindexAllResponse;
 import com.norbertfila.hashtune.dto.response.TrackResponse;
 import com.norbertfila.hashtune.dto.response.UploadResponse;
+import com.norbertfila.hashtune.entity.track.TrackOrigin;
 import com.norbertfila.hashtune.mapper.IndexingJobMapper;
 import com.norbertfila.hashtune.mapper.LibraryMapper;
 import com.norbertfila.hashtune.mapper.TrackMapper;
 import com.norbertfila.hashtune.service.track.TrackService;
-import com.norbertfila.hashtune.entity.track.TrackOrigin;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -55,8 +55,7 @@ public class LibraryAdminController {
     }
 
     @PatchMapping("/{id}/metadata")
-    public TrackResponse updateMetadata(
-            @PathVariable UUID id, @RequestBody UpdateTrackMetadataRequest request) {
+    public TrackResponse updateMetadata(@PathVariable UUID id, @RequestBody UpdateTrackMetadataRequest request) {
         return TrackMapper.toResponse(service.updateMetadata(id, request.title(), request.artist(), request.album()));
     }
 
@@ -68,7 +67,6 @@ public class LibraryAdminController {
     @PostMapping("/reindex")
     public ResponseEntity<ReindexAllResponse> reindexAll() {
         TrackService.ReindexAllResult result = service.reindexAll();
-        return ResponseEntity.accepted()
-                .body(LibraryMapper.reindexAll(result));
+        return ResponseEntity.accepted().body(LibraryMapper.reindexAll(result));
     }
 }

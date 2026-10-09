@@ -1,7 +1,7 @@
 package com.norbertfila.hashtune.service.fingerprint;
 
-import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
+import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -48,11 +48,10 @@ final class FfmpegAudioDecoder {
     }
 
     private void validate(AudioProbe.Result result) {
-        boolean supportedContainer = result.containerNames().stream()
-                .anyMatch(safetyProperties.getAllowedContainerNames()::contains);
+        boolean supportedContainer =
+                result.containerNames().stream().anyMatch(safetyProperties.getAllowedContainerNames()::contains);
         if (!supportedContainer) {
-            throw new AudioInputRejectedException(
-                    "AUDIO_FORMAT_NOT_SUPPORTED", "Audio container is not supported");
+            throw new AudioInputRejectedException("AUDIO_FORMAT_NOT_SUPPORTED", "Audio container is not supported");
         }
         if (result.durationMs() > safetyProperties.getMaxDurationMs()) {
             throw new AudioInputRejectedException(
@@ -64,7 +63,8 @@ final class FfmpegAudioDecoder {
         try (ExecutorService outputReader = Executors.newVirtualThreadPerTaskExecutor()) {
             Future<byte[]> output = outputReader.submit(() -> {
                 try {
-                    return BoundedProcessOutput.read(process.getInputStream(), safetyProperties.getMaxDecodedPcmBytes());
+                    return BoundedProcessOutput.read(
+                            process.getInputStream(), safetyProperties.getMaxDecodedPcmBytes());
                 } catch (RuntimeException | IOException exception) {
                     terminate(process);
                     throw exception;

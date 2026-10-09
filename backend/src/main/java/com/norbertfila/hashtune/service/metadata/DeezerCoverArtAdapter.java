@@ -1,7 +1,6 @@
 package com.norbertfila.hashtune.service.metadata;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.norbertfila.hashtune.service.metadata.CoverArtProvider;
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;

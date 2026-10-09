@@ -15,14 +15,12 @@ class DeezerArtistImageAdapterTest {
         RestClient.Builder builder = RestClient.builder().baseUrl("https://api.deezer.com");
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
         server.expect(requestTo("https://api.deezer.com/search/artist?q=Josef%20Bratan&limit=10"))
-                .andRespond(withSuccess(
-                        """
+                .andRespond(withSuccess("""
                         {"data":[
                           {"name":"Josef","picture_xl":"https://example.com/wrong.jpg"},
                           {"name":"Josef Bratan","picture_xl":"https://example.com/josef.jpg"}
                         ]}
-                        """,
-                        MediaType.APPLICATION_JSON));
+                        """, MediaType.APPLICATION_JSON));
 
         DeezerArtistImageAdapter adapter = new DeezerArtistImageAdapter(builder.build());
 

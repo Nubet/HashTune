@@ -1,6 +1,5 @@
 package com.norbertfila.hashtune.service.recognition;
 
-import com.norbertfila.hashtune.service.validation.AudioUploadValidator;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -11,16 +10,17 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.norbertfila.hashtune.service.fingerprint.AudioRecognitionEngine;
-import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
-import com.norbertfila.hashtune.security.RecognitionConcurrencyLimiter;
-import com.norbertfila.hashtune.repository.recognition.RecognitionRepository;
-import com.norbertfila.hashtune.repository.track.TrackRepository;
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
 import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
 import com.norbertfila.hashtune.entity.track.Track;
 import com.norbertfila.hashtune.entity.track.TrackStatus;
+import com.norbertfila.hashtune.repository.recognition.RecognitionRepository;
+import com.norbertfila.hashtune.repository.track.TrackRepository;
+import com.norbertfila.hashtune.security.RecognitionConcurrencyLimiter;
+import com.norbertfila.hashtune.service.fingerprint.AudioRecognitionEngine;
+import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
+import com.norbertfila.hashtune.service.validation.AudioUploadValidator;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -62,7 +62,7 @@ class RecognitionServiceTest {
         when(engine.recognize(any())).thenThrow(new IllegalStateException("decoder failed"));
 
         assertThatThrownBy(() -> service.probe(
-                         owner, file, com.norbertfila.hashtune.entity.recognition.RecognitionSource.AUDIO_FILE))
+                        owner, file, com.norbertfila.hashtune.entity.recognition.RecognitionSource.AUDIO_FILE))
                 .isInstanceOf(IllegalStateException.class);
 
         verify(storage).delete(eq("temp"), startsWith("samples/"));

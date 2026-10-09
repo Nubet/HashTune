@@ -1,17 +1,17 @@
 package com.norbertfila.hashtune.service.indexing;
 
-import com.norbertfila.hashtune.service.fingerprint.AudioRecognitionEngine;
-import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
-import com.norbertfila.hashtune.exceptions.application.ApplicationException;
-import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
-import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
-import com.norbertfila.hashtune.repository.track.TrackRepository;
 import com.norbertfila.hashtune.configuration.IndexingProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
 import com.norbertfila.hashtune.entity.indexing.IndexingJob;
 import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.entity.track.Track;
 import com.norbertfila.hashtune.entity.track.TrackStatus;
+import com.norbertfila.hashtune.exceptions.application.ApplicationException;
+import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
+import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
+import com.norbertfila.hashtune.repository.track.TrackRepository;
+import com.norbertfila.hashtune.service.fingerprint.AudioRecognitionEngine;
+import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
@@ -116,8 +116,7 @@ public class IndexingJobService {
     }
 
     private void handleFailure(IndexingJob job, Track track, Exception exception) {
-        boolean retry = isRetryable(exception)
-                && job.attempts() < Math.max(1, indexingProperties.getMaxAttempts());
+        boolean retry = isRetryable(exception) && job.attempts() < Math.max(1, indexingProperties.getMaxAttempts());
         Instant now = Instant.now();
         jobs.save(new IndexingJob(
                 job.id(),

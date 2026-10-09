@@ -2,8 +2,8 @@ package com.norbertfila.hashtune.service.fingerprint;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository.FingerprintMatch;
 import com.norbertfila.hashtune.entity.fingerprint.FingerprintOccurrence;
+import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository.FingerprintMatch;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

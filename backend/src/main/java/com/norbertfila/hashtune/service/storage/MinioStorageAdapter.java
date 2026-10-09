@@ -1,7 +1,6 @@
 package com.norbertfila.hashtune.service.storage;
 
 import com.norbertfila.hashtune.exceptions.storage.StorageException;
-import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
 import io.minio.BucketExistsArgs;
 import io.minio.GetObjectArgs;
 import io.minio.MakeBucketArgs;

@@ -1,7 +1,5 @@
 package com.norbertfila.hashtune.entity.track;
 
-import com.norbertfila.hashtune.entity.track.TrackOrigin;
-import com.norbertfila.hashtune.entity.track.TrackStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

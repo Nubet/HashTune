@@ -26,6 +26,7 @@ public class AuthenticatedIdentityResolver {
     }
 
     public ExternalIdentity resolve(Authentication authentication) {
-        return resolveOptional(authentication).orElseThrow(() -> new IllegalStateException("A validated JWT is required"));
+        return resolveOptional(authentication)
+                .orElseThrow(() -> new IllegalStateException("A validated JWT is required"));
     }
 }

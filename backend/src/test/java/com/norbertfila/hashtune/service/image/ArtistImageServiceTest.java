@@ -12,7 +12,6 @@ import com.norbertfila.hashtune.service.metadata.ArtistImageProvider;
 import java.time.Instant;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 class ArtistImageServiceTest {
@@ -28,8 +27,8 @@ class ArtistImageServiceTest {
 
         assertThat(service.findImageForDelivery(" Josef   Bratan "))
                 .contains("https://cdn-images.dzcdn.net/images/artist/josef.jpg");
-        verify(cache).save(argThat(entry ->
-                        entry.artistKey().equals("josef bratan")
+        verify(cache)
+                .save(argThat(entry -> entry.artistKey().equals("josef bratan")
                         && entry.displayName().equals("Josef Bratan")
                         && entry.imageUrl().equals("https://cdn-images.dzcdn.net/images/artist/josef.jpg")));
     }
@@ -38,7 +37,8 @@ class ArtistImageServiceTest {
     void cachesMissingImageAndDoesNotCallProviderAgainWhileFresh() {
         Instant checkedAt = Instant.now().minusSeconds(60);
         when(cache.findByArtistKey("unknown artist"))
-                .thenReturn(Optional.of(new ArtistImageCacheEntry("unknown artist", "Unknown Artist", null, checkedAt)));
+                .thenReturn(
+                        Optional.of(new ArtistImageCacheEntry("unknown artist", "Unknown Artist", null, checkedAt)));
 
         assertThat(service.findImageForDelivery("Unknown Artist")).isEmpty();
         verify(provider, never()).findArtistImage("Unknown Artist");

@@ -4,21 +4,21 @@ import com.norbertfila.hashtune.dto.response.AlbumResponse;
 import com.norbertfila.hashtune.dto.response.ArtistResponse;
 import com.norbertfila.hashtune.dto.response.PageResponse;
 import com.norbertfila.hashtune.dto.response.TrackResponse;
+import com.norbertfila.hashtune.entity.track.TrackOrigin;
 import com.norbertfila.hashtune.mapper.LibraryMapper;
 import com.norbertfila.hashtune.repository.track.TrackSearchQuery;
 import com.norbertfila.hashtune.service.image.ArtistImageService;
-import com.norbertfila.hashtune.service.track.TrackService;
 import com.norbertfila.hashtune.service.track.TrackQueryService;
-import com.norbertfila.hashtune.entity.track.TrackOrigin;
+import com.norbertfila.hashtune.service.track.TrackService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,7 +43,8 @@ public class LibraryQueryController {
             @RequestParam(required = false) String album,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "25") @Min(1) @Max(100) int size) {
-        return LibraryMapper.tracks(queryService.searchTracks(new TrackSearchQuery(query, origin, artist, album, page, size)));
+        return LibraryMapper.tracks(
+                queryService.searchTracks(new TrackSearchQuery(query, origin, artist, album, page, size)));
     }
 
     @GetMapping("/albums")

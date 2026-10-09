@@ -8,6 +8,7 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -36,6 +37,18 @@ public class ApiExceptionHandler {
                         "Retry-After",
                         Long.toString(Math.max(1, exception.retryAfter().toSeconds())));
         return response;
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    ResponseEntity<ApiDtos.ProblemResponse> handleAccessDenied(
+            AccessDeniedException exception, HttpServletRequest request) {
+        return problem(
+                HttpStatus.FORBIDDEN,
+                "Forbidden",
+                "FORBIDDEN",
+                "You do not have permission to access this resource.",
+                request,
+                Map.of());
     }
 
     @ExceptionHandler(StorageException.class)

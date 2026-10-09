@@ -50,7 +50,12 @@ public class MtgJamendoSeeder implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws IOException {
         Path directory = Path.of(properties.getDirectory()).toAbsolutePath().normalize();
-        List<Map<String, String>> rows = parseCsv(Files.readString(directory.resolve(MANIFEST)));
+        Path manifest = directory.resolve(MANIFEST);
+        if (!Files.isRegularFile(manifest)) {
+            log.warn("Skipping MTG-Jamendo seed; manifest not found at {}", manifest);
+            return;
+        }
+        List<Map<String, String>> rows = parseCsv(Files.readString(manifest));
         int imported = 0;
         int skipped = 0;
 

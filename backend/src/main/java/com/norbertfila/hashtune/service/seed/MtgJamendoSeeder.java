@@ -1,9 +1,9 @@
 package com.norbertfila.hashtune.service.seed;
 
-import com.norbertfila.hashtune.application.port.out.CoverArtProvider;
+import com.norbertfila.hashtune.service.metadata.CoverArtProvider;
 import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
 import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
-import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
+import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
 import com.norbertfila.hashtune.repository.track.TrackRepository;
 import com.norbertfila.hashtune.configuration.MtgJamendoSeedProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;

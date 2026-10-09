@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.adapter.out.storage;
+package com.norbertfila.hashtune.exceptions.storage;
 
 public class StorageException extends RuntimeException {
     public StorageException(String message, Throwable cause) {

@@ -1,12 +1,12 @@
 package com.norbertfila.hashtune.service.track;
 
-import com.norbertfila.hashtune.adapter.out.metadata.AudioMetadataReader;
-import com.norbertfila.hashtune.adapter.out.storage.StorageException;
-import com.norbertfila.hashtune.application.port.out.CoverArtProvider;
+import com.norbertfila.hashtune.service.metadata.AudioMetadataReader;
+import com.norbertfila.hashtune.exceptions.storage.StorageException;
+import com.norbertfila.hashtune.service.metadata.CoverArtProvider;
 import com.norbertfila.hashtune.exceptions.ApplicationException;
 import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
 import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
-import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
+import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
 import com.norbertfila.hashtune.repository.track.TrackRepository;
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;

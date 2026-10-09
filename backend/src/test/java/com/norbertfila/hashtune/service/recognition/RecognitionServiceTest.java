@@ -11,9 +11,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.norbertfila.hashtune.application.port.out.AudioRecognitionEngine;
-import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
-import com.norbertfila.hashtune.application.port.out.RecognitionConcurrencyLimiter;
+import com.norbertfila.hashtune.service.fingerprint.AudioRecognitionEngine;
+import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
+import com.norbertfila.hashtune.security.RecognitionConcurrencyLimiter;
 import com.norbertfila.hashtune.repository.recognition.RecognitionRepository;
 import com.norbertfila.hashtune.repository.track.TrackRepository;
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;

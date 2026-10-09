@@ -2,7 +2,7 @@ package com.norbertfila.hashtune.configuration;
 
 import com.norbertfila.hashtune.security.AuthenticatedIdentityResolver;
 import com.norbertfila.hashtune.security.RateLimitInterceptor;
-import com.norbertfila.hashtune.application.port.out.RequestRateLimiter;
+import com.norbertfila.hashtune.security.RequestRateLimiter;
 import io.minio.MinioClient;
 import java.util.Arrays;
 import java.util.List;

@@ -1,8 +1,8 @@
 package com.norbertfila.hashtune.security;
 
 import com.norbertfila.hashtune.security.AuthenticatedIdentityResolver;
-import com.norbertfila.hashtune.application.port.out.RateLimitDecision;
-import com.norbertfila.hashtune.application.port.out.RequestRateLimiter;
+import com.norbertfila.hashtune.security.RateLimitDecision;
+import com.norbertfila.hashtune.security.RequestRateLimiter;
 import com.norbertfila.hashtune.exceptions.TooManyRequestsException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

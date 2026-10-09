@@ -1,8 +1,8 @@
 package com.norbertfila.hashtune.service.recognition;
 
-import com.norbertfila.hashtune.application.port.out.AudioRecognitionEngine;
-import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
-import com.norbertfila.hashtune.application.port.out.RecognitionConcurrencyLimiter;
+import com.norbertfila.hashtune.service.fingerprint.AudioRecognitionEngine;
+import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
+import com.norbertfila.hashtune.security.RecognitionConcurrencyLimiter;
 import com.norbertfila.hashtune.exceptions.ApplicationException;
 import com.norbertfila.hashtune.exceptions.TooManyRequestsException;
 import com.norbertfila.hashtune.repository.recognition.RecognitionRepository;

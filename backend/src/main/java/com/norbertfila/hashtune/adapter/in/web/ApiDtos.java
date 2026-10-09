@@ -36,7 +36,7 @@ public final class ApiDtos {
             Long durationMs,
             String status,
             Instant createdAt) {
-        static TrackResponse from(Track track) {
+        public static TrackResponse from(Track track) {
             return new TrackResponse(
                     track.id(),
                     track.title(),
@@ -65,13 +65,13 @@ public final class ApiDtos {
     }
 
     public record UploadResponse(UUID trackId, UUID indexingJobId, String status, TrackResponse track) {
-        static UploadResponse from(Track track, IndexingJob job) {
+        public static UploadResponse from(Track track, IndexingJob job) {
             return new UploadResponse(track.id(), job.id(), job.status().name(), TrackResponse.from(track));
         }
     }
 
     public record AlbumResponse(String title, String artist, String coverArtUrl, long trackCount) {
-        static AlbumResponse from(AlbumSummary album) {
+        public static AlbumResponse from(AlbumSummary album) {
             String coverArtUrl = album.coverArtUrl();
             if (coverArtUrl == null && album.coverArtTrackId() != null) {
                 coverArtUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
@@ -84,7 +84,7 @@ public final class ApiDtos {
     }
 
     public record ArtistResponse(String name, long trackCount, long albumCount, String imageUrl) {
-        static ArtistResponse from(ArtistSummary artist) {
+        public static ArtistResponse from(ArtistSummary artist) {
             return new ArtistResponse(artist.name(), artist.trackCount(), artist.albumCount(), artist.imageUrl());
         }
     }
@@ -97,7 +97,7 @@ public final class ApiDtos {
             int totalPages,
             boolean hasNext,
             boolean hasPrevious) {
-        static <T, R> PageResponse<R> from(PageResult<T> result, Function<T, R> mapper) {
+        public static <T, R> PageResponse<R> from(PageResult<T> result, Function<T, R> mapper) {
             return new PageResponse<>(
                     result.content().stream().map(mapper).toList(),
                     result.page(),
@@ -110,7 +110,7 @@ public final class ApiDtos {
     }
 
     public record ImportResponse(String status, UUID trackId, UUID indexingJobId, TrackResponse track) {
-        static ImportResponse from(
+        public static ImportResponse from(
                 Track track, com.norbertfila.hashtune.service.track.TrackService.ImportResult result) {
             return new ImportResponse(
                     result.status(),
@@ -131,7 +131,7 @@ public final class ApiDtos {
             Instant nextAttemptAt,
             String errorCode,
             String errorMessage) {
-        static IndexingJobResponse from(IndexingJob job) {
+        public static IndexingJobResponse from(IndexingJob job) {
             return new IndexingJobResponse(
                     job.id(),
                     job.trackId(),
@@ -153,7 +153,7 @@ public final class ApiDtos {
             Long matchedAtMs,
             Long sampleDurationMs,
             Long recognitionTimeMs) {
-        static RecognitionResponse from(Recognition recognition, Track track) {
+        public static RecognitionResponse from(Recognition recognition, Track track) {
             return new RecognitionResponse(
                     recognition.status().name(),
                     track == null ? null : TrackResponse.from(track),
@@ -174,7 +174,7 @@ public final class ApiDtos {
             String downloadUrl,
             Long sampleDurationMs,
             Instant createdAt) {
-        static HistoryResponse from(Recognition recognition, Track track) {
+        public static HistoryResponse from(Recognition recognition, Track track) {
             return new HistoryResponse(
                     recognition.id(),
                     track == null ? null : TrackResponse.from(track),
@@ -187,7 +187,7 @@ public final class ApiDtos {
                     recognition.createdAt());
         }
 
-        private static String recordingUrl(UUID id, boolean download) {
+        public static String recordingUrl(UUID id, boolean download) {
             var builder = ServletUriComponentsBuilder.fromCurrentContextPath()
                     .path("/api/v1/recognition-history/{id}/recording")
                     .buildAndExpand(id);

@@ -1,7 +1,8 @@
-package com.norbertfila.hashtune.adapter.in.web;
+package com.norbertfila.hashtune.controller.recognition;
 
+import com.norbertfila.hashtune.adapter.in.web.ApiDtos;
 import com.norbertfila.hashtune.service.recognition.RecognitionService;
-import com.norbertfila.hashtune.adapter.in.security.AuthenticatedIdentityResolver;
+import com.norbertfila.hashtune.security.AuthenticatedIdentityResolver;
 import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
 import com.norbertfila.hashtune.entity.recognition.RecognitionSource;
 import java.util.List;

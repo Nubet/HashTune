@@ -1,14 +1,14 @@
-package com.norbertfila.hashtune.adapter.in.security;
+package com.norbertfila.hashtune.security;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.norbertfila.hashtune.adapter.in.web.IndexingJobController;
-import com.norbertfila.hashtune.adapter.in.web.LibraryAdminController;
-import com.norbertfila.hashtune.adapter.in.web.LibraryQueryController;
-import com.norbertfila.hashtune.adapter.in.web.RecognitionController;
+import com.norbertfila.hashtune.controller.indexing.IndexingJobController;
+import com.norbertfila.hashtune.controller.library.LibraryAdminController;
+import com.norbertfila.hashtune.controller.library.LibraryQueryController;
+import com.norbertfila.hashtune.controller.recognition.RecognitionController;
 import com.norbertfila.hashtune.repository.track.PageResult;
 import com.norbertfila.hashtune.service.image.ArtistImageService;
 import com.norbertfila.hashtune.service.indexing.IndexingJobService;

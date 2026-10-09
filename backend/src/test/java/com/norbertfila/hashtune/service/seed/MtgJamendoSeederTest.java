@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.adapter.in.seed;
+package com.norbertfila.hashtune.service.seed;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

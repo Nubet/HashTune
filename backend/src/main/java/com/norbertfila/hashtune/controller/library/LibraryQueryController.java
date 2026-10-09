@@ -1,5 +1,6 @@
-package com.norbertfila.hashtune.adapter.in.web;
+package com.norbertfila.hashtune.controller.library;
 
+import com.norbertfila.hashtune.adapter.in.web.ApiDtos;
 import com.norbertfila.hashtune.repository.track.TrackSearchQuery;
 import com.norbertfila.hashtune.service.image.ArtistImageService;
 import com.norbertfila.hashtune.service.track.TrackService;

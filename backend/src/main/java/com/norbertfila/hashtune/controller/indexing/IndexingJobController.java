@@ -1,5 +1,6 @@
-package com.norbertfila.hashtune.adapter.in.web;
+package com.norbertfila.hashtune.controller.indexing;
 
+import com.norbertfila.hashtune.adapter.in.web.ApiDtos;
 import com.norbertfila.hashtune.service.indexing.IndexingJobService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

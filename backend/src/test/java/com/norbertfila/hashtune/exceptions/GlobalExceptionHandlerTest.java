@@ -15,13 +15,12 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void returnsApplicationErrorContract() {
-        var response = handler.handle(
-                new ApplicationException(HttpStatus.UNPROCESSABLE_ENTITY, "INVALID_AUDIO", "Audio file is invalid"),
-                request);
+        var response =
+                handler.handle(new ApplicationException(ErrorCode.AUDIO_FILE_EMPTY, "Audio file is invalid"), request);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
         assertThat(response.getBody()).satisfies(problem -> {
-            assertThat(problem.code()).isEqualTo("INVALID_AUDIO");
+            assertThat(problem.code()).isEqualTo("AUDIO_FILE_EMPTY");
             assertThat(problem.detail()).isEqualTo("Audio file is invalid");
             assertThat(problem.instance()).isEqualTo("/api/v1/library/tracks");
         });

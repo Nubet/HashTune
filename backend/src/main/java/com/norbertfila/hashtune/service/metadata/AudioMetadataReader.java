@@ -5,6 +5,7 @@ import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.mp3.Mp3MetadataReader;
 import com.drew.metadata.Metadata;
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
+import com.norbertfila.hashtune.exceptions.ErrorCode;
 import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -104,23 +105,23 @@ public class AudioMetadataReader {
                 : artwork.getMimeType().split(";", 2)[0].trim().toLowerCase(Locale.ROOT);
         if (!safetyProperties.getAllowedCoverArtContentTypes().contains(mimeType)) {
             throw new AudioInputRejectedException(
-                    "AUDIO_COVER_ART_FORMAT_NOT_SUPPORTED", "Embedded cover art format is not supported");
+                    ErrorCode.AUDIO_COVER_ART_FORMAT_NOT_SUPPORTED, "Embedded cover art format is not supported");
         }
         byte[] data = artwork.getBinaryData();
         if (data.length > safetyProperties.getMaxCoverArtBytes()) {
             throw new AudioInputRejectedException(
-                    "AUDIO_COVER_ART_TOO_LARGE", "Embedded cover art exceeds the maximum allowed size");
+                    ErrorCode.AUDIO_COVER_ART_TOO_LARGE, "Embedded cover art exceeds the maximum allowed size");
         }
         String detectedMime;
         try (InputStream input = new ByteArrayInputStream(data)) {
             detectedMime = FileTypeDetector.detectFileType(input).getMimeType();
         } catch (IOException exception) {
             throw new AudioInputRejectedException(
-                    "AUDIO_COVER_ART_FORMAT_NOT_SUPPORTED", "Embedded cover art could not be inspected");
+                    ErrorCode.AUDIO_COVER_ART_FORMAT_NOT_SUPPORTED, "Embedded cover art could not be inspected");
         }
         if (!mimeType.equalsIgnoreCase(detectedMime)) {
             throw new AudioInputRejectedException(
-                    "AUDIO_COVER_ART_FORMAT_NOT_SUPPORTED", "Embedded cover art signature is invalid");
+                    ErrorCode.AUDIO_COVER_ART_FORMAT_NOT_SUPPORTED, "Embedded cover art signature is invalid");
         }
         return new EmbeddedArtwork(data, mimeType);
     }

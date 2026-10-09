@@ -6,6 +6,7 @@ import com.norbertfila.hashtune.entity.indexing.IndexingJob;
 import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.entity.track.Track;
 import com.norbertfila.hashtune.entity.track.TrackStatus;
+import com.norbertfila.hashtune.exceptions.ErrorCode;
 import com.norbertfila.hashtune.exceptions.application.ApplicationException;
 import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
 import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
@@ -39,9 +40,7 @@ public class IndexingJobService {
         IndexingJob job = get(id);
         if (job.status() != IndexingJobStatus.FAILED) {
             throw new ApplicationException(
-                    org.springframework.http.HttpStatus.CONFLICT,
-                    "INDEXING_JOB_NOT_RETRYABLE",
-                    "Only failed indexing jobs can be retried");
+                    ErrorCode.INDEXING_JOB_NOT_RETRYABLE, "Only failed indexing jobs can be retried");
         }
         Track track = getTrack(job.trackId());
         tracks.save(track.withStatus(TrackStatus.UPLOADED));
@@ -61,10 +60,8 @@ public class IndexingJobService {
 
     public IndexingJob get(UUID id) {
         return jobs.findById(id)
-                .orElseThrow(() -> new ApplicationException(
-                        org.springframework.http.HttpStatus.NOT_FOUND,
-                        "INDEXING_JOB_NOT_FOUND",
-                        "Indexing job not found"));
+                .orElseThrow(
+                        () -> new ApplicationException(ErrorCode.INDEXING_JOB_NOT_FOUND, "Indexing job not found"));
     }
 
     @Scheduled(fixedDelayString = "${app.indexing.worker-delay-ms:1000}")
@@ -164,7 +161,6 @@ public class IndexingJobService {
 
     private Track getTrack(UUID id) {
         return tracks.findById(id)
-                .orElseThrow(() -> new ApplicationException(
-                        org.springframework.http.HttpStatus.NOT_FOUND, "TRACK_NOT_FOUND", "Track not found"));
+                .orElseThrow(() -> new ApplicationException(ErrorCode.TRACK_NOT_FOUND, "Track not found"));
     }
 }

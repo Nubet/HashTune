@@ -1,5 +1,6 @@
 package com.norbertfila.hashtune.service.fingerprint;
 
+import com.norbertfila.hashtune.exceptions.ErrorCode;
 import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,7 +24,7 @@ final class BoundedProcessOutput {
                 total += read;
                 if (total > maxBytes) {
                     throw new AudioInputRejectedException(
-                            "AUDIO_DECODE_OUTPUT_TOO_LARGE", "Decoded audio exceeds the memory safety limit");
+                            ErrorCode.AUDIO_DECODE_OUTPUT_TOO_LARGE, "Decoded audio exceeds the memory safety limit");
                 }
                 output.write(buffer, 0, read);
             }

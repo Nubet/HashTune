@@ -32,7 +32,7 @@ services:
       IDENTITY_PROVIDER_ENABLED: "false"
       INDEXING_WORKER_DELAY_MS: "100"
       HIBERNATE_BATCH_SIZE: "1000"
-      MTG_JAMENDO_SEED_ENABLED: "true"
+      MTG_JAMENDO_SEED_ENABLED: "${MTG_JAMENDO_SEED_ENABLED:-false}"
       MTG_JAMENDO_SEED_DIRECTORY: /app/data/dev/mtg_jamendo_mini
       ALLOWED_ORIGIN: http://localhost:3000,http://127.0.0.1:3000
     volumes:

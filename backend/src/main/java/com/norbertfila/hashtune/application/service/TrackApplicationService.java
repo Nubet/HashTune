@@ -7,6 +7,7 @@ import com.norbertfila.hashtune.application.port.out.FingerprintRepository;
 import com.norbertfila.hashtune.application.port.out.IndexingJobRepository;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
+import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
 import com.norbertfila.hashtune.domain.indexing.IndexingJob;
 import com.norbertfila.hashtune.domain.indexing.IndexingJobStatus;
@@ -38,6 +39,7 @@ public class TrackApplicationService {
     private final ObjectStoragePort storage;
     private final FingerprintRepository fingerprints;
     private final StorageProperties storageProperties;
+    private final AudioSafetyProperties audioSafetyProperties;
     private final AudioUploadValidator audioUploadValidator;
     private final AudioMetadataReader metadataReader;
     private final CoverArtProvider coverArtProvider;
@@ -262,10 +264,12 @@ public class TrackApplicationService {
         if (track.coverArtObjectKey() == null) {
             throw notFound("COVER_ART_NOT_FOUND", "Embedded cover art not found");
         }
-        try (InputStream input = storage.get(storageProperties.getAudioBucket(), track.coverArtObjectKey())) {
-            return new CoverArt(input.readAllBytes(), track.coverArtMimeType());
-        } catch (IOException exception) {
-            throw new IllegalStateException("Could not read cover art", exception);
+        if (!audioSafetyProperties.getAllowedCoverArtContentTypes().contains(track.coverArtMimeType())) {
+            throw notFound("COVER_ART_NOT_FOUND", "Embedded cover art not found");
+        }
+        try {
+            InputStream input = storage.get(storageProperties.getAudioBucket(), track.coverArtObjectKey());
+            return new CoverArt(new BoundedInputStream(input, audioSafetyProperties.getMaxCoverArtBytes()), track.coverArtMimeType());
         } catch (StorageException exception) {
             throw notFound("COVER_ART_NOT_FOUND", "Embedded cover art not found");
         }
@@ -366,5 +370,5 @@ public class TrackApplicationService {
         }
     }
 
-    public record CoverArt(byte[] data, String mimeType) {}
+    public record CoverArt(InputStream content, String mimeType) {}
 }

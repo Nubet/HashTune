@@ -15,6 +15,7 @@ public class AudioSafetyProperties {
     private long probeTimeoutMs = 10_000;
     private long ffmpegTimeoutMs = 1_800_000;
     private long maxDecodedPcmBytes = 64L * 1024 * 1024;
+    private long maxCoverArtBytes = 5L * 1024 * 1024;
     private String ffprobeBinary = "ffprobe";
     private Set<String> allowedContentTypes = new LinkedHashSet<>(Set.of(
             "audio/flac",
@@ -25,6 +26,8 @@ public class AudioSafetyProperties {
             "audio/webm",
             "audio/x-m4a",
             "audio/x-wav"));
+    private Set<String> allowedCoverArtContentTypes = new LinkedHashSet<>(Set.of(
+            "image/jpeg", "image/png", "image/webp"));
     private Set<String> allowedContainerNames = new LinkedHashSet<>(Set.of(
             "flac", "matroska", "webm", "mp3", "mov", "mp4", "m4a", "3gp", "3g2", "mj2", "ogg", "wav"));
 }

@@ -53,6 +53,7 @@ class TrackApplicationServiceTest {
                 storage,
                 fingerprints,
                 storageProperties,
+                audioSafetyProperties,
                 new AudioUploadValidator(audioSafetyProperties),
                 metadataReader,
                 coverArtProvider);

@@ -7,6 +7,7 @@ import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.entity.track.Track;
 import com.norbertfila.hashtune.entity.track.TrackOrigin;
 import com.norbertfila.hashtune.entity.track.TrackStatus;
+import com.norbertfila.hashtune.exceptions.ErrorCode;
 import com.norbertfila.hashtune.exceptions.application.ApplicationException;
 import com.norbertfila.hashtune.exceptions.storage.StorageException;
 import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
@@ -130,8 +131,7 @@ public class TrackService {
             return new UploadResult(track, job);
         } catch (IOException exception) {
             cleanupUploadedObjects(uploadedKeys);
-            throw new ApplicationException(
-                    org.springframework.http.HttpStatus.BAD_REQUEST, "INVALID_AUDIO", "Could not read uploaded file");
+            throw new ApplicationException(ErrorCode.INVALID_AUDIO, "Could not read uploaded file");
         } catch (RuntimeException exception) {
             cleanupUploadedObjects(uploadedKeys);
             throw exception;
@@ -259,16 +259,16 @@ public class TrackService {
     }
 
     private Track get(UUID id) {
-        return tracks.findById(id).orElseThrow(() -> notFound("TRACK_NOT_FOUND", "Track not found"));
+        return tracks.findById(id).orElseThrow(() -> notFound(ErrorCode.TRACK_NOT_FOUND, "Track not found"));
     }
 
     public CoverArt getCoverArt(UUID id) {
         Track track = get(id);
         if (track.coverArtObjectKey() == null) {
-            throw notFound("COVER_ART_NOT_FOUND", "Embedded cover art not found");
+            throw notFound(ErrorCode.COVER_ART_NOT_FOUND, "Embedded cover art not found");
         }
         if (!audioSafetyProperties.getAllowedCoverArtContentTypes().contains(track.coverArtMimeType())) {
-            throw notFound("COVER_ART_NOT_FOUND", "Embedded cover art not found");
+            throw notFound(ErrorCode.COVER_ART_NOT_FOUND, "Embedded cover art not found");
         }
         try {
             InputStream input = storage.get(storageProperties.getAudioBucket(), track.coverArtObjectKey());
@@ -276,7 +276,7 @@ public class TrackService {
                     new BoundedInputStream(input, audioSafetyProperties.getMaxCoverArtBytes()),
                     track.coverArtMimeType());
         } catch (StorageException exception) {
-            throw notFound("COVER_ART_NOT_FOUND", "Embedded cover art not found");
+            throw notFound(ErrorCode.COVER_ART_NOT_FOUND, "Embedded cover art not found");
         }
     }
 
@@ -340,13 +340,12 @@ public class TrackService {
 
     private void ensureNew(String checksum) {
         tracks.findByChecksum(checksum).ifPresent(existing -> {
-            throw new ApplicationException(
-                    org.springframework.http.HttpStatus.CONFLICT, "TRACK_ALREADY_EXISTS", "Track already exists");
+            throw new ApplicationException(ErrorCode.TRACK_ALREADY_EXISTS, "Track already exists");
         });
     }
 
-    private ApplicationException notFound(String code, String message) {
-        return new ApplicationException(org.springframework.http.HttpStatus.NOT_FOUND, code, message);
+    private ApplicationException notFound(ErrorCode code, String message) {
+        return new ApplicationException(code, message);
     }
 
     public record UploadResult(Track track, IndexingJob job) {}

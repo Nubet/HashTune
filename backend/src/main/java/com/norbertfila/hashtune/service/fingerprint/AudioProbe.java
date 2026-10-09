@@ -1,5 +1,6 @@
 package com.norbertfila.hashtune.service.fingerprint;
 
+import com.norbertfila.hashtune.exceptions.ErrorCode;
 import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -35,7 +36,8 @@ final class AudioProbe {
                     .start();
             if (!process.waitFor(timeoutMs, TimeUnit.MILLISECONDS)) {
                 process.destroyForcibly();
-                throw new AudioInputRejectedException("AUDIO_PROBE_TIMEOUT", "Audio format inspection timed out");
+                throw new AudioInputRejectedException(
+                        ErrorCode.AUDIO_PROBE_TIMEOUT, "Audio format inspection timed out");
             }
             String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             if (process.exitValue() != 0) {
@@ -43,10 +45,12 @@ final class AudioProbe {
             }
             return parseOutput(output);
         } catch (IOException exception) {
-            throw new AudioInputRejectedException("AUDIO_FORMAT_NOT_SUPPORTED", "Audio format could not be inspected");
+            throw new AudioInputRejectedException(
+                    ErrorCode.AUDIO_FORMAT_NOT_SUPPORTED, "Audio format could not be inspected");
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            throw new AudioInputRejectedException("AUDIO_PROBE_TIMEOUT", "Audio format inspection was interrupted");
+            throw new AudioInputRejectedException(
+                    ErrorCode.AUDIO_PROBE_TIMEOUT, "Audio format inspection was interrupted");
         } finally {
             if (process != null && process.isAlive()) {
                 process.destroyForcibly();
@@ -90,7 +94,7 @@ final class AudioProbe {
 
     private static AudioInputRejectedException unsupportedFormat() {
         return new AudioInputRejectedException(
-                "AUDIO_FORMAT_NOT_SUPPORTED", "Audio must contain a supported audio stream");
+                ErrorCode.AUDIO_FORMAT_NOT_SUPPORTED, "Audio must contain a supported audio stream");
     }
 
     record Result(Set<String> containerNames, long durationMs) {}

@@ -1,22 +1,20 @@
 package com.norbertfila.hashtune.exceptions.application;
 
-import org.springframework.http.HttpStatus;
+import com.norbertfila.hashtune.exceptions.ErrorCode;
 
 public class ApplicationException extends RuntimeException {
-    private final HttpStatus status;
-    private final String code;
+    private final ErrorCode code;
 
-    public ApplicationException(HttpStatus status, String code, String message) {
+    public ApplicationException(ErrorCode code, String message) {
         super(message);
-        this.status = status;
         this.code = code;
     }
 
-    public HttpStatus status() {
-        return status;
+    public org.springframework.http.HttpStatus status() {
+        return code.status();
     }
 
     public String code() {
-        return code;
+        return code.name();
     }
 }

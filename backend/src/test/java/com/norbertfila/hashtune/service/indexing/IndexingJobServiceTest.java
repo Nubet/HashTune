@@ -14,6 +14,7 @@ import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.entity.track.Track;
 import com.norbertfila.hashtune.entity.track.TrackOrigin;
 import com.norbertfila.hashtune.entity.track.TrackStatus;
+import com.norbertfila.hashtune.exceptions.ErrorCode;
 import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
 import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
 import com.norbertfila.hashtune.repository.track.TrackRepository;
@@ -85,7 +86,7 @@ class IndexingJobServiceTest {
         when(jobs.claimNextPending(any())).thenReturn(Optional.of(job));
         when(tracks.findById(track.id())).thenReturn(Optional.of(track));
         when(engine.index(eq(track.id()), any()))
-                .thenThrow(new AudioInputRejectedException("AUDIO_DURATION_TOO_LONG", "too long"));
+                .thenThrow(new AudioInputRejectedException(ErrorCode.AUDIO_DURATION_TOO_LONG, "too long"));
 
         service.processNextJob();
 

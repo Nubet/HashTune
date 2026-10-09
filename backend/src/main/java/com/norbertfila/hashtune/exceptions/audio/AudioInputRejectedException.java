@@ -1,14 +1,16 @@
 package com.norbertfila.hashtune.exceptions.audio;
 
-public class AudioInputRejectedException extends RuntimeException {
-    private final String code;
+import com.norbertfila.hashtune.exceptions.ErrorCode;
 
-    public AudioInputRejectedException(String code, String message) {
+public class AudioInputRejectedException extends RuntimeException {
+    private final ErrorCode code;
+
+    public AudioInputRejectedException(ErrorCode code, String message) {
         super(message);
         this.code = code;
     }
 
     public String code() {
-        return code;
+        return code.name();
     }
 }

@@ -1,6 +1,7 @@
 package com.norbertfila.hashtune.service.fingerprint;
 
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
+import com.norbertfila.hashtune.exceptions.ErrorCode;
 import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,11 +52,12 @@ final class FfmpegAudioDecoder {
         boolean supportedContainer =
                 result.containerNames().stream().anyMatch(safetyProperties.getAllowedContainerNames()::contains);
         if (!supportedContainer) {
-            throw new AudioInputRejectedException("AUDIO_FORMAT_NOT_SUPPORTED", "Audio container is not supported");
+            throw new AudioInputRejectedException(
+                    ErrorCode.AUDIO_FORMAT_NOT_SUPPORTED, "Audio container is not supported");
         }
         if (result.durationMs() > safetyProperties.getMaxDurationMs()) {
             throw new AudioInputRejectedException(
-                    "AUDIO_DURATION_TOO_LONG", "Audio exceeds the maximum allowed duration");
+                    ErrorCode.AUDIO_DURATION_TOO_LONG, "Audio exceeds the maximum allowed duration");
         }
     }
 
@@ -73,19 +75,19 @@ final class FfmpegAudioDecoder {
             try {
                 if (!process.waitFor(safetyProperties.getFfmpegTimeoutMs(), TimeUnit.MILLISECONDS)) {
                     terminate(process);
-                    throw new AudioInputRejectedException("AUDIO_DECODE_TIMEOUT", "Audio decoding timed out");
+                    throw new AudioInputRejectedException(ErrorCode.AUDIO_DECODE_TIMEOUT, "Audio decoding timed out");
                 }
             } catch (InterruptedException exception) {
                 terminate(process);
                 Thread.currentThread().interrupt();
-                throw new AudioInputRejectedException("AUDIO_DECODE_TIMEOUT", "Audio decoding was interrupted");
+                throw new AudioInputRejectedException(ErrorCode.AUDIO_DECODE_TIMEOUT, "Audio decoding was interrupted");
             }
             try {
                 return output.get();
             } catch (InterruptedException exception) {
                 Thread.currentThread().interrupt();
                 terminate(process);
-                throw new AudioInputRejectedException("AUDIO_DECODE_TIMEOUT", "Audio decoding was interrupted");
+                throw new AudioInputRejectedException(ErrorCode.AUDIO_DECODE_TIMEOUT, "Audio decoding was interrupted");
             } catch (ExecutionException exception) {
                 Throwable cause = exception.getCause();
                 if (cause instanceof RuntimeException runtimeException) {

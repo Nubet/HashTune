@@ -6,6 +6,7 @@ import com.norbertfila.hashtune.entity.recognition.Recognition;
 import com.norbertfila.hashtune.entity.recognition.RecognitionSource;
 import com.norbertfila.hashtune.entity.recognition.RecognitionStatus;
 import com.norbertfila.hashtune.entity.track.Track;
+import com.norbertfila.hashtune.exceptions.ErrorCode;
 import com.norbertfila.hashtune.exceptions.application.ApplicationException;
 import com.norbertfila.hashtune.exceptions.application.TooManyRequestsException;
 import com.norbertfila.hashtune.repository.recognition.RecognitionRepository;
@@ -106,8 +107,7 @@ public class RecognitionService {
             }
             return recognitions.save(entity);
         } catch (IOException exception) {
-            throw new ApplicationException(
-                    org.springframework.http.HttpStatus.BAD_REQUEST, "INVALID_AUDIO", "Could not read audio sample");
+            throw new ApplicationException(ErrorCode.INVALID_AUDIO, "Could not read audio sample");
         } finally {
             cleanupSample(key);
         }
@@ -124,11 +124,9 @@ public class RecognitionService {
     public Recording recording(ExternalIdentity owner, UUID id) {
         Recognition recognition = recognitions
                 .findById(owner, id)
-                .orElseThrow(() -> new ApplicationException(
-                        org.springframework.http.HttpStatus.NOT_FOUND, "RECORDING_NOT_FOUND", "Recording not found"));
+                .orElseThrow(() -> new ApplicationException(ErrorCode.RECORDING_NOT_FOUND, "Recording not found"));
         if (recognition.recordingObjectKey() == null) {
-            throw new ApplicationException(
-                    org.springframework.http.HttpStatus.NOT_FOUND, "RECORDING_NOT_FOUND", "Recording not found");
+            throw new ApplicationException(ErrorCode.RECORDING_NOT_FOUND, "Recording not found");
         }
         return new Recording(
                 storage.get(storageProperties.getAudioBucket(), recognition.recordingObjectKey()),

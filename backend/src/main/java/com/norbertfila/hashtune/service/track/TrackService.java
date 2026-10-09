@@ -158,7 +158,7 @@ public class TrackService {
     public Track updateMetadata(UUID id, String title, String artist, String album) {
         Track track = get(id);
         String updatedTitle = firstValue(title, track.title());
-        String updatedArtist = firstValue(artist, "Unknown");
+        String updatedArtist = firstValue(artist, firstValue(track.artist(), "Unknown"));
         String updatedAlbum = album == null || album.isBlank() ? null : album.trim();
         String coverArtUrl = coverArtProvider
                 .findCoverArt(updatedTitle, updatedArtist, updatedAlbum)

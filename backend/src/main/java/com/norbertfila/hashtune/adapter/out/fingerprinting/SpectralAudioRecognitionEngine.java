@@ -5,6 +5,7 @@ import com.norbertfila.hashtune.application.port.out.FingerprintRepository;
 import com.norbertfila.hashtune.application.port.out.FingerprintRepository.FingerprintMatch;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.configuration.AudioProperties;
+import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
 import com.norbertfila.hashtune.domain.fingerprint.FingerprintOccurrence;
 import java.io.InputStream;
 import java.util.List;
@@ -26,9 +27,15 @@ public class SpectralAudioRecognitionEngine implements AudioRecognitionEngine {
     private final FingerprintMatcher matcher;
 
     public SpectralAudioRecognitionEngine(
-            ObjectStoragePort storage, AudioProperties audioProperties, FingerprintRepository fingerprints) {
+            ObjectStoragePort storage,
+            AudioProperties audioProperties,
+            AudioSafetyProperties safetyProperties,
+            FingerprintRepository fingerprints) {
         this.storage = storage;
-        this.decoder = new FfmpegAudioDecoder(audioProperties.getFfmpegBinary());
+        this.decoder = new FfmpegAudioDecoder(
+                audioProperties.getFfmpegBinary(),
+                safetyProperties.getFfprobeBinary(),
+                safetyProperties);
         this.fingerprinting = new SpectralFingerprinting(
                 audioProperties.getFingerprint().getMaxPeaksPerSecond(),
                 audioProperties.getFingerprint().getFanOut());

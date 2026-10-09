@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ArtistImageCachePersistenceAdapter implements ArtistImageCacheRepository {
+public class ArtistImageCacheRepositoryAdapter implements ArtistImageCacheRepository {
     private final SpringDataArtistImageCacheRepository repository;
 
     @Override
     public Optional<ArtistImageCacheEntry> findByArtistKey(String artistKey) {
-        return repository.findById(artistKey).map(ArtistImageCachePersistenceAdapter::toDomain);
+        return repository.findById(artistKey).map(ArtistImageCacheRepositoryAdapter::toDomain);
     }
 
     @Override

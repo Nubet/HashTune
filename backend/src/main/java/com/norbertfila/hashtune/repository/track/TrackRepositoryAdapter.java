@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class TrackPersistenceAdapter implements TrackRepository, TrackQueryRepository {
+public class TrackRepositoryAdapter implements TrackRepository, TrackQueryRepository {
     private final SpringDataTrackRepository repository;
 
     @Override
@@ -30,24 +30,24 @@ public class TrackPersistenceAdapter implements TrackRepository, TrackQueryRepos
 
     @Override
     public Optional<Track> findById(UUID id) {
-        return repository.findById(id).map(TrackPersistenceAdapter::toDomain);
+        return repository.findById(id).map(TrackRepositoryAdapter::toDomain);
     }
 
     @Override
     public Optional<Track> findByChecksum(String checksum) {
-        return repository.findByChecksum(checksum).map(TrackPersistenceAdapter::toDomain);
+        return repository.findByChecksum(checksum).map(TrackRepositoryAdapter::toDomain);
     }
 
     @Override
     public List<Track> findAll() {
         return repository.findAll(Sort.by(Sort.Direction.ASC, "createdAt")).stream()
-                .map(TrackPersistenceAdapter::toDomain)
+                .map(TrackRepositoryAdapter::toDomain)
                 .toList();
     }
 
     @Override
     public Optional<Track> findFirstByStatus(TrackStatus status) {
-        return repository.findFirstByStatusOrderByCreatedAtAsc(status).map(TrackPersistenceAdapter::toDomain);
+        return repository.findFirstByStatusOrderByCreatedAtAsc(status).map(TrackRepositoryAdapter::toDomain);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class TrackPersistenceAdapter implements TrackRepository, TrackQueryRepos
                                 .and(Sort.by(Sort.Direction.ASC, "id"))));
         return new PageResult<>(
                 result.getContent().stream()
-                        .map(TrackPersistenceAdapter::toDomain)
+                        .map(TrackRepositoryAdapter::toDomain)
                         .toList(),
                 result.getNumber(),
                 result.getSize(),

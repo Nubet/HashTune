@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
-public class JobPersistenceAdapter implements IndexingJobRepository {
+public class IndexingJobRepositoryAdapter implements IndexingJobRepository {
     private final SpringDataJobRepository repository;
 
     @Override
@@ -25,12 +25,12 @@ public class JobPersistenceAdapter implements IndexingJobRepository {
 
     @Override
     public Optional<IndexingJob> findById(UUID id) {
-        return repository.findById(id).map(JobPersistenceAdapter::toDomain);
+        return repository.findById(id).map(IndexingJobRepositoryAdapter::toDomain);
     }
 
     @Override
     public Optional<IndexingJob> findByTrackId(UUID trackId) {
-        return repository.findByTrackId(trackId).map(JobPersistenceAdapter::toDomain);
+        return repository.findByTrackId(trackId).map(IndexingJobRepositoryAdapter::toDomain);
     }
 
     @Override

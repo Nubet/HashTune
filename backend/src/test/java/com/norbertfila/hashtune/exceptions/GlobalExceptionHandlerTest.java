@@ -6,6 +6,7 @@ import com.norbertfila.hashtune.exceptions.application.ApplicationException;
 import com.norbertfila.hashtune.exceptions.storage.StorageException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
@@ -44,6 +45,18 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody())
                 .satisfies(problem -> assertThat(problem.errors()).containsEntry("file", "File is required."));
+    }
+
+    @Test
+    void mapsMalformedRequestToBadRequest() {
+        var response =
+                handler.handleMalformedRequest(new HttpMessageNotReadableException("Malformed JSON", null), request);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).satisfies(problem -> {
+            assertThat(problem.code()).isEqualTo("MALFORMED_REQUEST");
+            assertThat(problem.detail()).contains("could not be read");
+        });
     }
 
     private static MockHttpServletRequest request(String uri) {

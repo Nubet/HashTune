@@ -33,6 +33,7 @@ public class SecurityConfiguration {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationConverter jwtAuthenticationConverter)
             throws Exception {
+        identityProvider.validate();
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> {
@@ -63,23 +64,16 @@ public class SecurityConfiguration {
     @Bean
     @ConditionalOnProperty(prefix = "app.identity-provider", name = "enabled", havingValue = "true")
     JwtDecoder jwtDecoder() {
-        if (identityProvider.getJwkSetUri() == null || identityProvider.getJwkSetUri().isBlank()) {
-            throw new IllegalStateException("Identity provider JWK Set URI must be configured");
-        }
-        if (identityProvider.getIssuerUri() == null || identityProvider.getIssuerUri().isBlank()) {
-            throw new IllegalStateException("Identity provider issuer URI must be configured");
-        }
+        identityProvider.validate();
 
         NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(identityProvider.getJwkSetUri())
                 .jwsAlgorithm(SignatureAlgorithm.ES256)
                 .build();
         OAuth2TokenValidator<Jwt> issuerValidator = JwtValidators.createDefaultWithIssuer(identityProvider.getIssuerUri());
         OAuth2TokenValidator<Jwt> validator = issuerValidator;
-        if (identityProvider.getAudience() != null && !identityProvider.getAudience().isBlank()) {
-            OAuth2TokenValidator<Jwt> audienceValidator = new JwtClaimValidator<List<String>>(
-                    "aud", audience -> audience != null && audience.contains(identityProvider.getAudience()));
-            validator = new DelegatingOAuth2TokenValidator<>(issuerValidator, audienceValidator);
-        }
+        OAuth2TokenValidator<Jwt> audienceValidator = new JwtClaimValidator<List<String>>(
+                "aud", audience -> audience != null && audience.contains(identityProvider.getAudience()));
+        validator = new DelegatingOAuth2TokenValidator<>(issuerValidator, audienceValidator);
         decoder.setJwtValidator(validator);
         return decoder;
     }

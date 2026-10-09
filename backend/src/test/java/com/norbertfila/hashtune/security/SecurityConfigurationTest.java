@@ -5,20 +5,20 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.norbertfila.hashtune.configuration.ApplicationConfiguration;
+import com.norbertfila.hashtune.configuration.IdentityProviderProperties;
 import com.norbertfila.hashtune.controller.indexing.IndexingJobController;
 import com.norbertfila.hashtune.controller.library.LibraryAdminController;
 import com.norbertfila.hashtune.controller.library.LibraryQueryController;
 import com.norbertfila.hashtune.controller.recognition.RecognitionController;
+import com.norbertfila.hashtune.entity.indexing.IndexingJob;
+import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.repository.track.PageResult;
 import com.norbertfila.hashtune.service.image.ArtistImageService;
 import com.norbertfila.hashtune.service.indexing.IndexingJobService;
 import com.norbertfila.hashtune.service.recognition.RecognitionService;
-import com.norbertfila.hashtune.service.track.TrackService;
 import com.norbertfila.hashtune.service.track.TrackQueryService;
-import com.norbertfila.hashtune.configuration.ApplicationConfiguration;
-import com.norbertfila.hashtune.configuration.IdentityProviderProperties;
-import com.norbertfila.hashtune.entity.indexing.IndexingJob;
-import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
+import com.norbertfila.hashtune.service.track.TrackService;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -48,9 +48,8 @@ import org.springframework.test.web.servlet.MockMvc;
             "app.identity-provider.jwk-set-uri=https://issuer.example.com/.well-known/jwks.json",
             "app.identity-provider.audience=authenticated"
         },
-        excludeFilters = @ComponentScan.Filter(
-                type = FilterType.ASSIGNABLE_TYPE,
-                classes = ApplicationConfiguration.class))
+        excludeFilters =
+                @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = ApplicationConfiguration.class))
 @Import({SecurityConfiguration.class, SecurityConfigurationTest.TestSecurityConfiguration.class})
 class SecurityConfigurationTest {
     @Autowired

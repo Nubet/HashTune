@@ -1,7 +1,7 @@
 package com.norbertfila.hashtune.repository.recognition;
 
-import com.norbertfila.hashtune.entity.recognition.Recognition;
 import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
+import com.norbertfila.hashtune.entity.recognition.Recognition;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

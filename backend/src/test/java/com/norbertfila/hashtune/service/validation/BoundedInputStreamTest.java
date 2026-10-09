@@ -10,16 +10,16 @@ import org.junit.jupiter.api.Test;
 class BoundedInputStreamTest {
     @Test
     void streamsContentWithinLimit() throws Exception {
-        try (BoundedInputStream input = new BoundedInputStream(
-                new ByteArrayInputStream("cover".getBytes(StandardCharsets.UTF_8)), 5)) {
+        try (BoundedInputStream input =
+                new BoundedInputStream(new ByteArrayInputStream("cover".getBytes(StandardCharsets.UTF_8)), 5)) {
             assertThat(input.readAllBytes()).isEqualTo("cover".getBytes(StandardCharsets.UTF_8));
         }
     }
 
     @Test
     void rejectsContentBeyondLimit() throws Exception {
-        try (BoundedInputStream input = new BoundedInputStream(
-                new ByteArrayInputStream("covers".getBytes(StandardCharsets.UTF_8)), 5)) {
+        try (BoundedInputStream input =
+                new BoundedInputStream(new ByteArrayInputStream("covers".getBytes(StandardCharsets.UTF_8)), 5)) {
             byte[] buffer = new byte[5];
             assertThat(input.read(buffer)).isEqualTo(5);
             assertThatThrownBy(input::read).isInstanceOf(java.io.IOException.class);

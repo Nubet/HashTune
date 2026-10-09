@@ -3,8 +3,8 @@ package com.norbertfila.hashtune.service.fingerprint;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
+import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
 import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

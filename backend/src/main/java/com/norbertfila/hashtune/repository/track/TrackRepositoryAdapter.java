@@ -1,13 +1,7 @@
 package com.norbertfila.hashtune.repository.track;
 
-import com.norbertfila.hashtune.entity.track.TrackEntity;
-import com.norbertfila.hashtune.repository.track.AlbumSummary;
-import com.norbertfila.hashtune.repository.track.ArtistSummary;
-import com.norbertfila.hashtune.repository.track.PageResult;
-import com.norbertfila.hashtune.repository.track.TrackQueryRepository;
-import com.norbertfila.hashtune.repository.track.TrackRepository;
-import com.norbertfila.hashtune.repository.track.TrackSearchQuery;
 import com.norbertfila.hashtune.entity.track.Track;
+import com.norbertfila.hashtune.entity.track.TrackEntity;
 import com.norbertfila.hashtune.entity.track.TrackStatus;
 import java.util.List;
 import java.util.Optional;
@@ -102,8 +96,8 @@ public class TrackRepositoryAdapter implements TrackRepository, TrackQueryReposi
                 pageRequest(page, size, Sort.by(Sort.Direction.ASC, "name")));
         return new PageResult<>(
                 result.getContent().stream()
-                        .map(artist ->
-                                new ArtistSummary(artist.getName(), artist.getTrackCount(), artist.getAlbumCount(), null))
+                        .map(artist -> new ArtistSummary(
+                                artist.getName(), artist.getTrackCount(), artist.getAlbumCount(), null))
                         .toList(),
                 result.getNumber(),
                 result.getSize(),

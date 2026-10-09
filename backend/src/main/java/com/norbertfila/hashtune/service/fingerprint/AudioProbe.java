@@ -65,7 +65,9 @@ final class AudioProbe {
             }
             switch (entry[0]) {
                 case "codec_type" -> hasAudio |= "audio".equalsIgnoreCase(entry[1].trim());
-                case "format_name" -> containerNames.addAll(Arrays.asList(entry[1].trim().toLowerCase().split(",")));
+                case "format_name" ->
+                    containerNames.addAll(
+                            Arrays.asList(entry[1].trim().toLowerCase().split(",")));
                 case "duration" -> durationSeconds = Math.max(durationSeconds, parseDuration(entry[1]));
                 default -> {
                     // Ignore probe fields that are not part of the safety contract.

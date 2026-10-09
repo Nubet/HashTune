@@ -1,7 +1,6 @@
 package com.norbertfila.hashtune.service.metadata;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.norbertfila.hashtune.service.metadata.ArtistImageProvider;
 import com.norbertfila.hashtune.service.validation.ArtistNameNormalizer;
 import java.net.URI;
 import java.util.List;
@@ -50,8 +49,7 @@ public class DeezerArtistImageAdapter implements ArtistImageProvider {
     private boolean matches(DeezerArtist result, String requestedName) {
         return result != null
                 && result.name() != null
-                && ArtistNameNormalizer.normalize(result.name())
-                        .equals(ArtistNameNormalizer.normalize(requestedName));
+                && ArtistNameNormalizer.normalize(result.name()).equals(ArtistNameNormalizer.normalize(requestedName));
     }
 
     private record DeezerArtistSearchResponse(List<DeezerArtist> data) {
@@ -60,5 +58,6 @@ public class DeezerArtistImageAdapter implements ArtistImageProvider {
         }
     }
 
-    private record DeezerArtist(String name, @JsonProperty("picture_xl") String pictureXl) {}
+    private record DeezerArtist(
+            String name, @JsonProperty("picture_xl") String pictureXl) {}
 }

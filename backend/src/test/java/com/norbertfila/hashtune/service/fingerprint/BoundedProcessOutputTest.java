@@ -11,8 +11,7 @@ import org.junit.jupiter.api.Test;
 class BoundedProcessOutputTest {
     @Test
     void readsOutputWithinLimit() throws Exception {
-        byte[] output = BoundedProcessOutput.read(
-                new ByteArrayInputStream("pcm".getBytes(StandardCharsets.UTF_8)), 3);
+        byte[] output = BoundedProcessOutput.read(new ByteArrayInputStream("pcm".getBytes(StandardCharsets.UTF_8)), 3);
 
         assertThat(output).isEqualTo("pcm".getBytes(StandardCharsets.UTF_8));
     }

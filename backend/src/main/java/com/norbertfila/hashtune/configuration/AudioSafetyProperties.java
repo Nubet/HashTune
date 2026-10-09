@@ -26,8 +26,8 @@ public class AudioSafetyProperties {
             "audio/webm",
             "audio/x-m4a",
             "audio/x-wav"));
-    private Set<String> allowedCoverArtContentTypes = new LinkedHashSet<>(Set.of(
-            "image/jpeg", "image/png", "image/webp"));
-    private Set<String> allowedContainerNames = new LinkedHashSet<>(Set.of(
-            "flac", "matroska", "webm", "mp3", "mov", "mp4", "m4a", "3gp", "3g2", "mj2", "ogg", "wav"));
+    private Set<String> allowedCoverArtContentTypes =
+            new LinkedHashSet<>(Set.of("image/jpeg", "image/png", "image/webp"));
+    private Set<String> allowedContainerNames = new LinkedHashSet<>(
+            Set.of("flac", "matroska", "webm", "mp3", "mov", "mp4", "m4a", "3gp", "3g2", "mj2", "ogg", "wav"));
 }

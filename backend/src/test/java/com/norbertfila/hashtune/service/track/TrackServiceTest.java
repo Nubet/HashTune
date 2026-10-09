@@ -1,6 +1,5 @@
 package com.norbertfila.hashtune.service.track;
 
-import com.norbertfila.hashtune.service.validation.AudioUploadValidator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -11,12 +10,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.norbertfila.hashtune.service.metadata.AudioMetadataReader;
-import com.norbertfila.hashtune.service.metadata.CoverArtProvider;
-import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
-import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
-import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
-import com.norbertfila.hashtune.repository.track.TrackRepository;
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
 import com.norbertfila.hashtune.entity.indexing.IndexingJob;
@@ -24,6 +17,13 @@ import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.entity.track.Track;
 import com.norbertfila.hashtune.entity.track.TrackOrigin;
 import com.norbertfila.hashtune.entity.track.TrackStatus;
+import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
+import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
+import com.norbertfila.hashtune.repository.track.TrackRepository;
+import com.norbertfila.hashtune.service.metadata.AudioMetadataReader;
+import com.norbertfila.hashtune.service.metadata.CoverArtProvider;
+import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
+import com.norbertfila.hashtune.service.validation.AudioUploadValidator;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;

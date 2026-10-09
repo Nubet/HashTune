@@ -1,8 +1,7 @@
 package com.norbertfila.hashtune.repository.indexing;
 
-import com.norbertfila.hashtune.entity.indexing.IndexingJobEntity;
-import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
 import com.norbertfila.hashtune.entity.indexing.IndexingJob;
+import com.norbertfila.hashtune.entity.indexing.IndexingJobEntity;
 import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import java.time.Instant;
 import java.util.List;

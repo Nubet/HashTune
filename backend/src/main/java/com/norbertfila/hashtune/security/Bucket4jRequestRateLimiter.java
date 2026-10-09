@@ -1,7 +1,5 @@
 package com.norbertfila.hashtune.security;
 
-import com.norbertfila.hashtune.security.RateLimitDecision;
-import com.norbertfila.hashtune.security.RequestRateLimiter;
 import com.norbertfila.hashtune.configuration.RateLimitProperties;
 import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
 import io.github.bucket4j.Bandwidth;
@@ -24,21 +22,17 @@ public class Bucket4jRequestRateLimiter implements RequestRateLimiter {
 
     @Override
     public RateLimitDecision check(Optional<ExternalIdentity> identity, String clientIp, boolean expensiveRequest) {
-        int identityCapacity = expensiveRequest
-                ? properties.getExpensiveIdentityCapacity()
-                : properties.getIdentityCapacity();
-        Duration identityRefill = expensiveRequest
-                ? properties.getExpensiveIdentityRefill()
-                : properties.getIdentityRefill();
+        int identityCapacity =
+                expensiveRequest ? properties.getExpensiveIdentityCapacity() : properties.getIdentityCapacity();
+        Duration identityRefill =
+                expensiveRequest ? properties.getExpensiveIdentityRefill() : properties.getIdentityRefill();
         int ipCapacity = expensiveRequest ? properties.getExpensiveIpCapacity() : properties.getIpCapacity();
         Duration ipRefill = expensiveRequest ? properties.getExpensiveIpRefill() : properties.getIpRefill();
         String scope = expensiveRequest ? "expensive:" : "read:";
         if (identity.isPresent()) {
             ExternalIdentity owner = identity.get();
             RateLimitDecision identityDecision = consume(
-                    "identity:" + scope + owner.issuer() + ":" + owner.subject(),
-                    identityCapacity,
-                    identityRefill);
+                    "identity:" + scope + owner.issuer() + ":" + owner.subject(), identityCapacity, identityRefill);
             if (!identityDecision.allowed()) {
                 return identityDecision;
             }

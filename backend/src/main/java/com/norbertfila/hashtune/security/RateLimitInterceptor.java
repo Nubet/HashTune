@@ -1,8 +1,5 @@
 package com.norbertfila.hashtune.security;
 
-import com.norbertfila.hashtune.security.AuthenticatedIdentityResolver;
-import com.norbertfila.hashtune.security.RateLimitDecision;
-import com.norbertfila.hashtune.security.RequestRateLimiter;
 import com.norbertfila.hashtune.exceptions.application.TooManyRequestsException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,7 +18,8 @@ public class RateLimitInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        var identity = identityResolver.resolveOptional(SecurityContextHolder.getContext().getAuthentication());
+        var identity = identityResolver.resolveOptional(
+                SecurityContextHolder.getContext().getAuthentication());
         RateLimitDecision decision = rateLimiter.check(identity, request.getRemoteAddr(), isExpensiveRequest(request));
         if (!decision.allowed()) {
             throw new TooManyRequestsException(decision.retryAfter());

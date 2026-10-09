@@ -1,6 +1,5 @@
 package com.norbertfila.hashtune.security;
 
-import com.norbertfila.hashtune.security.RecognitionConcurrencyLimiter;
 import com.norbertfila.hashtune.configuration.RateLimitProperties;
 import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
 import java.util.Map;

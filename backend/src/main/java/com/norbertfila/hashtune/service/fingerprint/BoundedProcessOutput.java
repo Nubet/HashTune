@@ -14,7 +14,8 @@ final class BoundedProcessOutput {
         if (maxBytes <= 0 || maxBytes > Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Maximum process output must fit in a positive Java array");
         }
-        try (input; ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+        try (input;
+                ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[BUFFER_SIZE];
             long total = 0;
             int read;

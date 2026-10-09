@@ -1,19 +1,19 @@
 package com.norbertfila.hashtune.service.metadata;
 
-import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
-import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
-import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.FileTypeDetector;
+import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.mp3.Mp3MetadataReader;
 import com.drew.metadata.Metadata;
+import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
+import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
-import lombok.RequiredArgsConstructor;
 import java.util.stream.StreamSupport;
+import lombok.RequiredArgsConstructor;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.FieldKey;

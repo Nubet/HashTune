@@ -18,18 +18,22 @@ public final class LibraryMapper {
     }
 
     public static PageResponse<AlbumResponse> albums(PageResult<AlbumSummary> result) {
-        return page(result, album -> new AlbumResponse(
-                album.title(),
-                album.artist(),
-                album.coverArtUrl() == null && album.coverArtTrackId() != null
-                        ? TrackMapper.coverUrl(album.coverArtTrackId())
-                        : album.coverArtUrl(),
-                album.trackCount()));
+        return page(
+                result,
+                album -> new AlbumResponse(
+                        album.title(),
+                        album.artist(),
+                        album.coverArtUrl() == null && album.coverArtTrackId() != null
+                                ? TrackMapper.coverUrl(album.coverArtTrackId())
+                                : album.coverArtUrl(),
+                        album.trackCount()));
     }
 
     public static PageResponse<ArtistResponse> artists(PageResult<ArtistSummary> result) {
-        return page(result, artist -> new ArtistResponse(
-                artist.name(), artist.trackCount(), artist.albumCount(), artist.imageUrl()));
+        return page(
+                result,
+                artist ->
+                        new ArtistResponse(artist.name(), artist.trackCount(), artist.albumCount(), artist.imageUrl()));
     }
 
     public static ReindexAllResponse reindexAll(TrackService.ReindexAllResult result) {

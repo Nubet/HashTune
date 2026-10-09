@@ -1,8 +1,6 @@
 package com.norbertfila.hashtune.repository.artist;
 
 import com.norbertfila.hashtune.entity.health.ArtistImageCacheEntity;
-import com.norbertfila.hashtune.repository.artist.ArtistImageCacheEntry;
-import com.norbertfila.hashtune.repository.artist.ArtistImageCacheRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

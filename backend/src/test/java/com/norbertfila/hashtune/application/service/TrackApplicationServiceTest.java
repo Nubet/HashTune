@@ -16,7 +16,7 @@ import com.norbertfila.hashtune.application.port.out.FingerprintRepository;
 import com.norbertfila.hashtune.application.port.out.IndexingJobRepository;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
-import com.norbertfila.hashtune.configuration.AudioProperties;
+import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
 import com.norbertfila.hashtune.domain.indexing.IndexingJob;
 import com.norbertfila.hashtune.domain.indexing.IndexingJobStatus;
@@ -37,7 +37,7 @@ class TrackApplicationServiceTest {
     private final ObjectStoragePort storage = mock(ObjectStoragePort.class);
     private final FingerprintRepository fingerprints = mock(FingerprintRepository.class);
     private final StorageProperties storageProperties = new StorageProperties();
-    private final AudioProperties audioProperties = new AudioProperties();
+    private final AudioSafetyProperties audioSafetyProperties = new AudioSafetyProperties();
     private final AudioMetadataReader metadataReader = mock(AudioMetadataReader.class);
     private final CoverArtProvider coverArtProvider = mock(CoverArtProvider.class);
     private TrackApplicationService service;
@@ -46,14 +46,14 @@ class TrackApplicationServiceTest {
     void setUp() {
         storageProperties.setAudioBucket("audio");
         storageProperties.setTempBucket("temp");
-        audioProperties.setMaxFileSizeBytes(10_000);
+        audioSafetyProperties.setMaxFileSizeBytes(10_000);
         service = new TrackApplicationService(
                 tracks,
                 jobs,
                 storage,
                 fingerprints,
                 storageProperties,
-                audioProperties,
+                new AudioUploadValidator(audioSafetyProperties),
                 metadataReader,
                 coverArtProvider);
         when(jobs.save(any())).thenAnswer(invocation -> invocation.getArgument(0));

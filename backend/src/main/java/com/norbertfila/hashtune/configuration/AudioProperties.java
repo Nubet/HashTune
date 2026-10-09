@@ -10,7 +10,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AudioProperties {
     private String engine;
     private String ffmpegBinary;
-    private long maxFileSizeBytes;
     private FingerprintProperties fingerprint = new FingerprintProperties();
 
     @Getter

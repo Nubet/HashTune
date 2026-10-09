@@ -15,7 +15,7 @@ import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.application.port.out.RecognitionConcurrencyLimiter;
 import com.norbertfila.hashtune.application.port.out.RecognitionRepository;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
-import com.norbertfila.hashtune.configuration.AudioProperties;
+import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
 import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
 import com.norbertfila.hashtune.domain.track.Track;
@@ -35,7 +35,7 @@ class RecognitionApplicationServiceTest {
     private final ObjectStoragePort storage = mock(ObjectStoragePort.class);
     private final AudioRecognitionEngine engine = mock(AudioRecognitionEngine.class);
     private final StorageProperties storageProperties = new StorageProperties();
-    private final AudioProperties audioProperties = new AudioProperties();
+    private final AudioSafetyProperties audioSafetyProperties = new AudioSafetyProperties();
     private RecognitionApplicationService service;
     private final ExternalIdentity owner = new ExternalIdentity("test-issuer", "test-subject");
 
@@ -43,9 +43,15 @@ class RecognitionApplicationServiceTest {
     void setUp() {
         storageProperties.setTempBucket("temp");
         storageProperties.setAudioBucket("audio");
-        audioProperties.setMaxFileSizeBytes(10_000);
+        audioSafetyProperties.setMaxFileSizeBytes(10_000);
         service = new RecognitionApplicationService(
-                recognitions, concurrencyLimiter, tracks, storage, engine, storageProperties, audioProperties);
+                recognitions,
+                concurrencyLimiter,
+                tracks,
+                storage,
+                engine,
+                storageProperties,
+                new AudioUploadValidator(audioSafetyProperties));
         when(concurrencyLimiter.tryAcquire(owner)).thenReturn(true);
     }
 

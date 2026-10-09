@@ -24,9 +24,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @EnableScheduling
 @EnableConfigurationProperties({
-    StorageProperties.class,
-    AudioProperties.class,
-    IndexingProperties.class,
+            StorageProperties.class,
+            AudioProperties.class,
+            AudioSafetyProperties.class,
+            IndexingProperties.class,
     MtgJamendoSeedProperties.class,
     RateLimitProperties.class,
     IdentityProviderProperties.class

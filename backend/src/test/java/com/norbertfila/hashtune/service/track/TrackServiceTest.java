@@ -20,6 +20,7 @@ import com.norbertfila.hashtune.entity.track.TrackStatus;
 import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
 import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
 import com.norbertfila.hashtune.repository.track.TrackRepository;
+import com.norbertfila.hashtune.service.audio.AudioInput;
 import com.norbertfila.hashtune.service.metadata.AudioMetadataReader;
 import com.norbertfila.hashtune.service.metadata.CoverArtProvider;
 import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
@@ -30,7 +31,6 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockMultipartFile;
 
 class TrackServiceTest {
     private final TrackRepository tracks = mock(TrackRepository.class);
@@ -64,7 +64,7 @@ class TrackServiceTest {
 
     @Test
     void cleansUploadedObjectsWhenDatabaseSaveFails() {
-        MockMultipartFile file = audioFile("track.mp3");
+        AudioInput file = audioFile("track.mp3");
         when(metadataReader.read(file)).thenReturn(emptyMetadata());
         when(tracks.save(any())).thenThrow(new IllegalStateException("database unavailable"));
 
@@ -108,8 +108,9 @@ class TrackServiceTest {
                 .save(argThat(job -> job.trackId().equals(newTrackId) && job.status() == IndexingJobStatus.PENDING));
     }
 
-    private MockMultipartFile audioFile(String name) {
-        return new MockMultipartFile("file", name, "audio/mpeg", new byte[] {1, 2, 3});
+    private AudioInput audioFile(String name) {
+        byte[] data = new byte[] {1, 2, 3};
+        return new AudioInput(name, "audio/mpeg", data.length, () -> new java.io.ByteArrayInputStream(data));
     }
 
     private Track track(UUID id) {

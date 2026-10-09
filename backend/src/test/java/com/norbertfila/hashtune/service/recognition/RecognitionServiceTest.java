@@ -18,6 +18,7 @@ import com.norbertfila.hashtune.entity.track.TrackStatus;
 import com.norbertfila.hashtune.repository.recognition.RecognitionRepository;
 import com.norbertfila.hashtune.repository.track.TrackRepository;
 import com.norbertfila.hashtune.security.RecognitionConcurrencyLimiter;
+import com.norbertfila.hashtune.service.audio.AudioInput;
 import com.norbertfila.hashtune.service.fingerprint.AudioRecognitionEngine;
 import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
 import com.norbertfila.hashtune.service.validation.AudioUploadValidator;
@@ -27,7 +28,6 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockMultipartFile;
 
 class RecognitionServiceTest {
     private final RecognitionRepository recognitions = mock(RecognitionRepository.class);
@@ -58,7 +58,7 @@ class RecognitionServiceTest {
 
     @Test
     void cleansTemporarySampleWhenRecognitionFails() {
-        MockMultipartFile file = new MockMultipartFile("file", "sample.mp3", "audio/mpeg", new byte[] {1, 2, 3});
+        AudioInput file = audioFile();
         when(engine.recognize(any())).thenThrow(new IllegalStateException("decoder failed"));
 
         assertThatThrownBy(() -> service.probe(
@@ -71,7 +71,7 @@ class RecognitionServiceTest {
     @Test
     void persistsMatchedProbeForHistory() {
         UUID trackId = UUID.randomUUID();
-        MockMultipartFile file = new MockMultipartFile("file", "sample.mp3", "audio/mpeg", new byte[] {1, 2, 3});
+        AudioInput file = audioFile();
         Track track = new Track(
                 trackId,
                 "Remember the Time",
@@ -95,7 +95,7 @@ class RecognitionServiceTest {
 
     @Test
     void doesNotStoreAudioFileAsMicrophoneRecording() {
-        MockMultipartFile file = new MockMultipartFile("file", "sample.mp3", "audio/mpeg", new byte[] {1, 2, 3});
+        AudioInput file = audioFile();
         when(engine.recognize(any()))
                 .thenReturn(new AudioRecognitionEngine.RecognitionResult(false, null, 0.0, 0L, 5_000, 1, 1));
 
@@ -119,5 +119,10 @@ class RecognitionServiceTest {
 
         verify(recognitions).findAll(owner);
         verify(recognitions).deleteAll(owner);
+    }
+
+    private AudioInput audioFile() {
+        byte[] data = new byte[] {1, 2, 3};
+        return new AudioInput("sample.mp3", "audio/mpeg", data.length, () -> new java.io.ByteArrayInputStream(data));
     }
 }

@@ -15,6 +15,7 @@ import com.norbertfila.hashtune.exceptions.storage.StorageException;
 import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
 import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
 import com.norbertfila.hashtune.repository.track.TrackRepository;
+import com.norbertfila.hashtune.service.audio.AudioInput;
 import com.norbertfila.hashtune.service.metadata.AudioMetadataReader;
 import com.norbertfila.hashtune.service.metadata.CoverArtProvider;
 import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
@@ -34,7 +35,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +51,7 @@ public class TrackService {
     private final CoverArtProvider coverArtProvider;
 
     @Transactional
-    public UploadResult upload(MultipartFile file) {
+    public UploadResult upload(AudioInput file) {
         validate(file);
         String checksum = checksum(file);
         ensureNew(checksum);
@@ -59,7 +59,7 @@ public class TrackService {
     }
 
     @Transactional
-    public ImportResult importTrack(MultipartFile file, TrackOrigin origin, String relativePath) {
+    public ImportResult importTrack(AudioInput file, TrackOrigin origin, String relativePath) {
         validate(file);
         String checksum = checksum(file);
         Track existing = tracks.findByChecksum(checksum).orElse(null);
@@ -72,15 +72,15 @@ public class TrackService {
     }
 
     private UploadResult saveUpload(
-            MultipartFile file,
+            AudioInput file,
             String checksum,
             TrackOrigin origin,
             String relativePath,
             IndexingJobStatus initialJobStatus) {
         UUID id = UUID.randomUUID();
-        String key = "audio/" + id + "/original-" + safeName(file.getOriginalFilename());
+        String key = "audio/" + id + "/original-" + safeName(file.originalFilename());
         AudioMetadataReader.AudioMetadata metadata = metadataReader.read(file);
-        PathMetadata pathMetadata = PathMetadata.from(relativePath, file.getOriginalFilename());
+        PathMetadata pathMetadata = PathMetadata.from(relativePath, file.originalFilename());
         String title = firstValue(metadata.title(), pathMetadata.title());
         String artist = firstValue(metadata.artist(), firstValue(pathMetadata.artist(), "Unknown"));
         String album = firstValue(metadata.album(), pathMetadata.album());
@@ -91,9 +91,9 @@ public class TrackService {
                 ? coverArtProvider.findCoverArt(title, artist, album).orElse(null)
                 : null;
         List<String> uploadedKeys = new ArrayList<>();
-        try (InputStream input = file.getInputStream()) {
+        try (InputStream input = file.open()) {
             uploadedKeys.add(key);
-            storage.put(storageProperties.getAudioBucket(), key, input, file.getSize(), file.getContentType());
+            storage.put(storageProperties.getAudioBucket(), key, input, file.size(), file.contentType());
             if (metadata.artwork() != null) {
                 uploadedKeys.add(coverArtObjectKey);
                 storage.put(
@@ -316,12 +316,12 @@ public class TrackService {
                 Instant.now());
     }
 
-    private void validate(MultipartFile file) {
+    private void validate(AudioInput file) {
         audioUploadValidator.validate(file);
     }
 
-    private String checksum(MultipartFile file) {
-        try (InputStream input = file.getInputStream()) {
+    private String checksum(AudioInput file) {
+        try (InputStream input = file.open()) {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             try (DigestInputStream digestInput = new DigestInputStream(input, digest)) {
                 digestInput.transferTo(java.io.OutputStream.nullOutputStream());

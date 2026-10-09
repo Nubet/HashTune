@@ -7,6 +7,7 @@ import com.drew.metadata.Metadata;
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
 import com.norbertfila.hashtune.exceptions.ErrorCode;
 import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
+import com.norbertfila.hashtune.service.audio.AudioInput;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,21 +22,20 @@ import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.datatype.Artwork;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 @Component
 @RequiredArgsConstructor
 public class AudioMetadataReader {
     private final AudioSafetyProperties safetyProperties;
 
-    public AudioMetadata read(MultipartFile file) {
+    public AudioMetadata read(AudioInput file) {
         if (isFlac(file)) {
             return readFlac(file);
         }
         if (isM4a(file)) {
             return readM4a(file);
         }
-        try (InputStream input = file.getInputStream()) {
+        try (InputStream input = file.open()) {
             Metadata metadata =
                     isMp3(file) ? Mp3MetadataReader.readMetadata(input) : ImageMetadataReader.readMetadata(input);
             return AudioMetadata.basic(value(metadata, "title"), value(metadata, "artist"), value(metadata, "album"));
@@ -46,23 +46,25 @@ public class AudioMetadataReader {
         }
     }
 
-    private AudioMetadata readFlac(MultipartFile file) {
+    private AudioMetadata readFlac(AudioInput file) {
         return readTaggedAudio(file, ".flac");
     }
 
-    private AudioMetadata readM4a(MultipartFile file) {
+    private AudioMetadata readM4a(AudioInput file) {
         return readTaggedAudio(file, ".m4a");
     }
 
-    private AudioMetadata readTaggedAudio(MultipartFile file, String fallbackExtension) {
+    private AudioMetadata readTaggedAudio(AudioInput file, String fallbackExtension) {
         Path temporaryFile = null;
         try {
-            String name = file.getOriginalFilename();
+            String name = file.originalFilename();
             String extension = name != null && name.lastIndexOf('.') >= 0
                     ? name.substring(name.lastIndexOf('.'))
                     : fallbackExtension;
             temporaryFile = Files.createTempFile("hashtune-", extension);
-            file.transferTo(temporaryFile);
+            try (InputStream input = file.open()) {
+                Files.copy(input, temporaryFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
             AudioFile audioFile = AudioFileIO.read(temporaryFile.toFile());
             Tag tag = audioFile.getTag();
             if (tag == null) {
@@ -126,19 +128,19 @@ public class AudioMetadataReader {
         return new EmbeddedArtwork(data, mimeType);
     }
 
-    private boolean isMp3(MultipartFile file) {
-        String name = file.getOriginalFilename();
+    private boolean isMp3(AudioInput file) {
+        String name = file.originalFilename();
         return name != null && name.toLowerCase(Locale.ROOT).endsWith(".mp3");
     }
 
-    private boolean isFlac(MultipartFile file) {
-        String name = file.getOriginalFilename();
+    private boolean isFlac(AudioInput file) {
+        String name = file.originalFilename();
         return (name != null && name.toLowerCase(Locale.ROOT).endsWith(".flac"))
-                || "audio/flac".equalsIgnoreCase(file.getContentType());
+                || "audio/flac".equalsIgnoreCase(file.contentType());
     }
 
-    private boolean isM4a(MultipartFile file) {
-        String name = file.getOriginalFilename();
+    private boolean isM4a(AudioInput file) {
+        String name = file.originalFilename();
         if (name == null) {
             return false;
         }

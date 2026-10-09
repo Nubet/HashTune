@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.domain.identity;
+package com.norbertfila.hashtune.entity.identity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

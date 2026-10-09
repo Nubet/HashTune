@@ -1,7 +1,7 @@
 package com.norbertfila.hashtune.adapter.in.security;
 
 import com.norbertfila.hashtune.configuration.IdentityProviderProperties;
-import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
+import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;

@@ -1,6 +1,7 @@
 package com.norbertfila.hashtune.adapter.out.persistence;
 
-import com.norbertfila.hashtune.domain.indexing.IndexingJobStatus;
+import com.norbertfila.hashtune.entity.indexing.IndexingJobEntity;
+import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import jakarta.persistence.LockModeType;
 import java.time.Instant;
 import java.util.List;

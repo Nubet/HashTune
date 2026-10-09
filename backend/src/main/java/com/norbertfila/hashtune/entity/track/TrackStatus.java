@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.domain.track;
+package com.norbertfila.hashtune.entity.track;
 
 public enum TrackStatus {
     UPLOADED,

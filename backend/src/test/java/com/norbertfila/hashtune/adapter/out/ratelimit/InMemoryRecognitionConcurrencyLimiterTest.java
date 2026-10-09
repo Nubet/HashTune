@@ -3,7 +3,7 @@ package com.norbertfila.hashtune.adapter.out.ratelimit;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.norbertfila.hashtune.configuration.RateLimitProperties;
-import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
+import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
 import org.junit.jupiter.api.Test;
 
 class InMemoryRecognitionConcurrencyLimiterTest {

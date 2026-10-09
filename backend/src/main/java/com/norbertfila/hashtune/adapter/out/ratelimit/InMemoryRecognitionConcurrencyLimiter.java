@@ -2,7 +2,7 @@ package com.norbertfila.hashtune.adapter.out.ratelimit;
 
 import com.norbertfila.hashtune.application.port.out.RecognitionConcurrencyLimiter;
 import com.norbertfila.hashtune.configuration.RateLimitProperties;
-import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
+import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;

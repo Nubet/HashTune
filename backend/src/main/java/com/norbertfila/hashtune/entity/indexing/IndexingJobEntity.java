@@ -1,6 +1,6 @@
-package com.norbertfila.hashtune.adapter.out.persistence;
+package com.norbertfila.hashtune.entity.indexing;
 
-import com.norbertfila.hashtune.domain.indexing.IndexingJobStatus;
+import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

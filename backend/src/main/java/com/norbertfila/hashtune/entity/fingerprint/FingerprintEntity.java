@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.adapter.out.persistence;
+package com.norbertfila.hashtune.entity.fingerprint;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

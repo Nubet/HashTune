@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.adapter.out.persistence;
+package com.norbertfila.hashtune.entity.health;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

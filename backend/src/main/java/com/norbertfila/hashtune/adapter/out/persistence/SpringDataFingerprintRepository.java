@@ -1,5 +1,6 @@
 package com.norbertfila.hashtune.adapter.out.persistence;
 
+import com.norbertfila.hashtune.entity.fingerprint.FingerprintEntity;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;

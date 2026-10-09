@@ -3,7 +3,7 @@ package com.norbertfila.hashtune.adapter.out.fingerprinting;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
-import com.norbertfila.hashtune.domain.fingerprint.FingerprintOccurrence;
+import com.norbertfila.hashtune.entity.fingerprint.FingerprintOccurrence;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 

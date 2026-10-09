@@ -1,6 +1,6 @@
-package com.norbertfila.hashtune.domain.recognition;
+package com.norbertfila.hashtune.entity.recognition;
 
-import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
+import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
 import java.time.Instant;
 import java.util.UUID;
 

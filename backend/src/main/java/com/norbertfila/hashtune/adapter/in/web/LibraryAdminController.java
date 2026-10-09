@@ -1,7 +1,7 @@
 package com.norbertfila.hashtune.adapter.in.web;
 
 import com.norbertfila.hashtune.application.service.TrackApplicationService;
-import com.norbertfila.hashtune.domain.track.TrackOrigin;
+import com.norbertfila.hashtune.entity.track.TrackOrigin;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

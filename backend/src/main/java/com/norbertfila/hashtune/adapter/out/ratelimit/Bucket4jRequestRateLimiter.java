@@ -3,7 +3,7 @@ package com.norbertfila.hashtune.adapter.out.ratelimit;
 import com.norbertfila.hashtune.application.port.out.RateLimitDecision;
 import com.norbertfila.hashtune.application.port.out.RequestRateLimiter;
 import com.norbertfila.hashtune.configuration.RateLimitProperties;
-import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
+import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import java.time.Duration;

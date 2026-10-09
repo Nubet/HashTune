@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.domain.recognition;
+package com.norbertfila.hashtune.entity.recognition;
 
 public enum RecognitionStatus {
     MATCHED,

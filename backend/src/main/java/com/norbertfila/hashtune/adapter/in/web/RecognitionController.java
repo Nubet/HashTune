@@ -2,8 +2,8 @@ package com.norbertfila.hashtune.adapter.in.web;
 
 import com.norbertfila.hashtune.application.service.RecognitionApplicationService;
 import com.norbertfila.hashtune.adapter.in.security.AuthenticatedIdentityResolver;
-import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
-import com.norbertfila.hashtune.domain.recognition.RecognitionSource;
+import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
+import com.norbertfila.hashtune.entity.recognition.RecognitionSource;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;

@@ -1,6 +1,7 @@
-package com.norbertfila.hashtune.application.service;
+package com.norbertfila.hashtune.service.validation;
 
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
+import com.norbertfila.hashtune.exceptions.ApplicationException;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

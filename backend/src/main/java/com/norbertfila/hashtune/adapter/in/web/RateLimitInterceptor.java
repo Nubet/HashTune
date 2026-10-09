@@ -3,7 +3,7 @@ package com.norbertfila.hashtune.adapter.in.web;
 import com.norbertfila.hashtune.adapter.in.security.AuthenticatedIdentityResolver;
 import com.norbertfila.hashtune.application.port.out.RateLimitDecision;
 import com.norbertfila.hashtune.application.port.out.RequestRateLimiter;
-import com.norbertfila.hashtune.application.service.TooManyRequestsException;
+import com.norbertfila.hashtune.exceptions.TooManyRequestsException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

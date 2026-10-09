@@ -3,7 +3,7 @@ package com.norbertfila.hashtune.adapter.in.web;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.norbertfila.hashtune.adapter.out.storage.StorageException;
-import com.norbertfila.hashtune.application.service.ApplicationException;
+import com.norbertfila.hashtune.exceptions.ApplicationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;

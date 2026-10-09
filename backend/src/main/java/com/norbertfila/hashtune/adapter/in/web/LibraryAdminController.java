@@ -1,6 +1,6 @@
 package com.norbertfila.hashtune.adapter.in.web;
 
-import com.norbertfila.hashtune.application.service.TrackApplicationService;
+import com.norbertfila.hashtune.service.track.TrackService;
 import com.norbertfila.hashtune.entity.track.TrackOrigin;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +22,11 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class LibraryAdminController {
-    private final TrackApplicationService service;
+    private final TrackService service;
 
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<ApiDtos.UploadResponse> upload(@RequestPart("file") MultipartFile file) {
-        TrackApplicationService.UploadResult result = service.upload(file);
+        TrackService.UploadResult result = service.upload(file);
         return ResponseEntity.accepted().body(ApiDtos.UploadResponse.from(result.track(), result.job()));
     }
 
@@ -35,7 +35,7 @@ public class LibraryAdminController {
             @RequestPart("file") MultipartFile file,
             @RequestParam(defaultValue = "HASH_TUNE") TrackOrigin origin,
             @RequestParam(required = false) String relativePath) {
-        TrackApplicationService.ImportResult result = service.importTrack(file, origin, relativePath);
+        TrackService.ImportResult result = service.importTrack(file, origin, relativePath);
         return ApiDtos.ImportResponse.from(result.track(), result);
     }
 
@@ -59,7 +59,7 @@ public class LibraryAdminController {
 
     @PostMapping("/reindex")
     public ResponseEntity<ApiDtos.ReindexAllResponse> reindexAll() {
-        TrackApplicationService.ReindexAllResult result = service.reindexAll();
+        TrackService.ReindexAllResult result = service.reindexAll();
         return ResponseEntity.accepted()
                 .body(new ApiDtos.ReindexAllResponse(
                         result.scheduled(), result.alreadyProcessing(), result.awaitingConfirmation()));

@@ -1,9 +1,9 @@
 package com.norbertfila.hashtune.adapter.in.web;
 
 import com.norbertfila.hashtune.repository.track.TrackSearchQuery;
-import com.norbertfila.hashtune.application.service.ArtistImageService;
-import com.norbertfila.hashtune.application.service.TrackApplicationService;
-import com.norbertfila.hashtune.application.service.TrackQueryService;
+import com.norbertfila.hashtune.service.image.ArtistImageService;
+import com.norbertfila.hashtune.service.track.TrackService;
+import com.norbertfila.hashtune.service.track.TrackQueryService;
 import com.norbertfila.hashtune.entity.track.TrackOrigin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class LibraryQueryController {
     private final TrackQueryService queryService;
     private final ArtistImageService artistImages;
-    private final TrackApplicationService service;
+    private final TrackService service;
 
     @GetMapping
     public ApiDtos.PageResponse<ApiDtos.TrackResponse> search(
@@ -76,7 +76,7 @@ public class LibraryQueryController {
 
     @GetMapping("/{id}/cover")
     public ResponseEntity<InputStreamResource> cover(@PathVariable UUID id) {
-        TrackApplicationService.CoverArt cover = service.getCoverArt(id);
+        TrackService.CoverArt cover = service.getCoverArt(id);
         MediaType mediaType = MediaType.parseMediaType(cover.mimeType());
         return ResponseEntity.ok()
                 .contentType(mediaType)

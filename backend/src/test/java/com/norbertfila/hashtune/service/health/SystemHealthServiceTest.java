@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.application.service;
+package com.norbertfila.hashtune.service.health;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

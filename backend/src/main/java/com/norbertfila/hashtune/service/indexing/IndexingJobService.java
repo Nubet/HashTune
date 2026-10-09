@@ -1,7 +1,8 @@
-package com.norbertfila.hashtune.application.service;
+package com.norbertfila.hashtune.service.indexing;
 
 import com.norbertfila.hashtune.application.port.out.AudioRecognitionEngine;
 import com.norbertfila.hashtune.application.port.out.AudioInputRejectedException;
+import com.norbertfila.hashtune.exceptions.ApplicationException;
 import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.repository.track.TrackRepository;
@@ -24,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class IndexingJobApplicationService {
+public class IndexingJobService {
     private final TrackRepository tracks;
     private final IndexingJobRepository jobs;
     private final AudioRecognitionEngine engine;

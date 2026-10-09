@@ -2,8 +2,8 @@ package com.norbertfila.hashtune.adapter.in.web;
 
 import com.norbertfila.hashtune.adapter.out.storage.StorageException;
 import com.norbertfila.hashtune.application.port.out.AudioInputRejectedException;
-import com.norbertfila.hashtune.application.service.ApplicationException;
-import com.norbertfila.hashtune.application.service.TooManyRequestsException;
+import com.norbertfila.hashtune.exceptions.ApplicationException;
+import com.norbertfila.hashtune.exceptions.TooManyRequestsException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;

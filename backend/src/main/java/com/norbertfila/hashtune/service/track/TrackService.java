@@ -1,14 +1,17 @@
-package com.norbertfila.hashtune.application.service;
+package com.norbertfila.hashtune.service.track;
 
 import com.norbertfila.hashtune.adapter.out.metadata.AudioMetadataReader;
 import com.norbertfila.hashtune.adapter.out.storage.StorageException;
 import com.norbertfila.hashtune.application.port.out.CoverArtProvider;
+import com.norbertfila.hashtune.exceptions.ApplicationException;
 import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
 import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.repository.track.TrackRepository;
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
+import com.norbertfila.hashtune.service.validation.AudioUploadValidator;
+import com.norbertfila.hashtune.service.validation.BoundedInputStream;
 import com.norbertfila.hashtune.entity.indexing.IndexingJob;
 import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.entity.track.Track;
@@ -33,7 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class TrackApplicationService {
+public class TrackService {
     private final TrackRepository tracks;
     private final IndexingJobRepository jobs;
     private final ObjectStoragePort storage;

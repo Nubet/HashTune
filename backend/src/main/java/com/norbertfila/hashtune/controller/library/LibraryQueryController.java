@@ -1,6 +1,10 @@
 package com.norbertfila.hashtune.controller.library;
 
-import com.norbertfila.hashtune.adapter.in.web.ApiDtos;
+import com.norbertfila.hashtune.dto.response.AlbumResponse;
+import com.norbertfila.hashtune.dto.response.ArtistResponse;
+import com.norbertfila.hashtune.dto.response.PageResponse;
+import com.norbertfila.hashtune.dto.response.TrackResponse;
+import com.norbertfila.hashtune.mapper.LibraryMapper;
 import com.norbertfila.hashtune.repository.track.TrackSearchQuery;
 import com.norbertfila.hashtune.service.image.ArtistImageService;
 import com.norbertfila.hashtune.service.track.TrackService;
@@ -32,36 +36,32 @@ public class LibraryQueryController {
     private final TrackService service;
 
     @GetMapping
-    public ApiDtos.PageResponse<ApiDtos.TrackResponse> search(
+    public PageResponse<TrackResponse> search(
             @RequestParam(required = false) String query,
             @RequestParam(required = false) TrackOrigin origin,
             @RequestParam(required = false) String artist,
             @RequestParam(required = false) String album,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "25") @Min(1) @Max(100) int size) {
-        return ApiDtos.PageResponse.from(
-                queryService.searchTracks(new TrackSearchQuery(query, origin, artist, album, page, size)),
-                ApiDtos.TrackResponse::from);
+        return LibraryMapper.tracks(queryService.searchTracks(new TrackSearchQuery(query, origin, artist, album, page, size)));
     }
 
     @GetMapping("/albums")
-    public ApiDtos.PageResponse<ApiDtos.AlbumResponse> albums(
+    public PageResponse<AlbumResponse> albums(
             @RequestParam(required = false) String query,
             @RequestParam(required = false) TrackOrigin origin,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "25") @Min(1) @Max(100) int size) {
-        return ApiDtos.PageResponse.from(
-                queryService.searchAlbums(query, origin, page, size), ApiDtos.AlbumResponse::from);
+        return LibraryMapper.albums(queryService.searchAlbums(query, origin, page, size));
     }
 
     @GetMapping("/artists")
-    public ApiDtos.PageResponse<ApiDtos.ArtistResponse> artists(
+    public PageResponse<ArtistResponse> artists(
             @RequestParam(required = false) String query,
             @RequestParam(required = false) TrackOrigin origin,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "25") @Min(1) @Max(100) int size) {
-        return ApiDtos.PageResponse.from(
-                queryService.searchArtists(query, origin, page, size), ApiDtos.ArtistResponse::from);
+        return LibraryMapper.artists(queryService.searchArtists(query, origin, page, size));
     }
 
     @GetMapping("/artists/{artistName}/image")

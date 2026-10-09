@@ -1,0 +1,149 @@
+package com.norbertfila.hashtune.service.track;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.startsWith;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
+import com.norbertfila.hashtune.configuration.StorageProperties;
+import com.norbertfila.hashtune.entity.indexing.IndexingJob;
+import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
+import com.norbertfila.hashtune.entity.track.Track;
+import com.norbertfila.hashtune.entity.track.TrackOrigin;
+import com.norbertfila.hashtune.entity.track.TrackStatus;
+import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
+import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
+import com.norbertfila.hashtune.repository.track.TrackRepository;
+import com.norbertfila.hashtune.service.audio.AudioInput;
+import com.norbertfila.hashtune.service.metadata.AudioMetadataReader;
+import com.norbertfila.hashtune.service.metadata.CoverArtProvider;
+import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
+import com.norbertfila.hashtune.service.validation.AudioUploadValidator;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class TrackServiceTest {
+    private final TrackRepository tracks = mock(TrackRepository.class);
+    private final IndexingJobRepository jobs = mock(IndexingJobRepository.class);
+    private final ObjectStoragePort storage = mock(ObjectStoragePort.class);
+    private final FingerprintRepository fingerprints = mock(FingerprintRepository.class);
+    private final StorageProperties storageProperties = new StorageProperties();
+    private final AudioSafetyProperties audioSafetyProperties = new AudioSafetyProperties();
+    private final AudioMetadataReader metadataReader = mock(AudioMetadataReader.class);
+    private final CoverArtProvider coverArtProvider = mock(CoverArtProvider.class);
+    private TrackService service;
+
+    @BeforeEach
+    void setUp() {
+        storageProperties.setAudioBucket("audio");
+        storageProperties.setTempBucket("temp");
+        audioSafetyProperties.setMaxFileSizeBytes(10_000);
+        service = new TrackService(
+                tracks,
+                jobs,
+                storage,
+                fingerprints,
+                storageProperties,
+                audioSafetyProperties,
+                new AudioUploadValidator(audioSafetyProperties),
+                metadataReader,
+                coverArtProvider);
+        when(jobs.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(tracks.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    }
+
+    @Test
+    void cleansUploadedObjectsWhenDatabaseSaveFails() {
+        AudioInput file = audioFile("track.mp3");
+        when(metadataReader.read(file)).thenReturn(emptyMetadata());
+        when(tracks.save(any())).thenThrow(new IllegalStateException("database unavailable"));
+
+        assertThatThrownBy(() -> service.importTrack(file, TrackOrigin.HASH_TUNE, null))
+                .isInstanceOf(IllegalStateException.class);
+
+        verify(storage).delete(eq("audio"), startsWith("audio/"));
+    }
+
+    @Test
+    void schedulesAllTracksForReindexingWithoutDuplicatingJobs() {
+        UUID existingTrackId = UUID.randomUUID();
+        UUID newTrackId = UUID.randomUUID();
+        Track existingTrack = track(existingTrackId);
+        Track newTrack = track(newTrackId);
+        IndexingJob existingJob = new IndexingJob(
+                UUID.randomUUID(),
+                existingTrackId,
+                IndexingJobStatus.COMPLETED,
+                100,
+                2,
+                null,
+                null,
+                Instant.now(),
+                null,
+                Instant.now());
+        when(tracks.findAll()).thenReturn(List.of(existingTrack, newTrack));
+        when(jobs.findByTrackId(existingTrackId)).thenReturn(Optional.of(existingJob));
+        when(jobs.findByTrackId(newTrackId)).thenReturn(Optional.empty());
+
+        TrackService.ReindexAllResult result = service.reindexAll();
+
+        assertThat(result.scheduled()).isEqualTo(2);
+        assertThat(result.alreadyProcessing()).isZero();
+        assertThat(result.awaitingConfirmation()).isZero();
+        verify(jobs)
+                .save(argThat(job -> job.id().equals(existingJob.id())
+                        && job.trackId().equals(existingTrackId)
+                        && job.status() == IndexingJobStatus.PENDING));
+        verify(jobs)
+                .save(argThat(job -> job.trackId().equals(newTrackId) && job.status() == IndexingJobStatus.PENDING));
+    }
+
+    @Test
+    void preservesExistingArtistWhenMetadataPatchOmitsArtist() {
+        UUID trackId = UUID.randomUUID();
+        Track existingTrack = track(trackId);
+        when(tracks.findById(trackId)).thenReturn(Optional.of(existingTrack));
+
+        Track updatedTrack = service.updateMetadata(trackId, "Updated title", null, null);
+
+        assertThat(updatedTrack.title()).isEqualTo("Updated title");
+        assertThat(updatedTrack.artist()).isEqualTo(existingTrack.artist());
+    }
+
+    private AudioInput audioFile(String name) {
+        byte[] data = new byte[] {1, 2, 3};
+        return new AudioInput(name, "audio/mpeg", data.length, () -> new java.io.ByteArrayInputStream(data));
+    }
+
+    private Track track(UUID id) {
+        Instant now = Instant.now();
+        return new Track(
+                id,
+                "Track",
+                "Artist",
+                null,
+                TrackOrigin.HASH_TUNE,
+                null,
+                null,
+                "audio/" + id,
+                "checksum-" + id,
+                TrackStatus.INDEXED,
+                now,
+                now);
+    }
+
+    private AudioMetadataReader.AudioMetadata emptyMetadata() {
+        return new AudioMetadataReader.AudioMetadata(
+                null, null, null, null, null, null, null, null, null, null, null, null, null);
+    }
+}

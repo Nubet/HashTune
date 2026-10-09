@@ -1,0 +1,74 @@
+name: hashtune-local
+
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    container_name: hashtune-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://localhost:8080/actuator/health/liveness || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    restart: on-failure
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/hashtune
+      DATABASE_USERNAME: hashtune
+      DATABASE_PASSWORD: hashtune
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: hashtune
+      S3_SECRET_KEY: hashtune-secret
+      AUDIO_ENGINE: spectral
+      FFMPEG_BINARY: ffmpeg
+      INDEXING_WORKER_ENABLED: "true"
+      IDENTITY_PROVIDER_DEVELOPMENT_FALLBACK_ENABLED: "true"
+      IDENTITY_PROVIDER_ENABLED: "false"
+      INDEXING_WORKER_DELAY_MS: "100"
+      HIBERNATE_BATCH_SIZE: "1000"
+      MTG_JAMENDO_SEED_ENABLED: "${MTG_JAMENDO_SEED_ENABLED:-false}"
+      MTG_JAMENDO_SEED_DIRECTORY: /app/data/dev/mtg_jamendo_mini
+      ALLOWED_ORIGIN: http://localhost:3000,http://127.0.0.1:3000
+    volumes:
+      - ./data/mtg_jamendo_mini:/app/data/dev/mtg_jamendo_mini:ro
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+  postgres:
+    image: postgres:17-alpine
+    container_name: hashtune-postgres
+    environment:
+      POSTGRES_DB: hashtune
+      POSTGRES_USER: hashtune
+      POSTGRES_PASSWORD: hashtune
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hashtune -d hashtune"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    ports:
+      - "5433:5432"
+    volumes:
+      - hashtune-postgres:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio:latest
+    container_name: hashtune-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: hashtune
+      MINIO_ROOT_PASSWORD: hashtune-secret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - hashtune-minio:/data
+
+volumes:
+  hashtune-postgres:
+  hashtune-minio:

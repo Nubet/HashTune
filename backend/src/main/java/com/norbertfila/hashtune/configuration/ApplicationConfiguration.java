@@ -1,8 +1,8 @@
 package com.norbertfila.hashtune.configuration;
 
-import com.norbertfila.hashtune.adapter.in.security.AuthenticatedIdentityResolver;
-import com.norbertfila.hashtune.adapter.in.web.RateLimitInterceptor;
-import com.norbertfila.hashtune.application.port.out.RequestRateLimiter;
+import com.norbertfila.hashtune.security.AuthenticatedIdentityResolver;
+import com.norbertfila.hashtune.security.RateLimitInterceptor;
+import com.norbertfila.hashtune.security.RequestRateLimiter;
 import io.minio.MinioClient;
 import java.util.Arrays;
 import java.util.List;
@@ -24,10 +24,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @EnableScheduling
 @EnableConfigurationProperties({
-            StorageProperties.class,
-            AudioProperties.class,
-            AudioSafetyProperties.class,
-            IndexingProperties.class,
+    StorageProperties.class,
+    AudioProperties.class,
+    AudioSafetyProperties.class,
+    IndexingProperties.class,
     MtgJamendoSeedProperties.class,
     RateLimitProperties.class,
     IdentityProviderProperties.class
@@ -36,7 +36,8 @@ public class ApplicationConfiguration implements WebMvcConfigurer {
     private final RequestRateLimiter requestRateLimiter;
     private final AuthenticatedIdentityResolver identityResolver;
 
-    public ApplicationConfiguration(RequestRateLimiter requestRateLimiter, AuthenticatedIdentityResolver identityResolver) {
+    public ApplicationConfiguration(
+            RequestRateLimiter requestRateLimiter, AuthenticatedIdentityResolver identityResolver) {
         this.requestRateLimiter = requestRateLimiter;
         this.identityResolver = identityResolver;
     }
@@ -93,6 +94,7 @@ public class ApplicationConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new RateLimitInterceptor(requestRateLimiter, identityResolver)).addPathPatterns("/api/**");
+        registry.addInterceptor(new RateLimitInterceptor(requestRateLimiter, identityResolver))
+                .addPathPatterns("/api/**");
     }
 }

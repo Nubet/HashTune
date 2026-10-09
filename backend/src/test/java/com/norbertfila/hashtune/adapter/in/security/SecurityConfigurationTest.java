@@ -9,7 +9,7 @@ import com.norbertfila.hashtune.adapter.in.web.IndexingJobController;
 import com.norbertfila.hashtune.adapter.in.web.LibraryAdminController;
 import com.norbertfila.hashtune.adapter.in.web.LibraryQueryController;
 import com.norbertfila.hashtune.adapter.in.web.RecognitionController;
-import com.norbertfila.hashtune.application.port.out.PageResult;
+import com.norbertfila.hashtune.repository.track.PageResult;
 import com.norbertfila.hashtune.application.service.ArtistImageService;
 import com.norbertfila.hashtune.application.service.IndexingJobApplicationService;
 import com.norbertfila.hashtune.application.service.RecognitionApplicationService;

@@ -12,10 +12,10 @@ import static org.mockito.Mockito.when;
 
 import com.norbertfila.hashtune.adapter.out.metadata.AudioMetadataReader;
 import com.norbertfila.hashtune.application.port.out.CoverArtProvider;
-import com.norbertfila.hashtune.application.port.out.FingerprintRepository;
-import com.norbertfila.hashtune.application.port.out.IndexingJobRepository;
+import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
+import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
-import com.norbertfila.hashtune.application.port.out.TrackRepository;
+import com.norbertfila.hashtune.repository.track.TrackRepository;
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
 import com.norbertfila.hashtune.entity.indexing.IndexingJob;

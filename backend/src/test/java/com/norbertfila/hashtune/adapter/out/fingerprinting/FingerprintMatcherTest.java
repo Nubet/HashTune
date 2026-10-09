@@ -2,7 +2,7 @@ package com.norbertfila.hashtune.adapter.out.fingerprinting;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.norbertfila.hashtune.application.port.out.FingerprintRepository.FingerprintMatch;
+import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository.FingerprintMatch;
 import com.norbertfila.hashtune.entity.fingerprint.FingerprintOccurrence;
 import java.util.List;
 import java.util.UUID;

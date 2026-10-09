@@ -1,8 +1,8 @@
 package com.norbertfila.hashtune.adapter.out.fingerprinting;
 
 import com.norbertfila.hashtune.application.port.out.AudioRecognitionEngine;
-import com.norbertfila.hashtune.application.port.out.FingerprintRepository;
-import com.norbertfila.hashtune.application.port.out.FingerprintRepository.FingerprintMatch;
+import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
+import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository.FingerprintMatch;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.configuration.AudioProperties;
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;

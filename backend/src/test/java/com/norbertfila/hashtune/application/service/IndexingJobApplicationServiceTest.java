@@ -9,9 +9,9 @@ import static org.mockito.Mockito.when;
 
 import com.norbertfila.hashtune.application.port.out.AudioRecognitionEngine;
 import com.norbertfila.hashtune.application.port.out.AudioInputRejectedException;
-import com.norbertfila.hashtune.application.port.out.IndexingJobRepository;
+import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
-import com.norbertfila.hashtune.application.port.out.TrackRepository;
+import com.norbertfila.hashtune.repository.track.TrackRepository;
 import com.norbertfila.hashtune.configuration.IndexingProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
 import com.norbertfila.hashtune.entity.indexing.IndexingJob;

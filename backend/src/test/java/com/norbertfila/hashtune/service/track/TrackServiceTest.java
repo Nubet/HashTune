@@ -108,6 +108,18 @@ class TrackServiceTest {
                 .save(argThat(job -> job.trackId().equals(newTrackId) && job.status() == IndexingJobStatus.PENDING));
     }
 
+    @Test
+    void preservesExistingArtistWhenMetadataPatchOmitsArtist() {
+        UUID trackId = UUID.randomUUID();
+        Track existingTrack = track(trackId);
+        when(tracks.findById(trackId)).thenReturn(Optional.of(existingTrack));
+
+        Track updatedTrack = service.updateMetadata(trackId, "Updated title", null, null);
+
+        assertThat(updatedTrack.title()).isEqualTo("Updated title");
+        assertThat(updatedTrack.artist()).isEqualTo(existingTrack.artist());
+    }
+
     private AudioInput audioFile(String name) {
         byte[] data = new byte[] {1, 2, 3};
         return new AudioInput(name, "audio/mpeg", data.length, () -> new java.io.ByteArrayInputStream(data));

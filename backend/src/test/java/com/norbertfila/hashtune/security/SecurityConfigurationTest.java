@@ -3,6 +3,8 @@ package com.norbertfila.hashtune.security;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.norbertfila.hashtune.configuration.ApplicationConfiguration;
@@ -31,6 +33,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -120,6 +123,23 @@ class SecurityConfigurationTest {
         mockMvc.perform(get("/api/v1/indexing-jobs/{id}", jobId)
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void rejectsMalformedMetadataRequestAsBadRequest() throws Exception {
+        mockMvc.perform(patch("/api/v1/library/tracks/{id}/metadata", UUID.randomUUID())
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("MALFORMED_REQUEST"));
+    }
+
+    @Test
+    void rejectsInvalidPageSizeAsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/v1/library/tracks").param("size", "101"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
     }
 
     @TestConfiguration(proxyBeanMethods = false)

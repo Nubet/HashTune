@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class RecognitionPersistenceAdapter implements RecognitionRepository {
+public class RecognitionRepositoryAdapter implements RecognitionRepository {
     private final SpringDataRecognitionRepository repository;
 
     @Override
@@ -34,7 +34,7 @@ public class RecognitionPersistenceAdapter implements RecognitionRepository {
                                 Sort.by(Sort.Direction.DESC, "createdAt").and(Sort.by(Sort.Direction.DESC, "id"))))
                 .getContent()
                 .stream()
-                .map(RecognitionPersistenceAdapter::toDomain)
+                .map(RecognitionRepositoryAdapter::toDomain)
                 .toList();
     }
 
@@ -43,7 +43,7 @@ public class RecognitionPersistenceAdapter implements RecognitionRepository {
         return repository
                 .findAllByOwnerIssuerAndOwnerSubjectOrderByCreatedAtDesc(owner.issuer(), owner.subject())
                 .stream()
-                .map(RecognitionPersistenceAdapter::toDomain)
+                .map(RecognitionRepositoryAdapter::toDomain)
                 .toList();
     }
 
@@ -51,7 +51,7 @@ public class RecognitionPersistenceAdapter implements RecognitionRepository {
     public Optional<Recognition> findById(ExternalIdentity owner, UUID id) {
         return repository
                 .findByIdAndOwnerIssuerAndOwnerSubject(id, owner.issuer(), owner.subject())
-                .map(RecognitionPersistenceAdapter::toDomain);
+                .map(RecognitionRepositoryAdapter::toDomain);
     }
 
     @Override

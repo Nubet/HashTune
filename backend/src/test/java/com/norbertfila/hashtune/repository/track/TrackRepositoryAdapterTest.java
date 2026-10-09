@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-class TrackPersistenceAdapterTest {
+class TrackRepositoryAdapterTest {
     private final SpringDataTrackRepository repository = mock(SpringDataTrackRepository.class);
-    private final TrackPersistenceAdapter adapter = new TrackPersistenceAdapter(repository);
+    private final TrackRepositoryAdapter adapter = new TrackRepositoryAdapter(repository);
 
     @Test
     void mapsAlbumArtistProjectionToAlbumSummaryArtist() {

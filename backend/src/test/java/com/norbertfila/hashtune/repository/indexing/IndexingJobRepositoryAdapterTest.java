@@ -17,9 +17,9 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Pageable;
 
-class JobPersistenceAdapterTest {
+class IndexingJobRepositoryAdapterTest {
     private final SpringDataJobRepository repository = mock(SpringDataJobRepository.class);
-    private final JobPersistenceAdapter adapter = new JobPersistenceAdapter(repository);
+    private final IndexingJobRepositoryAdapter adapter = new IndexingJobRepositoryAdapter(repository);
 
     @Test
     void claimsOnlyJobsReadyForAnotherAttempt() {

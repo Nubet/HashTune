@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
-public class FingerprintPersistenceAdapter implements FingerprintRepository {
+public class FingerprintRepositoryAdapter implements FingerprintRepository {
     private static final int MAX_HASHES_PER_QUERY = 10_000;
     private static final int INSERT_BATCH_SIZE = 1_000;
 

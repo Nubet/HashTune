@@ -11,10 +11,10 @@ import java.util.stream.LongStream;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-class FingerprintPersistenceAdapterTest {
+class FingerprintRepositoryAdapterTest {
     private final SpringDataFingerprintRepository repository = mock(SpringDataFingerprintRepository.class);
     private final JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
-    private final FingerprintPersistenceAdapter adapter = new FingerprintPersistenceAdapter(repository, jdbcTemplate);
+    private final FingerprintRepositoryAdapter adapter = new FingerprintRepositoryAdapter(repository, jdbcTemplate);
 
     @Test
     void batchesLargeHashLookups() {

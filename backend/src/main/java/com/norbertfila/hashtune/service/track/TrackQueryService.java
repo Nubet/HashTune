@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.application.service;
+package com.norbertfila.hashtune.service.track;
 
 import com.norbertfila.hashtune.repository.track.AlbumSummary;
 import com.norbertfila.hashtune.repository.track.ArtistSummary;
@@ -7,6 +7,7 @@ import com.norbertfila.hashtune.repository.track.TrackQueryRepository;
 import com.norbertfila.hashtune.repository.track.TrackSearchQuery;
 import com.norbertfila.hashtune.entity.track.Track;
 import com.norbertfila.hashtune.entity.track.TrackOrigin;
+import com.norbertfila.hashtune.service.image.ArtistImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

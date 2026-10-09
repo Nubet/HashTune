@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.application.port.in;
+package com.norbertfila.hashtune.service.health;
 
 import com.norbertfila.hashtune.entity.health.SystemHealth;
 

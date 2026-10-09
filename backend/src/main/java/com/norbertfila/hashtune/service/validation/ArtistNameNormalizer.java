@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.application.service;
+package com.norbertfila.hashtune.service.validation;
 
 import java.text.Normalizer;
 import java.util.Locale;

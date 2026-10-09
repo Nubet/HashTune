@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.application.service;
+package com.norbertfila.hashtune.service.indexing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,14 +25,14 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class IndexingJobApplicationServiceTest {
+class IndexingJobServiceTest {
     private final TrackRepository tracks = mock(TrackRepository.class);
     private final IndexingJobRepository jobs = mock(IndexingJobRepository.class);
     private final AudioRecognitionEngine engine = mock(AudioRecognitionEngine.class);
     private final ObjectStoragePort storage = mock(ObjectStoragePort.class);
     private final StorageProperties storageProperties = new StorageProperties();
     private final IndexingProperties indexingProperties = new IndexingProperties();
-    private IndexingJobApplicationService service;
+    private IndexingJobService service;
 
     @BeforeEach
     void setUp() {
@@ -40,7 +40,7 @@ class IndexingJobApplicationServiceTest {
         indexingProperties.setRetryBackoffMs(100);
         indexingProperties.setMaxRetryBackoffMs(1_000);
         indexingProperties.setStaleProcessingTimeoutMs(60_000);
-        service = new IndexingJobApplicationService(
+        service = new IndexingJobService(
                 tracks, jobs, engine, storageProperties, storage, indexingProperties, Runnable::run);
         when(jobs.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }

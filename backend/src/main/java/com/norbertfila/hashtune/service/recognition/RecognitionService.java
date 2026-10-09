@@ -1,8 +1,10 @@
-package com.norbertfila.hashtune.application.service;
+package com.norbertfila.hashtune.service.recognition;
 
 import com.norbertfila.hashtune.application.port.out.AudioRecognitionEngine;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.application.port.out.RecognitionConcurrencyLimiter;
+import com.norbertfila.hashtune.exceptions.ApplicationException;
+import com.norbertfila.hashtune.exceptions.TooManyRequestsException;
 import com.norbertfila.hashtune.repository.recognition.RecognitionRepository;
 import com.norbertfila.hashtune.repository.track.TrackRepository;
 import com.norbertfila.hashtune.configuration.StorageProperties;
@@ -11,6 +13,7 @@ import com.norbertfila.hashtune.entity.recognition.RecognitionSource;
 import com.norbertfila.hashtune.entity.recognition.RecognitionStatus;
 import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
 import com.norbertfila.hashtune.entity.track.Track;
+import com.norbertfila.hashtune.service.validation.AudioUploadValidator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
@@ -25,7 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RecognitionApplicationService {
+public class RecognitionService {
     private final RecognitionRepository recognitions;
     private final RecognitionConcurrencyLimiter concurrencyLimiter;
     private final TrackRepository tracks;

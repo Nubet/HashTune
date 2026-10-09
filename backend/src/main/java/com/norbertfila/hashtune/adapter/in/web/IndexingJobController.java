@@ -1,6 +1,6 @@
 package com.norbertfila.hashtune.adapter.in.web;
 
-import com.norbertfila.hashtune.application.service.IndexingJobApplicationService;
+import com.norbertfila.hashtune.service.indexing.IndexingJobService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class IndexingJobController {
-    private final IndexingJobApplicationService service;
+    private final IndexingJobService service;
 
     @GetMapping("/{id}")
     public ApiDtos.IndexingJobResponse get(@PathVariable UUID id) {

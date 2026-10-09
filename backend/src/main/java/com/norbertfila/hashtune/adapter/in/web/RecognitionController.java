@@ -1,6 +1,6 @@
 package com.norbertfila.hashtune.adapter.in.web;
 
-import com.norbertfila.hashtune.application.service.RecognitionApplicationService;
+import com.norbertfila.hashtune.service.recognition.RecognitionService;
 import com.norbertfila.hashtune.adapter.in.security.AuthenticatedIdentityResolver;
 import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
 import com.norbertfila.hashtune.entity.recognition.RecognitionSource;
@@ -25,7 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class RecognitionController {
-    private final RecognitionApplicationService service;
+    private final RecognitionService service;
     private final AuthenticatedIdentityResolver identityResolver;
 
     @PostMapping(value = "/recognitions", consumes = "multipart/form-data")

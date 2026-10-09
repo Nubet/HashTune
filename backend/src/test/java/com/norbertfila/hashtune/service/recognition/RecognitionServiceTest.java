@@ -1,5 +1,6 @@
-package com.norbertfila.hashtune.application.service;
+package com.norbertfila.hashtune.service.recognition;
 
+import com.norbertfila.hashtune.service.validation.AudioUploadValidator;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -28,7 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 
-class RecognitionApplicationServiceTest {
+class RecognitionServiceTest {
     private final RecognitionRepository recognitions = mock(RecognitionRepository.class);
     private final RecognitionConcurrencyLimiter concurrencyLimiter = mock(RecognitionConcurrencyLimiter.class);
     private final TrackRepository tracks = mock(TrackRepository.class);
@@ -36,7 +37,7 @@ class RecognitionApplicationServiceTest {
     private final AudioRecognitionEngine engine = mock(AudioRecognitionEngine.class);
     private final StorageProperties storageProperties = new StorageProperties();
     private final AudioSafetyProperties audioSafetyProperties = new AudioSafetyProperties();
-    private RecognitionApplicationService service;
+    private RecognitionService service;
     private final ExternalIdentity owner = new ExternalIdentity("test-issuer", "test-subject");
 
     @BeforeEach
@@ -44,7 +45,7 @@ class RecognitionApplicationServiceTest {
         storageProperties.setTempBucket("temp");
         storageProperties.setAudioBucket("audio");
         audioSafetyProperties.setMaxFileSizeBytes(10_000);
-        service = new RecognitionApplicationService(
+        service = new RecognitionService(
                 recognitions,
                 concurrencyLimiter,
                 tracks,

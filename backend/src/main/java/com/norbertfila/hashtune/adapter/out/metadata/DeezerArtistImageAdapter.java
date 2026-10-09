@@ -2,7 +2,7 @@ package com.norbertfila.hashtune.adapter.out.metadata;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.norbertfila.hashtune.application.port.out.ArtistImageProvider;
-import com.norbertfila.hashtune.application.service.ArtistNameNormalizer;
+import com.norbertfila.hashtune.service.validation.ArtistNameNormalizer;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;

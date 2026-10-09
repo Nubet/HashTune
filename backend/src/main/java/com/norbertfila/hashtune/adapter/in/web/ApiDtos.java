@@ -111,7 +111,7 @@ public final class ApiDtos {
 
     public record ImportResponse(String status, UUID trackId, UUID indexingJobId, TrackResponse track) {
         static ImportResponse from(
-                Track track, com.norbertfila.hashtune.application.service.TrackApplicationService.ImportResult result) {
+                Track track, com.norbertfila.hashtune.service.track.TrackService.ImportResult result) {
             return new ImportResponse(
                     result.status(),
                     track == null ? null : track.id(),

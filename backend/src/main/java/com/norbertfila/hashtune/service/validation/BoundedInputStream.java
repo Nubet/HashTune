@@ -1,13 +1,13 @@
-package com.norbertfila.hashtune.application.service;
+package com.norbertfila.hashtune.service.validation;
 
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-final class BoundedInputStream extends FilterInputStream {
+public final class BoundedInputStream extends FilterInputStream {
     private long remaining;
 
-    BoundedInputStream(InputStream input, long maxBytes) {
+    public BoundedInputStream(InputStream input, long maxBytes) {
         super(input);
         if (maxBytes <= 0) {
             throw new IllegalArgumentException("Maximum stream size must be positive");

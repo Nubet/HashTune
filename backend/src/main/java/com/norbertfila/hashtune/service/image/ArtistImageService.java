@@ -1,5 +1,6 @@
-package com.norbertfila.hashtune.application.service;
+package com.norbertfila.hashtune.service.image;
 
+import com.norbertfila.hashtune.service.validation.ArtistNameNormalizer;
 import com.norbertfila.hashtune.repository.artist.ArtistImageCacheEntry;
 import com.norbertfila.hashtune.repository.artist.ArtistImageCacheRepository;
 import com.norbertfila.hashtune.application.port.out.ArtistImageProvider;

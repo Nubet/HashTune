@@ -10,11 +10,11 @@ import com.norbertfila.hashtune.adapter.in.web.LibraryAdminController;
 import com.norbertfila.hashtune.adapter.in.web.LibraryQueryController;
 import com.norbertfila.hashtune.adapter.in.web.RecognitionController;
 import com.norbertfila.hashtune.repository.track.PageResult;
-import com.norbertfila.hashtune.application.service.ArtistImageService;
-import com.norbertfila.hashtune.application.service.IndexingJobApplicationService;
-import com.norbertfila.hashtune.application.service.RecognitionApplicationService;
-import com.norbertfila.hashtune.application.service.TrackApplicationService;
-import com.norbertfila.hashtune.application.service.TrackQueryService;
+import com.norbertfila.hashtune.service.image.ArtistImageService;
+import com.norbertfila.hashtune.service.indexing.IndexingJobService;
+import com.norbertfila.hashtune.service.recognition.RecognitionService;
+import com.norbertfila.hashtune.service.track.TrackService;
+import com.norbertfila.hashtune.service.track.TrackQueryService;
 import com.norbertfila.hashtune.configuration.ApplicationConfiguration;
 import com.norbertfila.hashtune.configuration.IdentityProviderProperties;
 import com.norbertfila.hashtune.entity.indexing.IndexingJob;
@@ -63,13 +63,13 @@ class SecurityConfigurationTest {
     private ArtistImageService artistImageService;
 
     @MockitoBean
-    private TrackApplicationService trackApplicationService;
+    private TrackService trackApplicationService;
 
     @MockitoBean
-    private IndexingJobApplicationService indexingJobApplicationService;
+    private IndexingJobService indexingJobApplicationService;
 
     @MockitoBean
-    private RecognitionApplicationService recognitionApplicationService;
+    private RecognitionService recognitionApplicationService;
 
     @MockitoBean
     private AuthenticatedIdentityResolver authenticatedIdentityResolver;

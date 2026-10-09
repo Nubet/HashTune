@@ -1,5 +1,6 @@
-package com.norbertfila.hashtune.application.service;
+package com.norbertfila.hashtune.service.track;
 
+import com.norbertfila.hashtune.service.validation.AudioUploadValidator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,7 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 
-class TrackApplicationServiceTest {
+class TrackServiceTest {
     private final TrackRepository tracks = mock(TrackRepository.class);
     private final IndexingJobRepository jobs = mock(IndexingJobRepository.class);
     private final ObjectStoragePort storage = mock(ObjectStoragePort.class);
@@ -40,14 +41,14 @@ class TrackApplicationServiceTest {
     private final AudioSafetyProperties audioSafetyProperties = new AudioSafetyProperties();
     private final AudioMetadataReader metadataReader = mock(AudioMetadataReader.class);
     private final CoverArtProvider coverArtProvider = mock(CoverArtProvider.class);
-    private TrackApplicationService service;
+    private TrackService service;
 
     @BeforeEach
     void setUp() {
         storageProperties.setAudioBucket("audio");
         storageProperties.setTempBucket("temp");
         audioSafetyProperties.setMaxFileSizeBytes(10_000);
-        service = new TrackApplicationService(
+        service = new TrackService(
                 tracks,
                 jobs,
                 storage,
@@ -94,7 +95,7 @@ class TrackApplicationServiceTest {
         when(jobs.findByTrackId(existingTrackId)).thenReturn(Optional.of(existingJob));
         when(jobs.findByTrackId(newTrackId)).thenReturn(Optional.empty());
 
-        TrackApplicationService.ReindexAllResult result = service.reindexAll();
+        TrackService.ReindexAllResult result = service.reindexAll();
 
         assertThat(result.scheduled()).isEqualTo(2);
         assertThat(result.alreadyProcessing()).isZero();

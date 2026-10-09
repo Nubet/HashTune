@@ -6,7 +6,11 @@ import io.minio.GetObjectArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.errors.MinioException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +27,7 @@ public class MinioStorageAdapter implements ObjectStoragePort {
                     .contentType(contentType == null ? "application/octet-stream" : contentType)
                     .build());
             return objectKey;
-        } catch (Exception exception) {
+        } catch (MinioException | IOException | InvalidKeyException | NoSuchAlgorithmException exception) {
             throw new StorageException("Could not store object", exception);
         }
     }
@@ -33,7 +37,7 @@ public class MinioStorageAdapter implements ObjectStoragePort {
         try {
             return client.getObject(
                     GetObjectArgs.builder().bucket(bucket).object(objectKey).build());
-        } catch (Exception exception) {
+        } catch (MinioException | IOException | InvalidKeyException | NoSuchAlgorithmException exception) {
             throw new StorageException("Could not read object", exception);
         }
     }
@@ -45,12 +49,13 @@ public class MinioStorageAdapter implements ObjectStoragePort {
                     .bucket(bucket)
                     .object(objectKey)
                     .build());
-        } catch (Exception exception) {
+        } catch (MinioException | IOException | InvalidKeyException | NoSuchAlgorithmException exception) {
             throw new StorageException("Could not delete object", exception);
         }
     }
 
-    private void ensureBucket(String bucket) throws Exception {
+    private void ensureBucket(String bucket)
+            throws MinioException, IOException, InvalidKeyException, NoSuchAlgorithmException {
         if (!client.bucketExists(BucketExistsArgs.builder().bucket(bucket).build())) {
             client.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
         }

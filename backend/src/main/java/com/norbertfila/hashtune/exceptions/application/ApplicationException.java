@@ -1,6 +1,7 @@
 package com.norbertfila.hashtune.exceptions.application;
 
 import com.norbertfila.hashtune.exceptions.ErrorCode;
+import org.springframework.http.HttpStatus;
 
 public class ApplicationException extends RuntimeException {
     private final ErrorCode code;
@@ -10,7 +11,7 @@ public class ApplicationException extends RuntimeException {
         this.code = code;
     }
 
-    public org.springframework.http.HttpStatus status() {
+    public HttpStatus status() {
         return code.status();
     }
 

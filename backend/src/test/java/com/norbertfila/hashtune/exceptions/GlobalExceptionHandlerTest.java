@@ -3,6 +3,7 @@ package com.norbertfila.hashtune.exceptions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.norbertfila.hashtune.exceptions.application.ApplicationException;
+import com.norbertfila.hashtune.exceptions.security.AuthenticationRequiredException;
 import com.norbertfila.hashtune.exceptions.storage.StorageException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -56,6 +57,17 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody()).satisfies(problem -> {
             assertThat(problem.code()).isEqualTo("MALFORMED_REQUEST");
             assertThat(problem.detail()).contains("could not be read");
+        });
+    }
+
+    @Test
+    void mapsMissingAuthenticationToUnauthorized() {
+        var response = handler.handle(new AuthenticationRequiredException(), request);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(response.getBody()).satisfies(problem -> {
+            assertThat(problem.code()).isEqualTo("AUTHENTICATION_REQUIRED");
+            assertThat(problem.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         });
     }
 

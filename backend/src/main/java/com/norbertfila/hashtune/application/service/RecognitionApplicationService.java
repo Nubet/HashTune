@@ -5,7 +5,6 @@ import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.application.port.out.RecognitionConcurrencyLimiter;
 import com.norbertfila.hashtune.application.port.out.RecognitionRepository;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
-import com.norbertfila.hashtune.configuration.AudioProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
 import com.norbertfila.hashtune.domain.recognition.Recognition;
 import com.norbertfila.hashtune.domain.recognition.RecognitionSource;
@@ -33,7 +32,7 @@ public class RecognitionApplicationService {
     private final ObjectStoragePort storage;
     private final AudioRecognitionEngine engine;
     private final StorageProperties storageProperties;
-    private final AudioProperties audioProperties;
+    private final AudioUploadValidator audioUploadValidator;
 
     @Transactional
     public Recognition recognize(ExternalIdentity owner, MultipartFile file, RecognitionSource source) {
@@ -59,12 +58,7 @@ public class RecognitionApplicationService {
 
     private Recognition processAudio(
             ExternalIdentity owner, MultipartFile file, RecognitionSource source, boolean persist) {
-        if (file == null || file.isEmpty() || file.getSize() > audioProperties.getMaxFileSizeBytes()) {
-            throw new ApplicationException(
-                    org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
-                    "INVALID_AUDIO",
-                    "Audio sample is empty or too large");
-        }
+        audioUploadValidator.validate(file);
         UUID recognitionId = UUID.randomUUID();
         String key = "samples/" + recognitionId + "/" + safeName(file.getOriginalFilename());
         String recordingKey = "microphone-recordings/" + recognitionId + "/" + safeName(file.getOriginalFilename());

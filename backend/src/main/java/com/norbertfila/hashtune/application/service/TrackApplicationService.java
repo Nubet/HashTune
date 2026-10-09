@@ -7,7 +7,6 @@ import com.norbertfila.hashtune.application.port.out.FingerprintRepository;
 import com.norbertfila.hashtune.application.port.out.IndexingJobRepository;
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
-import com.norbertfila.hashtune.configuration.AudioProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
 import com.norbertfila.hashtune.domain.indexing.IndexingJob;
 import com.norbertfila.hashtune.domain.indexing.IndexingJobStatus;
@@ -39,7 +38,7 @@ public class TrackApplicationService {
     private final ObjectStoragePort storage;
     private final FingerprintRepository fingerprints;
     private final StorageProperties storageProperties;
-    private final AudioProperties audioProperties;
+    private final AudioUploadValidator audioUploadValidator;
     private final AudioMetadataReader metadataReader;
     private final CoverArtProvider coverArtProvider;
 
@@ -307,12 +306,7 @@ public class TrackApplicationService {
     }
 
     private void validate(MultipartFile file) {
-        if (file == null || file.isEmpty() || file.getSize() > audioProperties.getMaxFileSizeBytes()) {
-            throw new ApplicationException(
-                    org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY,
-                    "INVALID_AUDIO",
-                    "Audio file is empty or too large");
-        }
+        audioUploadValidator.validate(file);
     }
 
     private String checksum(MultipartFile file) {

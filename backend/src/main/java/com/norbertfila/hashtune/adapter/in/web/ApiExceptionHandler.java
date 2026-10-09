@@ -1,6 +1,7 @@
 package com.norbertfila.hashtune.adapter.in.web;
 
 import com.norbertfila.hashtune.adapter.out.storage.StorageException;
+import com.norbertfila.hashtune.application.port.out.AudioInputRejectedException;
 import com.norbertfila.hashtune.application.service.ApplicationException;
 import com.norbertfila.hashtune.application.service.TooManyRequestsException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,6 +48,18 @@ public class ApiExceptionHandler {
                 "Forbidden",
                 "FORBIDDEN",
                 "You do not have permission to access this resource.",
+                request,
+                Map.of());
+    }
+
+    @ExceptionHandler(AudioInputRejectedException.class)
+    ResponseEntity<ApiDtos.ProblemResponse> handleAudioInputRejected(
+            AudioInputRejectedException exception, HttpServletRequest request) {
+        return problem(
+                HttpStatus.UNPROCESSABLE_ENTITY,
+                "Invalid Audio",
+                exception.code(),
+                exception.getMessage(),
                 request,
                 Map.of());
     }

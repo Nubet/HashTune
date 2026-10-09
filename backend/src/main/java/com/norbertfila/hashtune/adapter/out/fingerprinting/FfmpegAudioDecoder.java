@@ -1,5 +1,7 @@
 package com.norbertfila.hashtune.adapter.out.fingerprinting;
 
+import com.norbertfila.hashtune.application.port.out.AudioInputRejectedException;
+import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,9 +11,13 @@ import java.util.List;
 
 final class FfmpegAudioDecoder {
     private final String ffmpegBinary;
+    private final AudioProbe probe;
+    private final AudioSafetyProperties safetyProperties;
 
-    FfmpegAudioDecoder(String ffmpegBinary) {
+    FfmpegAudioDecoder(String ffmpegBinary, String ffprobeBinary, AudioSafetyProperties safetyProperties) {
         this.ffmpegBinary = ffmpegBinary;
+        this.probe = new AudioProbe(ffprobeBinary, safetyProperties.getProbeTimeoutMs());
+        this.safetyProperties = safetyProperties;
     }
 
     DecodedAudio decode(InputStream audio) {
@@ -19,6 +25,7 @@ final class FfmpegAudioDecoder {
         try {
             inputFile = Files.createTempFile("hashtune-audio-", ".input");
             Files.copy(audio, inputFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            validate(probe.inspect(inputFile));
 
             Process process = new ProcessBuilder(command(inputFile))
                     .redirectError(ProcessBuilder.Redirect.DISCARD)
@@ -36,6 +43,19 @@ final class FfmpegAudioDecoder {
             throw new IllegalStateException("FFmpeg decoding was interrupted", exception);
         } finally {
             deleteInputFile(inputFile);
+        }
+    }
+
+    private void validate(AudioProbe.Result result) {
+        boolean supportedContainer = result.containerNames().stream()
+                .anyMatch(safetyProperties.getAllowedContainerNames()::contains);
+        if (!supportedContainer) {
+            throw new AudioInputRejectedException(
+                    "AUDIO_FORMAT_NOT_SUPPORTED", "Audio container is not supported");
+        }
+        if (result.durationMs() > safetyProperties.getMaxDurationMs()) {
+            throw new AudioInputRejectedException(
+                    "AUDIO_DURATION_TOO_LONG", "Audio exceeds the maximum allowed duration");
         }
     }
 

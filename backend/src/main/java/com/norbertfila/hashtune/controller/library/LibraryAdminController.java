@@ -1,5 +1,6 @@
 package com.norbertfila.hashtune.controller.library;
 
+import com.norbertfila.hashtune.controller.AudioInputMapper;
 import com.norbertfila.hashtune.dto.request.UpdateTrackMetadataRequest;
 import com.norbertfila.hashtune.dto.response.ImportResponse;
 import com.norbertfila.hashtune.dto.response.IndexingJobResponse;
@@ -35,7 +36,7 @@ public class LibraryAdminController {
 
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<UploadResponse> upload(@RequestPart("file") MultipartFile file) {
-        TrackService.UploadResult result = service.upload(file);
+        TrackService.UploadResult result = service.upload(AudioInputMapper.from(file));
         return ResponseEntity.accepted().body(TrackMapper.toUploadResponse(result.track(), result.job()));
     }
 
@@ -44,7 +45,7 @@ public class LibraryAdminController {
             @RequestPart("file") MultipartFile file,
             @RequestParam(defaultValue = "HASH_TUNE") TrackOrigin origin,
             @RequestParam(required = false) String relativePath) {
-        TrackService.ImportResult result = service.importTrack(file, origin, relativePath);
+        TrackService.ImportResult result = service.importTrack(AudioInputMapper.from(file), origin, relativePath);
         return TrackMapper.toImportResponse(result.track(), result);
     }
 

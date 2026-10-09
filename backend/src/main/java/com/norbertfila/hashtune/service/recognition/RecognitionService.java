@@ -13,6 +13,7 @@ import com.norbertfila.hashtune.exceptions.application.TooManyRequestsException;
 import com.norbertfila.hashtune.repository.recognition.RecognitionRepository;
 import com.norbertfila.hashtune.repository.track.TrackRepository;
 import com.norbertfila.hashtune.security.RecognitionConcurrencyLimiter;
+import com.norbertfila.hashtune.service.audio.AudioInput;
 import com.norbertfila.hashtune.service.fingerprint.AudioRecognitionEngine;
 import com.norbertfila.hashtune.service.storage.ObjectStoragePort;
 import com.norbertfila.hashtune.service.validation.AudioUploadValidator;
@@ -25,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -40,16 +40,16 @@ public class RecognitionService {
     private final AudioUploadValidator audioUploadValidator;
 
     @Transactional
-    public Recognition recognize(ExternalIdentity owner, MultipartFile file, RecognitionSource source) {
+    public Recognition recognize(ExternalIdentity owner, AudioInput file, RecognitionSource source) {
         return process(owner, file, source, true);
     }
 
     @Transactional
-    public Recognition probe(ExternalIdentity owner, MultipartFile file, RecognitionSource source) {
+    public Recognition probe(ExternalIdentity owner, AudioInput file, RecognitionSource source) {
         return process(owner, file, source, false);
     }
 
-    private Recognition process(ExternalIdentity owner, MultipartFile file, RecognitionSource source, boolean persist) {
+    private Recognition process(ExternalIdentity owner, AudioInput file, RecognitionSource source, boolean persist) {
         if (!concurrencyLimiter.tryAcquire(owner)) {
             throw new TooManyRequestsException(java.time.Duration.ofSeconds(1));
         }
@@ -61,18 +61,18 @@ public class RecognitionService {
     }
 
     private Recognition processAudio(
-            ExternalIdentity owner, MultipartFile file, RecognitionSource source, boolean persist) {
+            ExternalIdentity owner, AudioInput file, RecognitionSource source, boolean persist) {
         audioUploadValidator.validate(file);
         UUID recognitionId = UUID.randomUUID();
-        String key = "samples/" + recognitionId + "/" + safeName(file.getOriginalFilename());
-        String recordingKey = "microphone-recordings/" + recognitionId + "/" + safeName(file.getOriginalFilename());
+        String key = "samples/" + recognitionId + "/" + safeName(file.originalFilename());
+        String recordingKey = "microphone-recordings/" + recognitionId + "/" + safeName(file.originalFilename());
         long started = System.currentTimeMillis();
         try {
-            try (InputStream input = file.getInputStream()) {
-                storage.put(storageProperties.getTempBucket(), key, input, file.getSize(), file.getContentType());
+            try (InputStream input = file.open()) {
+                storage.put(storageProperties.getTempBucket(), key, input, file.size(), file.contentType());
             }
             AudioRecognitionEngine.RecognitionResult result = engine.recognize(new AudioRecognitionEngine.InputAudio(
-                    storageProperties.getTempBucket(), key, file.getOriginalFilename(), ""));
+                    storageProperties.getTempBucket(), key, file.originalFilename(), ""));
             Track track = result.matched() && result.trackId() != null
                     ? tracks.findById(result.trackId()).orElse(null)
                     : null;
@@ -87,11 +87,9 @@ public class RecognitionService {
                     result.sampleDurationMs(),
                     System.currentTimeMillis() - started,
                     source == RecognitionSource.MICROPHONE && (persist || result.matched()) ? recordingKey : null,
+                    source == RecognitionSource.MICROPHONE && (persist || result.matched()) ? file.contentType() : null,
                     source == RecognitionSource.MICROPHONE && (persist || result.matched())
-                            ? file.getContentType()
-                            : null,
-                    source == RecognitionSource.MICROPHONE && (persist || result.matched())
-                            ? safeName(file.getOriginalFilename())
+                            ? safeName(file.originalFilename())
                             : null,
                     Instant.now());
             boolean shouldPersist = persist || entity.status() == RecognitionStatus.MATCHED;
@@ -102,7 +100,7 @@ public class RecognitionService {
                             storageProperties.getAudioBucket(),
                             entity.recordingObjectKey(),
                             recording,
-                            file.getSize(),
+                            file.size(),
                             entity.recordingContentType());
                 }
             }

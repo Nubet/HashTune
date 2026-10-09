@@ -1,5 +1,6 @@
 package com.norbertfila.hashtune.controller.recognition;
 
+import com.norbertfila.hashtune.controller.AudioInputMapper;
 import com.norbertfila.hashtune.dto.response.HistoryResponse;
 import com.norbertfila.hashtune.dto.response.RecognitionResponse;
 import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
@@ -38,7 +39,8 @@ public class RecognitionController {
             @RequestParam(defaultValue = "AUDIO_FILE") RecognitionSource source,
             @RequestParam(defaultValue = "false") boolean probe) {
         var owner = owner(authentication);
-        var result = probe ? service.probe(owner, file, source) : service.recognize(owner, file, source);
+        var audio = AudioInputMapper.from(file);
+        var result = probe ? service.probe(owner, audio, source) : service.recognize(owner, audio, source);
         var track = result.trackId() == null ? null : service.track(result.trackId());
         return RecognitionMapper.toResponse(result, track);
     }

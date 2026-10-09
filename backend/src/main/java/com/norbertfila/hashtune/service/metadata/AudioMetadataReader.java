@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.Locale;
 import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.FieldKey;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class AudioMetadataReader {
     private final AudioSafetyProperties safetyProperties;
 
@@ -41,7 +43,8 @@ public class AudioMetadataReader {
             return AudioMetadata.basic(value(metadata, "title"), value(metadata, "artist"), value(metadata, "album"));
         } catch (AudioInputRejectedException exception) {
             throw exception;
-        } catch (Exception ignored) {
+        } catch (Exception exception) {
+            log.debug("Could not read optional audio metadata from {}", file.originalFilename(), exception);
             return AudioMetadata.empty();
         }
     }
@@ -88,14 +91,16 @@ public class AudioMetadataReader {
                     embeddedArtwork);
         } catch (AudioInputRejectedException exception) {
             throw exception;
-        } catch (Exception ignored) {
+        } catch (Exception exception) {
+            log.debug("Could not read optional audio metadata from {}", file.originalFilename(), exception);
             return AudioMetadata.empty();
         } finally {
             if (temporaryFile != null) {
                 try {
                     Files.deleteIfExists(temporaryFile);
-                } catch (IOException ignored) {
+                } catch (IOException exception) {
                     // Temporary file cleanup is best effort.
+                    log.debug("Could not delete temporary metadata file {}", temporaryFile, exception);
                 }
             }
         }

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HexFormat;
@@ -327,8 +328,10 @@ public class TrackService {
                 digestInput.transferTo(java.io.OutputStream.nullOutputStream());
             }
             return HexFormat.of().formatHex(digest.digest());
-        } catch (Exception exception) {
-            throw new IllegalStateException("Could not calculate checksum", exception);
+        } catch (IOException exception) {
+            throw new InvalidAudioException(ErrorCode.INVALID_AUDIO, "Could not read uploaded file");
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("SHA-256 is unavailable", exception);
         }
     }
 

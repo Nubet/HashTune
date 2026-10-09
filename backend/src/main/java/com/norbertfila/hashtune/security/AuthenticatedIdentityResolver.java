@@ -2,6 +2,7 @@ package com.norbertfila.hashtune.security;
 
 import com.norbertfila.hashtune.configuration.IdentityProviderProperties;
 import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
+import com.norbertfila.hashtune.exceptions.security.AuthenticationRequiredException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -26,7 +27,6 @@ public class AuthenticatedIdentityResolver {
     }
 
     public ExternalIdentity resolve(Authentication authentication) {
-        return resolveOptional(authentication)
-                .orElseThrow(() -> new IllegalStateException("A validated JWT is required"));
+        return resolveOptional(authentication).orElseThrow(AuthenticationRequiredException::new);
     }
 }

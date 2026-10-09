@@ -7,7 +7,8 @@ import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import com.norbertfila.hashtune.entity.track.Track;
 import com.norbertfila.hashtune.entity.track.TrackStatus;
 import com.norbertfila.hashtune.exceptions.ErrorCode;
-import com.norbertfila.hashtune.exceptions.application.ApplicationException;
+import com.norbertfila.hashtune.exceptions.application.ResourceConflictException;
+import com.norbertfila.hashtune.exceptions.application.ResourceNotFoundException;
 import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
 import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
 import com.norbertfila.hashtune.repository.track.TrackRepository;
@@ -39,7 +40,7 @@ public class IndexingJobService {
     public IndexingJob retry(UUID id) {
         IndexingJob job = get(id);
         if (job.status() != IndexingJobStatus.FAILED) {
-            throw new ApplicationException(
+            throw new ResourceConflictException(
                     ErrorCode.INDEXING_JOB_NOT_RETRYABLE, "Only failed indexing jobs can be retried");
         }
         Track track = getTrack(job.trackId());
@@ -60,8 +61,8 @@ public class IndexingJobService {
 
     public IndexingJob get(UUID id) {
         return jobs.findById(id)
-                .orElseThrow(
-                        () -> new ApplicationException(ErrorCode.INDEXING_JOB_NOT_FOUND, "Indexing job not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(ErrorCode.INDEXING_JOB_NOT_FOUND, "Indexing job not found"));
     }
 
     @Scheduled(fixedDelayString = "${app.indexing.worker-delay-ms:1000}")
@@ -161,6 +162,6 @@ public class IndexingJobService {
 
     private Track getTrack(UUID id) {
         return tracks.findById(id)
-                .orElseThrow(() -> new ApplicationException(ErrorCode.TRACK_NOT_FOUND, "Track not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.TRACK_NOT_FOUND, "Track not found"));
     }
 }

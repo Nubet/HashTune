@@ -3,7 +3,7 @@ package com.norbertfila.hashtune.service.track;
 import com.norbertfila.hashtune.service.metadata.AudioMetadataReader;
 import com.norbertfila.hashtune.exceptions.storage.StorageException;
 import com.norbertfila.hashtune.service.metadata.CoverArtProvider;
-import com.norbertfila.hashtune.exceptions.ApplicationException;
+import com.norbertfila.hashtune.exceptions.application.ApplicationException;
 import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;
 import com.norbertfila.hashtune.repository.indexing.IndexingJobRepository;
 import com.norbertfila.hashtune.service.storage.ObjectStoragePort;

@@ -17,9 +17,9 @@ import com.norbertfila.hashtune.application.port.out.RecognitionRepository;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
 import com.norbertfila.hashtune.configuration.StorageProperties;
-import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
-import com.norbertfila.hashtune.domain.track.Track;
-import com.norbertfila.hashtune.domain.track.TrackStatus;
+import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
+import com.norbertfila.hashtune.entity.track.Track;
+import com.norbertfila.hashtune.entity.track.TrackStatus;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -61,7 +61,7 @@ class RecognitionApplicationServiceTest {
         when(engine.recognize(any())).thenThrow(new IllegalStateException("decoder failed"));
 
         assertThatThrownBy(() -> service.probe(
-                         owner, file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.AUDIO_FILE))
+                         owner, file, com.norbertfila.hashtune.entity.recognition.RecognitionSource.AUDIO_FILE))
                 .isInstanceOf(IllegalStateException.class);
 
         verify(storage).delete(eq("temp"), startsWith("samples/"));
@@ -87,7 +87,7 @@ class RecognitionApplicationServiceTest {
                 .thenReturn(new AudioRecognitionEngine.RecognitionResult(true, trackId, 1.0, 27_000, 5_000, 1, 1));
         when(tracks.findById(trackId)).thenReturn(Optional.of(track));
 
-        service.probe(owner, file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.MICROPHONE);
+        service.probe(owner, file, com.norbertfila.hashtune.entity.recognition.RecognitionSource.MICROPHONE);
 
         verify(recognitions).save(any());
     }
@@ -98,7 +98,7 @@ class RecognitionApplicationServiceTest {
         when(engine.recognize(any()))
                 .thenReturn(new AudioRecognitionEngine.RecognitionResult(false, null, 0.0, 0L, 5_000, 1, 1));
 
-        service.recognize(owner, file, com.norbertfila.hashtune.domain.recognition.RecognitionSource.AUDIO_FILE);
+        service.recognize(owner, file, com.norbertfila.hashtune.entity.recognition.RecognitionSource.AUDIO_FILE);
 
         verify(storage, never()).put(eq("audio"), any(), any(), anyLong(), any());
     }

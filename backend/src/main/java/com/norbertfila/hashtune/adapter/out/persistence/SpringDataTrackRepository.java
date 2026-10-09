@@ -1,6 +1,7 @@
 package com.norbertfila.hashtune.adapter.out.persistence;
 
-import com.norbertfila.hashtune.domain.track.TrackStatus;
+import com.norbertfila.hashtune.entity.track.TrackEntity;
+import com.norbertfila.hashtune.entity.track.TrackStatus;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;

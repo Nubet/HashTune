@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.domain.identity;
+package com.norbertfila.hashtune.entity.identity;
 
 public record ExternalIdentity(String issuer, String subject) {
     public ExternalIdentity {

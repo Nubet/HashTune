@@ -1,5 +1,6 @@
 package com.norbertfila.hashtune.adapter.out.persistence;
 
+import com.norbertfila.hashtune.entity.recognition.RecognitionEntity;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

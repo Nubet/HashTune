@@ -1,7 +1,7 @@
 package com.norbertfila.hashtune.application.port.out;
 
-import com.norbertfila.hashtune.domain.indexing.IndexingJob;
-import com.norbertfila.hashtune.domain.indexing.IndexingJobStatus;
+import com.norbertfila.hashtune.entity.indexing.IndexingJob;
+import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;

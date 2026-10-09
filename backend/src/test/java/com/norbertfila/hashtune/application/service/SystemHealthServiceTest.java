@@ -2,7 +2,7 @@ package com.norbertfila.hashtune.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.norbertfila.hashtune.domain.health.SystemHealth;
+import com.norbertfila.hashtune.entity.health.SystemHealth;
 import org.junit.jupiter.api.Test;
 
 class SystemHealthServiceTest {

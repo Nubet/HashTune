@@ -1,8 +1,9 @@
 package com.norbertfila.hashtune.adapter.out.persistence;
 
+import com.norbertfila.hashtune.entity.recognition.RecognitionEntity;
 import com.norbertfila.hashtune.application.port.out.RecognitionRepository;
-import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
-import com.norbertfila.hashtune.domain.recognition.Recognition;
+import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
+import com.norbertfila.hashtune.entity.recognition.Recognition;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

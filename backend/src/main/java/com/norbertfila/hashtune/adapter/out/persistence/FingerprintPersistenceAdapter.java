@@ -1,7 +1,8 @@
 package com.norbertfila.hashtune.adapter.out.persistence;
 
+import com.norbertfila.hashtune.entity.fingerprint.FingerprintEntity;
 import com.norbertfila.hashtune.application.port.out.FingerprintRepository;
-import com.norbertfila.hashtune.domain.fingerprint.FingerprintOccurrence;
+import com.norbertfila.hashtune.entity.fingerprint.FingerprintOccurrence;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

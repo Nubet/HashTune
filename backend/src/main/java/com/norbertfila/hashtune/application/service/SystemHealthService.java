@@ -1,7 +1,7 @@
 package com.norbertfila.hashtune.application.service;
 
 import com.norbertfila.hashtune.application.port.in.GetSystemHealthUseCase;
-import com.norbertfila.hashtune.domain.health.SystemHealth;
+import com.norbertfila.hashtune.entity.health.SystemHealth;
 import org.springframework.stereotype.Service;
 
 @Service

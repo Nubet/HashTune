@@ -4,7 +4,7 @@ import com.norbertfila.hashtune.application.port.out.TrackSearchQuery;
 import com.norbertfila.hashtune.application.service.ArtistImageService;
 import com.norbertfila.hashtune.application.service.TrackApplicationService;
 import com.norbertfila.hashtune.application.service.TrackQueryService;
-import com.norbertfila.hashtune.domain.track.TrackOrigin;
+import com.norbertfila.hashtune.entity.track.TrackOrigin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.net.URI;

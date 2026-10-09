@@ -5,8 +5,8 @@ import com.norbertfila.hashtune.application.port.out.ArtistSummary;
 import com.norbertfila.hashtune.application.port.out.PageResult;
 import com.norbertfila.hashtune.application.port.out.TrackQueryRepository;
 import com.norbertfila.hashtune.application.port.out.TrackSearchQuery;
-import com.norbertfila.hashtune.domain.track.Track;
-import com.norbertfila.hashtune.domain.track.TrackOrigin;
+import com.norbertfila.hashtune.entity.track.Track;
+import com.norbertfila.hashtune.entity.track.TrackOrigin;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

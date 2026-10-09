@@ -1,7 +1,7 @@
-package com.norbertfila.hashtune.adapter.out.persistence;
+package com.norbertfila.hashtune.entity.recognition;
 
-import com.norbertfila.hashtune.domain.recognition.RecognitionSource;
-import com.norbertfila.hashtune.domain.recognition.RecognitionStatus;
+import com.norbertfila.hashtune.entity.recognition.RecognitionSource;
+import com.norbertfila.hashtune.entity.recognition.RecognitionStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;

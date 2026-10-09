@@ -1,7 +1,7 @@
 package com.norbertfila.hashtune.application.port.out;
 
-import com.norbertfila.hashtune.domain.track.Track;
-import com.norbertfila.hashtune.domain.track.TrackStatus;
+import com.norbertfila.hashtune.entity.track.Track;
+import com.norbertfila.hashtune.entity.track.TrackStatus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

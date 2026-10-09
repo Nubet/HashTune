@@ -1,5 +1,6 @@
 package com.norbertfila.hashtune.adapter.out.persistence;
 
+import com.norbertfila.hashtune.entity.indexing.IndexingJobEntity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -7,8 +8,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.norbertfila.hashtune.domain.indexing.IndexingJob;
-import com.norbertfila.hashtune.domain.indexing.IndexingJobStatus;
+import com.norbertfila.hashtune.entity.indexing.IndexingJob;
+import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;

@@ -6,11 +6,11 @@ import com.norbertfila.hashtune.application.port.out.RecognitionConcurrencyLimit
 import com.norbertfila.hashtune.application.port.out.RecognitionRepository;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
 import com.norbertfila.hashtune.configuration.StorageProperties;
-import com.norbertfila.hashtune.domain.recognition.Recognition;
-import com.norbertfila.hashtune.domain.recognition.RecognitionSource;
-import com.norbertfila.hashtune.domain.recognition.RecognitionStatus;
-import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
-import com.norbertfila.hashtune.domain.track.Track;
+import com.norbertfila.hashtune.entity.recognition.Recognition;
+import com.norbertfila.hashtune.entity.recognition.RecognitionSource;
+import com.norbertfila.hashtune.entity.recognition.RecognitionStatus;
+import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
+import com.norbertfila.hashtune.entity.track.Track;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;

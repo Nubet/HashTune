@@ -1,7 +1,7 @@
 package com.norbertfila.hashtune.adapter.out.fingerprinting;
 
 import com.norbertfila.hashtune.application.port.out.FingerprintRepository.FingerprintMatch;
-import com.norbertfila.hashtune.domain.fingerprint.FingerprintOccurrence;
+import com.norbertfila.hashtune.entity.fingerprint.FingerprintOccurrence;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;

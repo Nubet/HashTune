@@ -1,8 +1,9 @@
 package com.norbertfila.hashtune.adapter.out.persistence;
 
+import com.norbertfila.hashtune.entity.indexing.IndexingJobEntity;
 import com.norbertfila.hashtune.application.port.out.IndexingJobRepository;
-import com.norbertfila.hashtune.domain.indexing.IndexingJob;
-import com.norbertfila.hashtune.domain.indexing.IndexingJobStatus;
+import com.norbertfila.hashtune.entity.indexing.IndexingJob;
+import com.norbertfila.hashtune.entity.indexing.IndexingJobStatus;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;

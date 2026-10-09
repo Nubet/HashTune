@@ -1,6 +1,6 @@
 package com.norbertfila.hashtune.application.port.in;
 
-import com.norbertfila.hashtune.domain.health.SystemHealth;
+import com.norbertfila.hashtune.entity.health.SystemHealth;
 
 public interface GetSystemHealthUseCase {
 

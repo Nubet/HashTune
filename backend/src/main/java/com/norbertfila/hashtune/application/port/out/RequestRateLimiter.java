@@ -1,6 +1,6 @@
 package com.norbertfila.hashtune.application.port.out;
 
-import com.norbertfila.hashtune.domain.identity.ExternalIdentity;
+import com.norbertfila.hashtune.entity.identity.ExternalIdentity;
 import java.util.Optional;
 
 public interface RequestRateLimiter {

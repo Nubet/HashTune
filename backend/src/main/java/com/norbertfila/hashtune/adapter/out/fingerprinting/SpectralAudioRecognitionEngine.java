@@ -6,7 +6,7 @@ import com.norbertfila.hashtune.application.port.out.FingerprintRepository.Finge
 import com.norbertfila.hashtune.application.port.out.ObjectStoragePort;
 import com.norbertfila.hashtune.configuration.AudioProperties;
 import com.norbertfila.hashtune.configuration.AudioSafetyProperties;
-import com.norbertfila.hashtune.domain.fingerprint.FingerprintOccurrence;
+import com.norbertfila.hashtune.entity.fingerprint.FingerprintOccurrence;
 import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;

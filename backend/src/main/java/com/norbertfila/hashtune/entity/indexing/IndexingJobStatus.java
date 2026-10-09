@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.domain.indexing;
+package com.norbertfila.hashtune.entity.indexing;
 
 public enum IndexingJobStatus {
     AWAITING_CONFIRMATION,

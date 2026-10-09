@@ -1,13 +1,14 @@
 package com.norbertfila.hashtune.adapter.out.persistence;
 
+import com.norbertfila.hashtune.entity.track.TrackEntity;
 import com.norbertfila.hashtune.application.port.out.AlbumSummary;
 import com.norbertfila.hashtune.application.port.out.ArtistSummary;
 import com.norbertfila.hashtune.application.port.out.PageResult;
 import com.norbertfila.hashtune.application.port.out.TrackQueryRepository;
 import com.norbertfila.hashtune.application.port.out.TrackRepository;
 import com.norbertfila.hashtune.application.port.out.TrackSearchQuery;
-import com.norbertfila.hashtune.domain.track.Track;
-import com.norbertfila.hashtune.domain.track.TrackStatus;
+import com.norbertfila.hashtune.entity.track.Track;
+import com.norbertfila.hashtune.entity.track.TrackStatus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -73,7 +74,7 @@ public class TrackPersistenceAdapter implements TrackRepository, TrackQueryRepos
 
     @Override
     public PageResult<AlbumSummary> searchAlbums(
-            String query, com.norbertfila.hashtune.domain.track.TrackOrigin origin, int page, int size) {
+            String query, com.norbertfila.hashtune.entity.track.TrackOrigin origin, int page, int size) {
         Page<AlbumSummaryProjection> result = repository.searchAlbums(
                 query,
                 origin == null ? null : origin.name(),
@@ -94,7 +95,7 @@ public class TrackPersistenceAdapter implements TrackRepository, TrackQueryRepos
 
     @Override
     public PageResult<ArtistSummary> searchArtists(
-            String query, com.norbertfila.hashtune.domain.track.TrackOrigin origin, int page, int size) {
+            String query, com.norbertfila.hashtune.entity.track.TrackOrigin origin, int page, int size) {
         Page<ArtistSummaryProjection> result = repository.searchArtists(
                 query,
                 origin == null ? null : origin.name(),

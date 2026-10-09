@@ -1,5 +1,6 @@
 package com.norbertfila.hashtune.adapter.out.persistence;
 
+import com.norbertfila.hashtune.entity.health.ArtistImageCacheEntity;
 import com.norbertfila.hashtune.application.port.out.ArtistImageCacheEntry;
 import com.norbertfila.hashtune.application.port.out.ArtistImageCacheRepository;
 import java.util.Optional;

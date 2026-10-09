@@ -1,7 +1,8 @@
-package com.norbertfila.hashtune.adapter.in.web;
+package com.norbertfila.hashtune.exceptions;
 
-import com.norbertfila.hashtune.adapter.out.storage.StorageException;
-import com.norbertfila.hashtune.application.port.out.AudioInputRejectedException;
+import com.norbertfila.hashtune.dto.error.ProblemResponse;
+import com.norbertfila.hashtune.exceptions.storage.StorageException;
+import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
 import com.norbertfila.hashtune.exceptions.ApplicationException;
 import com.norbertfila.hashtune.exceptions.TooManyRequestsException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,17 +22,17 @@ import org.springframework.web.multipart.support.MissingServletRequestPartExcept
 
 @RestControllerAdvice
 @Slf4j
-public class ApiExceptionHandler {
+public class GlobalExceptionHandler {
     @ExceptionHandler(ApplicationException.class)
-    ResponseEntity<ApiDtos.ProblemResponse> handle(ApplicationException exception, HttpServletRequest request) {
+    ResponseEntity<ProblemResponse> handle(ApplicationException exception, HttpServletRequest request) {
         return problem(
                 exception.status(), exception.code(), exception.code(), exception.getMessage(), request, Map.of());
     }
 
     @ExceptionHandler(TooManyRequestsException.class)
-    ResponseEntity<ApiDtos.ProblemResponse> handleRateLimit(
+    ResponseEntity<ProblemResponse> handleRateLimit(
             TooManyRequestsException exception, HttpServletRequest request) {
-        ResponseEntity<ApiDtos.ProblemResponse> response = problem(
+        ResponseEntity<ProblemResponse> response = problem(
                 exception.status(), exception.code(), exception.code(), exception.getMessage(), request, Map.of());
         response.getHeaders()
                 .add(
@@ -41,7 +42,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    ResponseEntity<ApiDtos.ProblemResponse> handleAccessDenied(
+    ResponseEntity<ProblemResponse> handleAccessDenied(
             AccessDeniedException exception, HttpServletRequest request) {
         return problem(
                 HttpStatus.FORBIDDEN,
@@ -53,7 +54,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(AudioInputRejectedException.class)
-    ResponseEntity<ApiDtos.ProblemResponse> handleAudioInputRejected(
+    ResponseEntity<ProblemResponse> handleAudioInputRejected(
             AudioInputRejectedException exception, HttpServletRequest request) {
         return problem(
                 HttpStatus.UNPROCESSABLE_ENTITY,
@@ -65,7 +66,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(StorageException.class)
-    ResponseEntity<ApiDtos.ProblemResponse> handleStorage(StorageException exception, HttpServletRequest request) {
+    ResponseEntity<ProblemResponse> handleStorage(StorageException exception, HttpServletRequest request) {
         log.error("Storage operation failed on {}", request.getRequestURI(), exception);
         return problem(
                 HttpStatus.SERVICE_UNAVAILABLE,
@@ -77,7 +78,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    ResponseEntity<ApiDtos.ProblemResponse> handleMaxUploadSize(
+    ResponseEntity<ProblemResponse> handleMaxUploadSize(
             MaxUploadSizeExceededException exception, HttpServletRequest request) {
         return problem(
                 HttpStatus.PAYLOAD_TOO_LARGE,
@@ -89,7 +90,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(MissingServletRequestPartException.class)
-    ResponseEntity<ApiDtos.ProblemResponse> handleMissingPart(
+    ResponseEntity<ProblemResponse> handleMissingPart(
             MissingServletRequestPartException exception, HttpServletRequest request) {
         return problem(
                 HttpStatus.BAD_REQUEST,
@@ -101,7 +102,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    ResponseEntity<ApiDtos.ProblemResponse> handleMissingParameter(
+    ResponseEntity<ProblemResponse> handleMissingParameter(
             MissingServletRequestParameterException exception, HttpServletRequest request) {
         return problem(
                 HttpStatus.BAD_REQUEST,
@@ -113,7 +114,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    ResponseEntity<ApiDtos.ProblemResponse> handleTypeMismatch(
+    ResponseEntity<ProblemResponse> handleTypeMismatch(
             MethodArgumentTypeMismatchException exception, HttpServletRequest request) {
         String parameter = exception.getName();
         return problem(
@@ -126,7 +127,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    ResponseEntity<ApiDtos.ProblemResponse> handleValidation(
+    ResponseEntity<ProblemResponse> handleValidation(
             MethodArgumentNotValidException exception, HttpServletRequest request) {
         Map<String, String> errors = exception.getBindingResult().getFieldErrors().stream()
                 .collect(java.util.stream.Collectors.toMap(
@@ -145,7 +146,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
-    ResponseEntity<ApiDtos.ProblemResponse> handleUnsupportedMediaType(
+    ResponseEntity<ProblemResponse> handleUnsupportedMediaType(
             HttpMediaTypeNotSupportedException exception, HttpServletRequest request) {
         return problem(
                 HttpStatus.UNSUPPORTED_MEDIA_TYPE,
@@ -157,7 +158,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    ResponseEntity<ApiDtos.ProblemResponse> handleUnexpected(Exception exception, HttpServletRequest request) {
+    ResponseEntity<ProblemResponse> handleUnexpected(Exception exception, HttpServletRequest request) {
         log.error("Unhandled API error on {}", request.getRequestURI(), exception);
         return problem(
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -168,7 +169,7 @@ public class ApiExceptionHandler {
                 Map.of());
     }
 
-    private ResponseEntity<ApiDtos.ProblemResponse> problem(
+    private ResponseEntity<ProblemResponse> problem(
             HttpStatus status,
             String title,
             String code,
@@ -176,7 +177,7 @@ public class ApiExceptionHandler {
             HttpServletRequest request,
             Map<String, String> errors) {
         return ResponseEntity.status(status)
-                .body(new ApiDtos.ProblemResponse(
+                .body(new ProblemResponse(
                         "https://hashtune.local/problems/" + code.toLowerCase(),
                         title,
                         status.value(),

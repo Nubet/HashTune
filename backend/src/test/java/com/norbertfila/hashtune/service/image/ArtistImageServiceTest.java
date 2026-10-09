@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.norbertfila.hashtune.repository.artist.ArtistImageCacheEntry;
 import com.norbertfila.hashtune.repository.artist.ArtistImageCacheRepository;
-import com.norbertfila.hashtune.application.port.out.ArtistImageProvider;
+import com.norbertfila.hashtune.service.metadata.ArtistImageProvider;
 import java.time.Instant;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;

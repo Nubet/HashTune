@@ -1,16 +1,16 @@
-package com.norbertfila.hashtune.adapter.in.web;
+package com.norbertfila.hashtune.exceptions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.norbertfila.hashtune.adapter.out.storage.StorageException;
+import com.norbertfila.hashtune.exceptions.storage.StorageException;
 import com.norbertfila.hashtune.exceptions.ApplicationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
-class ApiExceptionHandlerTest {
-    private final ApiExceptionHandler handler = new ApiExceptionHandler();
+class GlobalExceptionHandlerTest {
+    private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
     private final MockHttpServletRequest request = request("/api/v1/library/tracks");
 
     @Test

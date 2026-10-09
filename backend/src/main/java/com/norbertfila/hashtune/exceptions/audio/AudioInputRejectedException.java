@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.application.port.out;
+package com.norbertfila.hashtune.exceptions.audio;
 
 public class AudioInputRejectedException extends RuntimeException {
     private final String code;

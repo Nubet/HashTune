@@ -6,16 +6,20 @@ import com.norbertfila.hashtune.exceptions.application.TooManyRequestsException;
 import com.norbertfila.hashtune.exceptions.audio.AudioInputRejectedException;
 import com.norbertfila.hashtune.exceptions.storage.StorageException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
@@ -45,8 +49,20 @@ public class GlobalExceptionHandler {
         return problem(
                 HttpStatus.FORBIDDEN,
                 "Forbidden",
-                "FORBIDDEN",
+                ErrorCode.FORBIDDEN.name(),
                 "You do not have permission to access this resource.",
+                request,
+                Map.of());
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    ResponseEntity<ProblemResponse> handleAuthentication(
+            AuthenticationException exception, HttpServletRequest request) {
+        return problem(
+                HttpStatus.UNAUTHORIZED,
+                "Authentication Required",
+                ErrorCode.AUTHENTICATION_REQUIRED.name(),
+                "Authentication is required to access this resource.",
                 request,
                 Map.of());
     }
@@ -69,7 +85,7 @@ public class GlobalExceptionHandler {
         return problem(
                 HttpStatus.SERVICE_UNAVAILABLE,
                 "Storage Unavailable",
-                "STORAGE_UNAVAILABLE",
+                ErrorCode.STORAGE_UNAVAILABLE.name(),
                 "Audio storage is temporarily unavailable. Try again later.",
                 request,
                 Map.of());
@@ -81,7 +97,7 @@ public class GlobalExceptionHandler {
         return problem(
                 HttpStatus.PAYLOAD_TOO_LARGE,
                 "File Too Large",
-                "FILE_TOO_LARGE",
+                ErrorCode.FILE_TOO_LARGE.name(),
                 "The uploaded audio file exceeds the maximum allowed size.",
                 request,
                 Map.of("file", "File is too large."));
@@ -93,7 +109,7 @@ public class GlobalExceptionHandler {
         return problem(
                 HttpStatus.BAD_REQUEST,
                 "Missing File",
-                "MISSING_FILE",
+                ErrorCode.MISSING_FILE.name(),
                 "Multipart field 'file' is required.",
                 request,
                 Map.of("file", "File is required."));
@@ -105,7 +121,7 @@ public class GlobalExceptionHandler {
         return problem(
                 HttpStatus.BAD_REQUEST,
                 "Missing Parameter",
-                "MISSING_PARAMETER",
+                ErrorCode.MISSING_PARAMETER.name(),
                 "Request parameter '%s' is required.".formatted(exception.getParameterName()),
                 request,
                 Map.of(exception.getParameterName(), "Parameter is required."));
@@ -118,7 +134,7 @@ public class GlobalExceptionHandler {
         return problem(
                 HttpStatus.BAD_REQUEST,
                 "Invalid Parameter",
-                "INVALID_PARAMETER",
+                ErrorCode.INVALID_PARAMETER.name(),
                 "Request parameter '%s' has an invalid value.".formatted(parameter),
                 request,
                 Map.of(parameter, "Value is invalid."));
@@ -137,10 +153,51 @@ public class GlobalExceptionHandler {
         return problem(
                 HttpStatus.BAD_REQUEST,
                 "Validation Failed",
-                "VALIDATION_FAILED",
+                ErrorCode.VALIDATION_FAILED.name(),
                 "One or more request values are invalid.",
                 request,
                 errors);
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    ResponseEntity<ProblemResponse> handleMethodValidation(
+            HandlerMethodValidationException exception, HttpServletRequest request) {
+        return problem(
+                HttpStatus.BAD_REQUEST,
+                "Validation Failed",
+                ErrorCode.VALIDATION_FAILED.name(),
+                "One or more request values are invalid.",
+                request,
+                Map.of());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    ResponseEntity<ProblemResponse> handleConstraintViolation(
+            ConstraintViolationException exception, HttpServletRequest request) {
+        Map<String, String> errors = exception.getConstraintViolations().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        violation -> violation.getPropertyPath().toString(),
+                        violation -> violation.getMessage(),
+                        (first, ignored) -> first));
+        return problem(
+                HttpStatus.BAD_REQUEST,
+                "Validation Failed",
+                ErrorCode.VALIDATION_FAILED.name(),
+                "One or more request values are invalid.",
+                request,
+                errors);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ResponseEntity<ProblemResponse> handleMalformedRequest(
+            HttpMessageNotReadableException exception, HttpServletRequest request) {
+        return problem(
+                HttpStatus.BAD_REQUEST,
+                "Malformed Request",
+                ErrorCode.MALFORMED_REQUEST.name(),
+                "The request body could not be read.",
+                request,
+                Map.of());
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
@@ -149,7 +206,7 @@ public class GlobalExceptionHandler {
         return problem(
                 HttpStatus.UNSUPPORTED_MEDIA_TYPE,
                 "Unsupported Media Type",
-                "UNSUPPORTED_MEDIA_TYPE",
+                ErrorCode.UNSUPPORTED_MEDIA_TYPE.name(),
                 "The request content type is not supported.",
                 request,
                 Map.of());
@@ -161,7 +218,7 @@ public class GlobalExceptionHandler {
         return problem(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Internal Server Error",
-                "INTERNAL_ERROR",
+                ErrorCode.INTERNAL_ERROR.name(),
                 "The server could not complete the request.",
                 request,
                 Map.of());

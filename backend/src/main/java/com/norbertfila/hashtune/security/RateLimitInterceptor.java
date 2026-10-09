@@ -1,6 +1,6 @@
-package com.norbertfila.hashtune.adapter.in.web;
+package com.norbertfila.hashtune.security;
 
-import com.norbertfila.hashtune.adapter.in.security.AuthenticatedIdentityResolver;
+import com.norbertfila.hashtune.security.AuthenticatedIdentityResolver;
 import com.norbertfila.hashtune.application.port.out.RateLimitDecision;
 import com.norbertfila.hashtune.application.port.out.RequestRateLimiter;
 import com.norbertfila.hashtune.exceptions.TooManyRequestsException;

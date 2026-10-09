@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.adapter.in.security;
+package com.norbertfila.hashtune.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

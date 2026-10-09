@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.adapter.in.security;
+package com.norbertfila.hashtune.security;
 
 import com.norbertfila.hashtune.configuration.IdentityProviderProperties;
 import com.norbertfila.hashtune.entity.identity.ExternalIdentity;

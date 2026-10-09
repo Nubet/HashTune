@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.adapter.in.seed;
+package com.norbertfila.hashtune.service.seed;
 
 import com.norbertfila.hashtune.application.port.out.CoverArtProvider;
 import com.norbertfila.hashtune.repository.fingerprint.FingerprintRepository;

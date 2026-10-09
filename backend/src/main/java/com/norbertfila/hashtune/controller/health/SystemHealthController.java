@@ -1,5 +1,6 @@
-package com.norbertfila.hashtune.adapter.in.web;
+package com.norbertfila.hashtune.controller.health;
 
+import com.norbertfila.hashtune.adapter.in.web.ApiDtos;
 import com.norbertfila.hashtune.service.health.GetSystemHealthUseCase;
 import com.norbertfila.hashtune.entity.health.SystemHealth;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,4 +1,4 @@
-package com.norbertfila.hashtune.adapter.in.security;
+package com.norbertfila.hashtune.security;
 
 import java.util.Collection;
 import java.util.Collections;

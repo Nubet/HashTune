@@ -1,8 +1,8 @@
 package com.norbertfila.hashtune.adapter.in.web;
 
-import com.norbertfila.hashtune.application.port.out.AlbumSummary;
-import com.norbertfila.hashtune.application.port.out.ArtistSummary;
-import com.norbertfila.hashtune.application.port.out.PageResult;
+import com.norbertfila.hashtune.repository.track.AlbumSummary;
+import com.norbertfila.hashtune.repository.track.ArtistSummary;
+import com.norbertfila.hashtune.repository.track.PageResult;
 import com.norbertfila.hashtune.entity.indexing.IndexingJob;
 import com.norbertfila.hashtune.entity.recognition.Recognition;
 import com.norbertfila.hashtune.entity.track.Track;

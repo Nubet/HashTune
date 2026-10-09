@@ -1,7 +1,7 @@
 package com.norbertfila.hashtune.application.service;
 
-import com.norbertfila.hashtune.application.port.out.ArtistImageCacheEntry;
-import com.norbertfila.hashtune.application.port.out.ArtistImageCacheRepository;
+import com.norbertfila.hashtune.repository.artist.ArtistImageCacheEntry;
+import com.norbertfila.hashtune.repository.artist.ArtistImageCacheRepository;
 import com.norbertfila.hashtune.application.port.out.ArtistImageProvider;
 import java.net.URI;
 import java.time.Duration;

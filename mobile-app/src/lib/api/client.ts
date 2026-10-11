@@ -42,6 +42,7 @@ export function createApiClient({
     schema: z.ZodType<T>,
     options: RequestInit = {},
     authenticated = true,
+    responseType: "json" | "arrayBuffer" = "json",
   ): Promise<T> {
     const controller = new AbortController();
     const abort = () => controller.abort();
@@ -90,13 +91,15 @@ export function createApiClient({
       const body: unknown =
         response.status === 204
           ? undefined
-          : await response.json().catch(() => {
-              throw new ApiError(
-                "The backend returned an unexpected response.",
-                response.status,
-                "INVALID_RESPONSE",
-              );
-            });
+          : responseType === "arrayBuffer"
+            ? await response.arrayBuffer()
+            : await response.json().catch(() => {
+                throw new ApiError(
+                  "The backend returned an unexpected response.",
+                  response.status,
+                  "INVALID_RESPONSE",
+                );
+              });
       const parsed = schema.safeParse(body);
       if (!parsed.success)
         throw new ApiError(

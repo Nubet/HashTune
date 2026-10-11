@@ -81,7 +81,13 @@ export const musicApi = {
       false,
     );
   },
-  recordingUrl(id: string) {
-    return `${requireConfiguration().apiUrl.replace(/\/$/, "")}/api/v1/recognition-history/${encodeURIComponent(id)}/recording`;
+  recording(id: string, signal: AbortSignal) {
+    return request(
+      `/api/v1/recognition-history/${encodeURIComponent(id)}/recording`,
+      z.instanceof(ArrayBuffer).refine((buffer) => buffer.byteLength > 0),
+      { signal },
+      true,
+      "arrayBuffer",
+    );
   },
 };

@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AppState } from "react-native";
 import { useFocusEffect } from "expo-router";
+import { File, Paths } from "expo-file-system";
 import {
   setAudioModeAsync,
   useAudioPlayer,
   useAudioPlayerStatus,
 } from "expo-audio";
-import { getAccessToken } from "@/lib/auth/supabase";
-import { musicApi } from "@/lib/api/music-api";
+import { musicApi } from "../../lib/api/music-api";
 
 type PlaybackState =
   { status: "ready" | "loading" } | { status: "error"; error: Error };
@@ -17,6 +17,7 @@ export function useRecordingPlayback(recognitionId: string) {
   const audio = useAudioPlayerStatus(player);
   const [state, setState] = useState<PlaybackState>({ status: "ready" });
   const pending = useRef<AbortController | null>(null);
+  const cachedRecording = useRef<File | null>(null);
 
   const stop = useCallback(() => {
     pending.current?.abort();
@@ -28,7 +29,11 @@ export function useRecordingPlayback(recognitionId: string) {
     const subscription = AppState.addEventListener("change", (state) => {
       if (state === "background") stop();
     });
-    return () => subscription.remove();
+    return () => {
+      subscription.remove();
+      pending.current?.abort();
+      if (cachedRecording.current?.exists) cachedRecording.current.delete();
+    };
   }, [stop]);
 
   async function toggle() {
@@ -48,12 +53,20 @@ export function useRecordingPlayback(recognitionId: string) {
       });
       if (operation.signal.aborted) return;
       if (!audio.isLoaded || audio.error) {
-        const token = await getAccessToken();
-        if (operation.signal.aborted) return;
-        player.replace({
-          uri: musicApi.recordingUrl(recognitionId),
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        if (!cachedRecording.current?.exists) {
+          const bytes = await musicApi.recording(
+            recognitionId,
+            operation.signal,
+          );
+          if (operation.signal.aborted) return;
+          const file = new File(
+            Paths.cache,
+            `hashtune-recording-${Date.now()}.m4a`,
+          );
+          cachedRecording.current = file;
+          file.write(new Uint8Array(bytes));
+        }
+        player.replace({ uri: cachedRecording.current.uri });
       } else if (audio.didJustFinish || audio.currentTime >= audio.duration) {
         await player.seekTo(0);
       }

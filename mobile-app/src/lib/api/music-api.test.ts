@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { musicApi } from "./music-api";
 
-const { fetch, getAccessToken } = vi.hoisted(() => ({
+const { fetch, getAccessToken, refreshAccessToken } = vi.hoisted(() => ({
   fetch: vi.fn<(url: string, options: RequestInit) => Promise<Response>>(),
   getAccessToken: vi.fn(async () => "session-token"),
+  refreshAccessToken: vi.fn(async () => "refreshed-token"),
 }));
 
 vi.mock("expo/fetch", () => ({ fetch }));
@@ -12,7 +13,7 @@ vi.mock("../config", () => ({
 }));
 vi.mock("../auth/supabase", () => ({
   getAccessToken,
-  refreshAccessToken: async () => "refreshed-token",
+  refreshAccessToken,
 }));
 
 beforeEach(() => {
@@ -96,9 +97,38 @@ describe("backend integration contract", () => {
     expect(getAccessToken).not.toHaveBeenCalled();
   });
 
-  it("keeps authenticated sample playback on the configured API origin", () => {
-    expect(musicApi.recordingUrl("sample-id")).toBe(
-      "https://api.hashtune.test/api/v1/recognition-history/sample-id/recording",
+  it("downloads audio bytes after refreshing an expired token", async () => {
+    const bytes = new Uint8Array([0, 255, 16, 0]);
+    fetch
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(
+        new Response(bytes, { headers: { "Content-Type": "audio/mp4" } }),
+      );
+    const signal = new AbortController().signal;
+    const recording = await musicApi.recording("sample/id", signal);
+    expect(new Uint8Array(recording)).toEqual(bytes);
+    expect(fetch.mock.calls[0]?.[0]).toBe(
+      "https://api.hashtune.test/api/v1/recognition-history/sample%2Fid/recording",
     );
+    expect(refreshAccessToken).toHaveBeenCalledOnce();
+    expect(
+      new Headers(fetch.mock.calls[1]?.[1].headers).get("Authorization"),
+    ).toBe("Bearer refreshed-token");
+  });
+
+  it("reports unavailable recordings and rejects empty audio", async () => {
+    fetch.mockResolvedValueOnce(
+      Response.json(
+        { detail: "Recording not found", code: "RECORDING_NOT_FOUND" },
+        { status: 404 },
+      ),
+    );
+    await expect(
+      musicApi.recording("missing", new AbortController().signal),
+    ).rejects.toMatchObject({ status: 404, message: "Recording not found" });
+    fetch.mockResolvedValueOnce(new Response(new Uint8Array()));
+    await expect(
+      musicApi.recording("empty", new AbortController().signal),
+    ).rejects.toMatchObject({ code: "INVALID_RESPONSE" });
   });
 });

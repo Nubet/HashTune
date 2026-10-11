@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { ApiError } from "../../lib/api/client";
 import {
   RecognitionSession,
+  RecognitionRateLimitError,
   sampleDurationSeconds,
 } from "./recognition-session";
 import type { RecognitionPorts } from "./recognition-session";
@@ -81,7 +81,7 @@ describe("microphone recognition session", () => {
   it("cleans up failed uploads and respects the server cooldown", async () => {
     const dependencies = ports();
     dependencies.recognize.mockRejectedValueOnce(
-      new ApiError("Wait", 429, "TOO_MANY_REQUESTS", 30),
+      new RecognitionRateLimitError("Wait", 30),
     );
     const session = new RecognitionSession(dependencies);
     await session.start();

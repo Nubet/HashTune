@@ -55,7 +55,12 @@ export function createApiClient({
         headers.set("Authorization", `Bearer ${await getToken()}`);
       const url = `${baseUrl().replace(/\/$/, "")}${path}`;
       const send = () =>
-        fetch(url, { ...options, headers, signal: controller.signal });
+        fetch(url, {
+          ...options,
+          credentials: "omit",
+          headers,
+          signal: controller.signal,
+        });
       let response = await send();
       if (authenticated && response.status === 401) {
         headers.set("Authorization", `Bearer ${await refreshToken()}`);

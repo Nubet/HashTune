@@ -24,3 +24,5 @@ yarn-error.*
 /ios
 /android
 coverage/
+!docs/
+!docs/**

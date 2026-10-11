@@ -13,7 +13,7 @@ export default {
   icon: "./assets/icon.png",
   ios: {
     bundleIdentifier: "com.norbertfila.hashtune",
-    supportsTablet: true,
+    supportsTablet: false,
     infoPlist: production
       ? {}
       : {
@@ -32,6 +32,8 @@ export default {
   },
   plugins: [
     "expo-router",
+    "expo-dev-client",
+    "expo-asset",
     "expo-font",
     "expo-secure-store",
     [

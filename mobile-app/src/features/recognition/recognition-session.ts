@@ -1,7 +1,15 @@
-import { ApiError } from "../../lib/api/client";
 import type { Recognition } from "../../lib/api/contracts";
 
 export const sampleDurationSeconds = 12;
+
+export class RecognitionRateLimitError extends Error {
+  constructor(
+    message: string,
+    readonly retryAfterSeconds: number,
+  ) {
+    super(message);
+  }
+}
 
 export type RecognitionState =
   | { status: "idle" | "preparing" | "recording" | "processing" | "canceling" }
@@ -103,8 +111,8 @@ export class RecognitionSession {
       this.ports.onRecognized();
     } catch (error) {
       if (!operation.signal.aborted) {
-        if (error instanceof ApiError && error.status === 429)
-          this.retryAt = Date.now() + (error.retryAfterSeconds ?? 30) * 1000;
+        if (error instanceof RecognitionRateLimitError)
+          this.retryAt = Date.now() + error.retryAfterSeconds * 1000;
         this.update({
           status: "error",
           error:

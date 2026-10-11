@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -6,12 +6,13 @@ import {
   TextInput,
   View,
 } from "react-native";
+import type { ListRenderItemInfo } from "react-native";
 import { Button, Heading, Message } from "@/components/ui";
 import { ChoiceChip } from "@/components/choice-chip";
 import type { LibraryFilters } from "@/lib/api/music-api";
 import { fonts, useTheme } from "@/theme/theme";
 import { libraryEntryKey, useLibrary } from "./use-library";
-import type { LibraryResource } from "./use-library";
+import type { LibraryEntry, LibraryResource } from "./use-library";
 import { LibraryEntryRow } from "./library-entry";
 
 const resources = [
@@ -34,18 +35,34 @@ export default function LibraryScreen() {
     origin: "HASH_TUNE",
   });
   const library = useLibrary(resource, filters);
-  const entries = library.data?.pages.flatMap((page) => page.content) ?? [];
+  const entries = useMemo(
+    () => library.data?.pages.flatMap((page) => page.content) ?? [],
+    [library.data],
+  );
 
-  function browse(artist: string, album?: string) {
-    setResource("tracks");
-    setSearch("");
-    setFilters({
-      query: "",
-      origin: filters.origin,
-      artist,
-      ...(album ? { album } : {}),
-    });
-  }
+  const browse = useCallback(
+    (artist: string, album?: string) => {
+      setResource("tracks");
+      setSearch("");
+      setFilters({
+        query: "",
+        origin: filters.origin,
+        artist,
+        ...(album ? { album } : {}),
+      });
+    },
+    [filters.origin],
+  );
+  const browseAlbum = useCallback(
+    (title: string, artist: string) => browse(artist, title),
+    [browse],
+  );
+  const renderItem = useCallback(
+    ({ item }: ListRenderItemInfo<LibraryEntry>) => (
+      <LibraryEntryRow entry={item} onAlbum={browseAlbum} onArtist={browse} />
+    ),
+    [browseAlbum, browse],
+  );
 
   return (
     <FlatList
@@ -185,13 +202,7 @@ export default function LibraryScreen() {
       ItemSeparatorComponent={() => (
         <View style={{ height: 1, backgroundColor: theme.line }} />
       )}
-      renderItem={({ item }) => (
-        <LibraryEntryRow
-          entry={item}
-          onAlbum={(title, artist) => browse(artist, title)}
-          onArtist={(name) => browse(name)}
-        />
-      )}
+      renderItem={renderItem}
       ListFooterComponent={
         library.hasNextPage ? (
           <Button

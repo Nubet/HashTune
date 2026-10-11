@@ -1,17 +1,29 @@
-import { useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Text, View } from "react-native";
-import { Button, Card, Heading, Message } from "@/components/ui";
-import { TrackRow } from "@/components/track-row";
+import { useCallback, useMemo, useState } from "react";
+import { ActivityIndicator, Alert, FlatList, View } from "react-native";
+import type { ListRenderItemInfo } from "react-native";
+import type { HistoryItem } from "@/lib/api/contracts";
+import { Button, Heading, Message } from "@/components/ui";
 import { SessionStatus } from "@/components/session-status";
-import { fonts, useTheme } from "@/theme/theme";
+import { useTheme } from "@/theme/theme";
 import { useHistory } from "./use-history";
-import { RecordingPlayer } from "./recording-player";
+import { HistoryEntry } from "./history-entry";
 
 export default function HistoryScreen() {
   const theme = useTheme();
   const { session, history, clear } = useHistory();
   const [playingId, setPlayingId] = useState<string | null>(null);
-  const items = history.data?.pages.flat() ?? [];
+  const items = useMemo(() => history.data?.pages.flat() ?? [], [history.data]);
+  const renderItem = useCallback(
+    ({ item }: ListRenderItemInfo<HistoryItem>) => (
+      <HistoryEntry
+        item={item}
+        active={playingId === item.id}
+        disabled={clear.isPending}
+        onPlay={setPlayingId}
+      />
+    ),
+    [playingId, clear.isPending],
+  );
 
   function confirmClear() {
     Alert.alert(
@@ -94,71 +106,7 @@ export default function HistoryScreen() {
           )
         ) : null
       }
-      renderItem={({ item }) => (
-        <Card>
-          {item.track ? (
-            <TrackRow track={item.track} />
-          ) : (
-            <Message
-              title={
-                item.status === "INVALID_AUDIO"
-                  ? "Audio could not be read"
-                  : "Nothing matched"
-              }
-              description="No track was identified in this search."
-            />
-          )}
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-            <Text
-              selectable
-              style={{
-                fontFamily: fonts.medium,
-                fontSize: 12,
-                color: theme.primaryText,
-              }}
-            >
-              {item.status === "MATCHED" ? "Match found" : "No match"}
-            </Text>
-            <Text
-              selectable
-              style={{
-                fontFamily: fonts.regular,
-                fontSize: 12,
-                color: theme.muted,
-              }}
-            >
-              {item.source === "MICROPHONE" ? "Microphone" : "Audio file"}
-            </Text>
-            <Text
-              selectable
-              style={{
-                fontFamily: fonts.regular,
-                fontSize: 12,
-                color: theme.muted,
-              }}
-            >
-              {new Date(item.createdAt).toLocaleString("en-US", {
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </Text>
-          </View>
-          {item.source === "MICROPHONE" &&
-            item.recordingUrl &&
-            (playingId === item.id ? (
-              <RecordingPlayer key={item.id} recognitionId={item.id} />
-            ) : (
-              <Button
-                secondary
-                label="Listen to sample"
-                disabled={clear.isPending}
-                onPress={() => setPlayingId(item.id)}
-              />
-            ))}
-        </Card>
-      )}
+      renderItem={renderItem}
       ListFooterComponent={
         history.hasNextPage ? (
           <Button

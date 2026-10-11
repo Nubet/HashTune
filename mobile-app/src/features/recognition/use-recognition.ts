@@ -11,8 +11,12 @@ import {
 import { File } from "expo-file-system";
 import { useQueryClient } from "@tanstack/react-query";
 import { musicApi } from "@/lib/api/music-api";
+import { ApiError } from "@/lib/api/client";
 import { getAccessToken } from "@/lib/auth/supabase";
-import { RecognitionSession } from "./recognition-session";
+import {
+  RecognitionRateLimitError,
+  RecognitionSession,
+} from "./recognition-session";
 
 export class MicrophonePermissionError extends Error {
   constructor(readonly canAskAgain: boolean) {
@@ -70,7 +74,17 @@ export function useRecognition() {
             throw new Error(
               "The sample is empty. Record a longer clip and try again.",
             );
-          return musicApi.recognize(file, signal);
+          try {
+            return await musicApi.recognize(file, signal);
+          } catch (error) {
+            if (error instanceof ApiError && error.status === 429) {
+              throw new RecognitionRateLimitError(
+                error.message,
+                error.retryAfterSeconds ?? 30,
+              );
+            }
+            throw error;
+          }
         },
         onRecognized: () => {
           void queryClient.invalidateQueries({ queryKey: ["history"] });

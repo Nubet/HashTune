@@ -79,4 +79,41 @@ describe("native API transport", () => {
     ).toBe(30);
     expect(retryAfterSeconds("unknown")).toBeNull();
   });
+
+  it("reports a deadline separately from a canceled request", async () => {
+    vi.useFakeTimers();
+    fetch.mockImplementation(
+      (_url, options) =>
+        new Promise((_resolve, reject) => {
+          options.signal?.addEventListener(
+            "abort",
+            () => reject(new DOMException("Aborted", "AbortError")),
+            { once: true },
+          );
+        }),
+    );
+    try {
+      const deadline = expect(
+        request("/history", z.unknown()),
+      ).rejects.toMatchObject({ code: "TIMEOUT" });
+      await vi.advanceTimersByTimeAsync(60_000);
+      await deadline;
+      const controller = new AbortController();
+      const canceled = expect(
+        request("/history", z.unknown(), { signal: controller.signal }),
+      ).rejects.toMatchObject({ code: "CANCELED" });
+      await vi.advanceTimersByTimeAsync(0);
+      controller.abort();
+      await canceled;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("treats non-JSON successful responses as contract errors", async () => {
+    fetch.mockResolvedValueOnce(new Response("<html>Proxy error</html>"));
+    await expect(request("/history", z.unknown())).rejects.toMatchObject({
+      code: "INVALID_RESPONSE",
+    });
+  });
 });

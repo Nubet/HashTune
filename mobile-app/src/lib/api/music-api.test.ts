@@ -20,35 +20,38 @@ beforeEach(() => {
 });
 
 describe("backend integration contract", () => {
-  it("uploads a finalized microphone file with the existing multipart contract", async () => {
-    fetch.mockResolvedValueOnce(
-      Response.json({
-        status: "NO_MATCH",
-        track: null,
-        sampleDurationMs: 12000,
-        recognitionTimeMs: 30,
-      }),
-    );
-    await musicApi.recognize(
-      new Blob(["aac"], { type: "audio/mp4" }),
-      new AbortController().signal,
-    );
-    const request = fetch.mock.calls[0];
-    expect(request?.[0]).toBe(
-      "https://api.hashtune.test/api/v1/recognitions?source=MICROPHONE",
-    );
-    expect(request?.[1].method).toBe("POST");
-    const body = request?.[1].body;
-    expect(body).toBeInstanceOf(FormData);
-    if (!(body instanceof FormData))
-      throw new Error("Expected multipart form data");
-    const file = body.get("file");
-    expect(file).toBeInstanceOf(File);
-    if (!(file instanceof File)) throw new Error("Expected audio file");
-    expect(file.type).toBe("audio/mp4");
-    expect(file.name).toBe("microphone-sample.m4a");
-    expect(new Headers(request?.[1].headers).get("Content-Type")).toBeNull();
-  });
+  it.each(["audio/mp4", "audio/x-m4a"])(
+    "uploads a finalized microphone file as %s with the existing multipart contract",
+    async (type) => {
+      fetch.mockResolvedValueOnce(
+        Response.json({
+          status: "NO_MATCH",
+          track: null,
+          sampleDurationMs: 12000,
+          recognitionTimeMs: 30,
+        }),
+      );
+      await musicApi.recognize(
+        new Blob(["aac"], { type }),
+        new AbortController().signal,
+      );
+      const request = fetch.mock.calls[0];
+      expect(request?.[0]).toBe(
+        "https://api.hashtune.test/api/v1/recognitions?source=MICROPHONE",
+      );
+      expect(request?.[1].method).toBe("POST");
+      const body = request?.[1].body;
+      expect(body).toBeInstanceOf(FormData);
+      if (!(body instanceof FormData))
+        throw new Error("Expected multipart form data");
+      const file = body.get("file");
+      expect(file).toBeInstanceOf(File);
+      if (!(file instanceof File)) throw new Error("Expected audio file");
+      expect(file.type).toBe(type);
+      expect(file.name).toBe("microphone-sample.m4a");
+      expect(new Headers(request?.[1].headers).get("Content-Type")).toBeNull();
+    },
+  );
 
   it("reads history as an authenticated offset-paginated array and clears with 204", async () => {
     fetch.mockResolvedValueOnce(Response.json([]));

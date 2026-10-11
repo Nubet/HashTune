@@ -168,7 +168,7 @@ export default function LibraryScreen() {
               {resource}
             </Text>
           )}
-          {library.error && (
+          {library.error && !library.isFetchNextPageError && (
             <>
               <Message
                 error
@@ -204,7 +204,23 @@ export default function LibraryScreen() {
       )}
       renderItem={renderItem}
       ListFooterComponent={
-        library.hasNextPage ? (
+        library.isFetchNextPageError ? (
+          <View style={{ gap: 10 }}>
+            <Message
+              error
+              title="More music could not be loaded"
+              description={library.error?.message}
+            />
+            <Button
+              secondary
+              label="Try again"
+              busy={library.isFetchingNextPage}
+              onPress={() => {
+                void library.fetchNextPage();
+              }}
+            />
+          </View>
+        ) : library.hasNextPage ? (
           <Button
             secondary
             label="Load more"

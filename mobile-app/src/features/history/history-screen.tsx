@@ -12,7 +12,14 @@ export default function HistoryScreen() {
   const theme = useTheme();
   const { session, history, clear } = useHistory();
   const [playingId, setPlayingId] = useState<string | null>(null);
-  const items = useMemo(() => history.data?.pages.flat() ?? [], [history.data]);
+  const items = useMemo(() => {
+    const seen = new Set<string>();
+    return (history.data?.pages.flat() ?? []).filter((item) => {
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
+  }, [history.data]);
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<HistoryItem>) => (
       <HistoryEntry

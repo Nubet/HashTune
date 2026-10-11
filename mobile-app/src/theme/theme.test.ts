@@ -10,7 +10,7 @@ describe("HashTune brand", () => {
       new URL("../../../frontend/app/globals.css", import.meta.url),
       "utf8",
     );
-    const light = css.match(/\n\.app-shell \{([^}]+)\}/)?.[1];
+    const light = css.match(/\n\.app-shell \{([^}]+)}/)?.[1];
     const dark = css.match(/\n\.dark \.app-shell \{([^}]+)\}/)?.[1];
     expect(css).toContain(
       `--brand-primary-blue: ${themes.light.primary.toLowerCase()};`,

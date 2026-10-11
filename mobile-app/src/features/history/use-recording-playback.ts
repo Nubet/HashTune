@@ -7,7 +7,7 @@ import {
   useAudioPlayer,
   useAudioPlayerStatus,
 } from "expo-audio";
-import { musicApi } from "../../lib/api/music-api";
+import { musicApi } from "@/lib/api/music-api";
 
 type PlaybackState =
   { status: "ready" | "loading" } | { status: "error"; error: Error };

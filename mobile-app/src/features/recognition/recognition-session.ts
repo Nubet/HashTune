@@ -1,4 +1,4 @@
-import type { Recognition } from "../../lib/api/contracts";
+import type { Recognition } from "@/lib/api/contracts";
 
 export const sampleDurationSeconds = 12;
 

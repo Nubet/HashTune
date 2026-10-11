@@ -1,5 +1,6 @@
 import { ScrollView } from "react-native";
 import { Heading } from "@/components/ui";
+import { SessionStatus } from "@/components/session-status";
 
 export default function ListenScreen() {
   return (
@@ -11,6 +12,7 @@ export default function ListenScreen() {
         title="Discover the music"
         description="Identify the music around you with HashTune."
       />
+      <SessionStatus />
     </ScrollView>
   );
 }
